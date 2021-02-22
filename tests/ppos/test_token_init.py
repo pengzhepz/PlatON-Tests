@@ -24,7 +24,7 @@ from client_sdk_python.packages.platon_account.account import Account
 
 
 @pytest.mark.P0
-def test_IT_IA_002_to_007(new_genesis_env):
+def test_IT_IA_002_to_007(new_genesis_env, client_consensus):
     """
     IT_IA_002:链初始化-查看token发行总量账户初始值
     IT_IA_003:链初始化-查看platON基金会账户初始值
@@ -35,39 +35,39 @@ def test_IT_IA_002_to_007(new_genesis_env):
     :return:验证链初始化后token各内置账户初始值
     """
     # Initialization genesis file Initial amount
+    account = client_consensus.economic.account
     node_count = len(new_genesis_env.consensus_node_list)
-    default_pledge_amount = Web3.toWei(node_count * 1500000, 'ether')
+    default_pledge_amount = Web3.toWei(node_count * 150000, 'ether')
     node = new_genesis_env.get_rand_node()
     community_amount = default_pledge_amount + 259096239000000000000000000 + 62215742000000000000000000
     genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
     genesis.economicModel.innerAcc.cdfBalance = community_amount
-    surplus_amount = str(EconomicConfig.TOKEN_TOTAL - community_amount - 200000000000000000000000000)
+    surplus_amount = str(10250000000000000000000000000 - community_amount - 200000000000000000000000000)
     genesis.alloc = {
-        "lax1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrzpqayr": {
+        "atp1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr5jy24r": {
             "balance": "200000000000000000000000000"
         },
-        "lax196278ns22j23awdfj9f2d4vz0pedld8au6xelj": {
+        "atp1zkrxx6rf358jcvr7nruhyvr9hxpwv9uncjmns0": {
             "balance": surplus_amount
         }
     }
-    new_file = new_genesis_env.cfg.env_tmp + "/genesis_0.13.1.json"
+    new_file = new_genesis_env.cfg.env_tmp + "/genesis_1.0.0.json"
     genesis.to_file(new_file)
     new_genesis_env.deploy_all(new_file)
 
     # Verify the amount of each built-in account
     foundation_louckup = node.eth.getBalance(node.ppos.restrictingAddress, 0)
     log.info('Initial lock up contract address： {} amount：{}'.format(node.ppos.restrictingAddress, foundation_louckup))
-    incentive_pool = node.eth.getBalance(EconomicConfig.INCENTIVEPOOL_ADDRESS, 0)
-    log.info('Incentive pool address：{} amount：{}'.format(EconomicConfig.INCENTIVEPOOL_ADDRESS, incentive_pool))
+    incentive_pool = node.eth.getBalance(account.raw_accounts[1]['address'], 0)
+    log.info('Incentive pool address：{} amount：{}'.format(account.raw_accounts[1]['address'], incentive_pool))
     staking = node.eth.getBalance(node.ppos.stakingAddress, 0)
     log.info('Address of pledge contract：{} amount：{}'.format(node.ppos.stakingAddress, staking))
-    foundation = node.eth.getBalance(EconomicConfig.FOUNDATION_ADDRESS, 0)
-    log.info('PlatON Foundation address：{} amount：{}'.format(EconomicConfig.FOUNDATION_ADDRESS, foundation))
-    remain = node.eth.getBalance(EconomicConfig.REMAIN_ACCOUNT_ADDRESS, 0)
-    log.info('Remaining total account address：{} amount：{}'.format(EconomicConfig.REMAIN_ACCOUNT_ADDRESS, remain))
-    develop = node.eth.getBalance(EconomicConfig.DEVELOPER_FOUNDATAION_ADDRESS, 0)
-    log.info('Community developer foundation address：{} amount：{}'.format(EconomicConfig.DEVELOPER_FOUNDATAION_ADDRESS,
-                                                                          develop))
+    foundation = node.eth.getBalance(account.raw_accounts[3]['address'], 0)
+    log.info('PlatON Foundation address：{} amount：{}'.format(account.raw_accounts[3]['address'], foundation))
+    remain = node.eth.getBalance(account.raw_accounts[0]['address'], 0)
+    log.info('Remaining total account address：{} amount：{}'.format(account.raw_accounts[0]['address'], remain))
+    develop = node.eth.getBalance(account.raw_accounts[2]['address'], 0)
+    log.info('Community developer foundation address：{} amount：{}'.format(account.raw_accounts[2]['address'], develop))
     reality_total = foundation_louckup + incentive_pool + staking + foundation + remain + develop
     log.info("Total issuance of Chuangshi block：{}".format(reality_total))
     log.info("--------------Dividing line---------------")
@@ -79,7 +79,7 @@ def test_IT_IA_002_to_007(new_genesis_env):
         incentive_pool)
     assert remain == int(surplus_amount), "ErrMsg:Initial amount of remaining total account {}".format(remain)
     assert develop == 0, "ErrMsg:Community developer foundation account amount {}".format(develop)
-    assert reality_total == EconomicConfig.TOKEN_TOTAL, "ErrMsg:Initialize release value {}".format(reality_total)
+    assert reality_total == 10250000000000000000000000000, "ErrMsg:Initialize release value {}".format(reality_total)
 
 
 @allure.title("Two distribution-Transfer amount：{value}")
