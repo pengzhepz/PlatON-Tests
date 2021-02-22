@@ -143,7 +143,7 @@ class Account:
             from conf.settings import BASE_DIR
             from ruamel import yaml
             accounts = list(self.accounts.values())
-            with open(os.path.join(BASE_DIR, "deploy/tmp/accounts.yml"), mode="w", encoding="UTF-8") as f:
+            with open(os.path.join(BASE_DIR, "deploy/tmp/accounts.uat.yml"), mode="w", encoding="UTF-8") as f:
                 yaml.dump(accounts, f, Dumper=yaml.RoundTripDumper)
         debug()
         return address, prikey

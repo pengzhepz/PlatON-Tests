@@ -994,6 +994,7 @@ def test_DG_TR_021(delegate_node_client):
     economic = delegate_node_client.economic
 
     economic.wait_settlement(node)
+
     candidate_info = delegate_node_client.ppos.getCandidateInfo(node.node_id)
     delegate_node_client.delegate.withdrew_delegate(candidate_info["Ret"]["StakingBlockNum"],
                                                     delegate_node_client.delegate_address,

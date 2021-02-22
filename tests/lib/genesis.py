@@ -36,6 +36,7 @@ class Staking:
     unStakeFreezeDuration: int
     rewardPerMaxChangeRange: int
     rewardPerChangeInterval: int
+    unDelegateFreezeDuration: int
 
 
 @dataclass

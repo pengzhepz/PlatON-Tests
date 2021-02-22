@@ -15,7 +15,7 @@ Follow the pytest command to execute, add a new parameter reference[conftest.py]
 example: 
 
 ```js
-py.test 'tests/chain/test_chain_deploy.py' --nodeFile "deploy/node/test_chaininfo.yml" --accountFile "deploy/accounts.yml"
+py.test 'tests/chain/test_chain_deploy.py' --nodeFile "deploy/node/test_chaininfo.yml" --accountFile "deploy/accounts.uat.yml"
 ```
 
 More please check[readme](../README.md)

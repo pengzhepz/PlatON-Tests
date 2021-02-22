@@ -36,21 +36,22 @@ def test_IT_IA_002_to_007(new_genesis_env):
     """
     # Initialization genesis file Initial amount
     node_count = len(new_genesis_env.consensus_node_list)
-    default_pledge_amount = Web3.toWei(node_count * 1500000, 'ether')
+    default_pledge_amount = Web3.toWei(node_count * 10500, 'ether')
     node = new_genesis_env.get_rand_node()
-    community_amount = default_pledge_amount + 259096239000000000000000000 + 62215742000000000000000000
+    community_amount = Web3.toWei(500000, 'ether')
+    platon_fund = Web3.toWei(2500000, 'ether')
     genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
     genesis.economicModel.innerAcc.cdfBalance = community_amount
-    surplus_amount = str(EconomicConfig.TOKEN_TOTAL - community_amount - 200000000000000000000000000)
+    surplus_amount = str(Web3.toWei(105000000, 'ether') - community_amount - platon_fund - Web3.toWei(2000000, 'ether'))
     genesis.alloc = {
-        "lax1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrzpqayr": {
-            "balance": "200000000000000000000000000"
+        "atp1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr5jy24r": {
+            "balance": "2000000000000000000000000"
         },
-        "lax196278ns22j23awdfj9f2d4vz0pedld8au6xelj": {
+        "atp1zkrxx6rf358jcvr7nruhyvr9hxpwv9uncjmns0": {
             "balance": surplus_amount
         }
     }
-    new_file = new_genesis_env.cfg.env_tmp + "/genesis_0.13.1.json"
+    new_file = new_genesis_env.cfg.env_tmp + "/alaya_genesis_0.15.1.json"
     genesis.to_file(new_file)
     new_genesis_env.deploy_all(new_file)
 
@@ -71,20 +72,21 @@ def test_IT_IA_002_to_007(new_genesis_env):
     reality_total = foundation_louckup + incentive_pool + staking + foundation + remain + develop
     log.info("Total issuance of Chuangshi block：{}".format(reality_total))
     log.info("--------------Dividing line---------------")
-    assert foundation == 0, "ErrMsg:Initial amount of foundation {}".format(foundation)
-    assert foundation_louckup == 259096239000000000000000000, "ErrMsg:Initial lock up amount of foundation {}".format(
+    assert foundation == Web3.toWei(2500000, 'ether'), "ErrMsg:Initial amount of foundation {}".format(foundation)
+    assert foundation_louckup == 0, "ErrMsg:Initial lock up amount of foundation {}".format(
         foundation_louckup)
     assert staking == default_pledge_amount, "ErrMsg:Amount of initial pledge account: {}".format(staking)
-    assert incentive_pool == 262215742000000000000000000, "ErrMsg:Initial amount of incentive pool {}".format(
+    assert incentive_pool == Web3.toWei(2000000, 'ether'), "ErrMsg:Initial amount of incentive pool {}".format(
         incentive_pool)
     assert remain == int(surplus_amount), "ErrMsg:Initial amount of remaining total account {}".format(remain)
-    assert develop == 0, "ErrMsg:Community developer foundation account amount {}".format(develop)
-    assert reality_total == EconomicConfig.TOKEN_TOTAL, "ErrMsg:Initialize release value {}".format(reality_total)
+    assert develop == community_amount - default_pledge_amount, "ErrMsg:Community developer foundation account amount {}".format(
+        develop)
+    assert reality_total == Web3.toWei(105000000, 'ether'), "ErrMsg:Initialize release value {}".format(reality_total)
 
 
 @allure.title("Two distribution-Transfer amount：{value}")
 @pytest.mark.P0
-@pytest.mark.parametrize('value', [0, 1000, 0.000000000000000001, 100000000])
+@pytest.mark.parametrize('value', [0, 1000, 0.000000000000000001, 10000000])
 def test_IT_SD_004_to_006(client_consensus, value):
     """
     IT_SD_006:二次分配：普通钱包转keyshard钱包
@@ -96,6 +98,7 @@ def test_IT_SD_004_to_006(client_consensus, value):
     """
     value = client_consensus.node.web3.toWei(value, 'ether')
     address, _ = client_consensus.economic.account.generate_account(client_consensus.node.web3, value)
+    print(address)
     balance = client_consensus.node.eth.getBalance(address)
     log.info("transaction address：{},account：{}".format(address, balance))
     assert balance == value, "ErrMsg:Transfer amount {}".format(balance)
@@ -513,7 +516,7 @@ def test_AL_IE_001(client_consensus):
     client.economic.env.deploy_all()
     # 查询激励池初始金额
     incentive_pool = node.eth.getBalance(EconomicConfig.INCENTIVEPOOL_ADDRESS, 0)
-    assert incentive_pool == 262215742000000000000000000, "ErrMsg:Initial amount of incentive pool {}".format(
+    assert incentive_pool == Web3.toWei(2000000, 'ether'), "ErrMsg:Initial amount of incentive pool {}".format(
         incentive_pool)
 
 
@@ -1271,7 +1274,7 @@ def test_AL_NBI_019(client_consensus):
     log.info("Start resetting the chain")
     economic.env.deploy_all()
     time.sleep(5)
-    incentive_pool_balance = 262215742000000000000000000
+    incentive_pool_balance = Web3.toWei(2000000, 'ether')
     log.info("Get the initial value of the incentive pool：{}".format(incentive_pool_balance))
     annualcycle = math.ceil((economic.additional_cycle_time * 60) / economic.settlement_size)
     log.info("Number of current additional settlement cycles：{}".format(annualcycle))
@@ -2145,7 +2148,7 @@ def test_hrp_address(new_genesis_env, client_consensus):
     platon_fund = Web3.toWei(2500000, 'ether')
     genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
     genesis.economicModel.innerAcc.cdfBalance = community_amount
-    genesis.config.addressHRP = 'lxg'
+    genesis.config.addressHRP = 'uat'
     surplus_amount = str(Web3.toWei(105000000, 'ether') - community_amount - platon_fund - Web3.toWei(2000000, 'ether'))
     HRP = genesis.config.addressHRP
     platon_fund_account, _ = create_account(HRP)
@@ -2164,12 +2167,12 @@ def test_hrp_address(new_genesis_env, client_consensus):
             "balance": surplus_amount
         }
     }
-    new_file = new_genesis_env.cfg.env_tmp + "/alaya_genesis_0.15.1.json"
+    new_file = new_genesis_env.cfg.env_tmp + "/alaya_genesis_0.16.0.json"
     genesis.to_file(new_file)
     new_genesis_env.deploy_all(new_file)
-    for i in range(5):
-        address, _ = client_consensus.economic.account.generate_account(client_consensus.node.web3)
-        print(address, _)
+    # for i in range(5):
+    #     address, _ = client_consensus.economic.account.generate_account(client_consensus.node.web3)
+    #     print(address, _)
     # client_consensus.economic.wait_settlement(node)
     #
     # assert node.eth.blockNumber > 0

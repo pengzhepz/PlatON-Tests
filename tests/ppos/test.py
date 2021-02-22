@@ -217,7 +217,7 @@ def create_account(HRP='atp'):
 #     accounts[address] = account
 #     # todo delete debug
 #     accounts = list(accounts.values())
-#     with open(os.path.join(BASE_DIR, "deploy/tmp/accounts.yml"), mode="w", encoding="UTF-8") as f:
+#     with open(os.path.join(BASE_DIR, "deploy/tmp/accounts.uat.yml"), mode="w", encoding="UTF-8") as f:
 #         yaml.dump(accounts, f, Dumper=yaml.RoundTripDumper)
 #
 #
@@ -248,7 +248,7 @@ def fff(url):
 
 
 if __name__ == '__main__':
-    # url = 'http://192.168.10.224:6790'
+    url = 'http://192.168.10.224:6790'
     # url = 'http://192.168.9.221:6789'
     # url = 'http://192.168.120.141:6789'
     # url = 'http://10.1.1.51:6789'
@@ -257,7 +257,7 @@ if __name__ == '__main__':
     # url = 'http://154.85.35.163:80'
     # url = 'http://154.85.34.8:6789'
     # url = 'http://192.168.21.186:6771'
-    url = 'https://openapi.alaya.network/rpc'
+    # url = 'https://openapi.alaya.network/rpc'
     account = '0x1000000000000000000000000000000000000002'
     pri_key = 'a872ee498a5a92b87b1780b1d3d71dd0cfce2980f59960b76318f5d409908303'
     account1 = 'atx1zkrxx6rf358jcvr7nruhyvr9hxpwv9unj58er9'
@@ -327,7 +327,7 @@ if __name__ == '__main__':
     plan = [{'Epoch': 200, 'Amount': Web3.toWei(1000, 'ether')}]
     # address = 'atp1xsp5qwy9hgj26yujead2jmjlknhp2s7cqyh37u'
     # address = 'atx1lmcpsdp8cw899lu3wzmr5hxxplze82s2y3k4h9'
-    node_id = '77861e48684ab9b35b6aafdbbb9028da0ff0bbe669f0485a8f387fa5ae83c2c9d54fabf3c027684b1371cad8f21b37981c053a5ff54eb8db2914f28ece651575'
+    node_id = 'f7a07f6ff8c282a4a1c1febaf68531bbb557fa262c641d022f249e926e222c9190602b502d2772fa4a2834ffb4bf6298f4c80467178e90728c5a852504f571ad'
     # print(Web3.fromWei(1000000000000000000000, 'ether'))
     node_id1 = 'd3f54cf2fbcb06e372573079f432513f328dde846ceebcc8915ea1ea9abf91e4ffefe42dc42f411850c23e177e81271703bbc16add6754c7df1a9c6ac6cbe63f'
     # pri_key1 = 'd357920de1df4ecb00cbce60ded2d73f3f51fd1e9fb79b08f366e301e849bd9d'
@@ -339,7 +339,8 @@ if __name__ == '__main__':
     # get_RestrictingPlan(url, account)
     # fff(url)
     # sendTransaction(url, account1, pri_key1, account, Web3.toWei(1, 'ether'), 201030)
-    # web3 = connect_web3(url)
+    web3 = connect_web3(url)
+    print(web3.chain_id)
     # ppos = Ppos(web3)
     # platon = Eth(web3)
     # print(web3.is)
@@ -400,7 +401,7 @@ if __name__ == '__main__':
     # time.sleep(2)
     # increase_staking(url, 1, node_id1, amount, pri_key)
     # createstaking(url, 1, pri_key, Web3.toWei(10000, 'ether'))
-    get_candinfo(url, node_id)
+    # get_candinfo(url, node_id)
     # getDelegateInfo(url, 127, account, node_id)
     # get_RestrictingPlan(url, account)
     # get_RestrictingPlan(url, 'atp10llx4zpnjv52sst2skwyzxsd29lzk45neyspuy')

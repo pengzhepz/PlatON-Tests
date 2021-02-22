@@ -13,7 +13,7 @@ from conf.settings import NODE_FILE
 # from environment import t1est_env_impl
 
 
-# py.test tests/cmd/account/t1est_account.py -s --nodeFile "deploy/4_node.yml" --accountFile "deploy/accounts.yml" --initChain --startAll
+# py.test tests/cmd/account/t1est_account.py -s --nodeFile "deploy/4_node.yml" --accountFile "deploy/accounts.uat.yml" --initChain --startAll
 from environment import Node
 
 

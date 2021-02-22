@@ -26,6 +26,7 @@ def create_staking_client(client_new_node):
 def staking_delegate_client(client_new_node):
     staking_amount = client_new_node.economic.create_staking_limit
     delegate_amount = client_new_node.economic.delegate_limit
+    print(delegate_amount)
     staking_address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
                                                                            staking_amount * 2)
     delegate_address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
