@@ -1,20 +1,20 @@
 - id: 1
-  address: 'atp1zkrxx6rf358jcvr7nruhyvr9hxpwv9uncjmns0'
-  prikey: f51ca759562e1daf9e5302d121f933a8152915d34fcbc27e542baf256b5e4b74
+  address: 'lat1rzw6lukpltqn9rk5k59apjrf5vmt2ncv8uvfn7'
+  prikey: f90fd6808860fe869631d978b0582bb59db6189f7908b578a886d582cb6fccfa
   nonce: 0
   balance: 100000000000000000000000000
 - id: 2
-  address: 'atp1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr5jy24r'
-  prikey: 6382b6fc972ae9c22a2d8913dace308d09e406d118efddb702a7ea9e505cc823
+  address: 'lat1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrdyjj2v'
+  prikey: f0ef5fd2189aee83cef7cda65410b11fb51a317abbabd167e1f73fcb2d8649fb
   nonce: 0
   balance: 1000000000000000000000000
 - id: 3
-  address: 'atp1ur2hg0u9wt5qenmkcxlp7ysvaw6yupt4vll2fq'
-  prikey: 64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e
+  address: 'lat1kvurep20767ahvrkraglgd9t34w0w2g059pmlx'
+  prikey: f767d379a652ab5cc8c85cd7fef1b00bffcec90697dcfd6c64991dd284cac4e9
   nonce: 0
   balance: 0
 - id: 4
-  address: 'atp1m6n2wj6cmnnqnmhhaytyf6x75607t7rh6y9kyu'
-  prikey: 64bc85af4fa0e165a1753b762b1f45017dd66955e2f8eea00333db352198b77e
+  address: 'lat1drz94my95tskswnrcnkdvnwq43n8jt6dmzf8h8'
+  prikey: 038a54faa49a1f71c2611f2d45e56092fa3bc63669b10741292c04b4c49dd7c8
   nonce: 0
   balance: 0
