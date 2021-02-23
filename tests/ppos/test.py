@@ -392,7 +392,8 @@ if __name__ == '__main__':
     # delegate(url, 0, i, amount, pri_key)
     #     time.sleep(1)
     # getValidatorList(url)
-    # amount = Web3.toWei(1000, 'ether')
+    amount = Web3.toWei(9718188019, 'ether')
+    print(amount)
     # amount = 6167000000000000000000
     # delegate(url, 1, node_id, amount, pri_key)
     # for pri_key in privateKey:
