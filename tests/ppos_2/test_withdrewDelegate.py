@@ -2,6 +2,7 @@
 from tests.lib.utils import *
 import pytest
 from tests.lib.config import EconomicConfig
+from tests.ppos.test_general_punishment import get_out_block_penalty_parameters
 
 
 @pytest.mark.P0
@@ -12,16 +13,19 @@ def test_ROE_001_007_015(client_new_node):
     :param get_generate_account:
     :return:
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
-    client_new_node.staking.create_staking(0, address, address)
-    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                    10 ** 18 * 10000000)
-    result = client_new_node.delegate.delegate(0, address1)
-    log.info(result)
-    msg = client_new_node.ppos.getCandidateInfo(client_new_node.node.node_id)
+    client = client_new_node
+    economic = client.economic
+    node = client.node
+    address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
+    result = client.staking.create_staking(0, address, address)
+    assert_code(result, 0)
+    address1, _ = economic.account.generate_account(node.web3, economic.delegate_limit * 10)
+    result = client.delegate.delegate(0, address1)
+    assert_code(result, 0)
+
+    msg = client.ppos.getCandidateInfo(node.node_id)
     staking_blocknum = msg["Ret"]["StakingBlockNum"]
-    result = client_new_node.delegate.withdrew_delegate(staking_blocknum, address1)
+    result = client.delegate.withdrew_delegate(staking_blocknum, address1)
     assert_code(result, 0)
 
 
@@ -715,40 +719,52 @@ def test_ROE_056_057(client_new_node, client_consensus):
     :param client_consensus_obj:
     :return:
     """
-    address_staking, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                           10 ** 18 * 10000000)
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
-    value = client_new_node.economic.create_staking_limit * 2
-    result = client_new_node.staking.create_staking(0, address_staking, address_staking,
-                                                    amount=value)
+    client = client_new_node
+    economic = client.economic
+    node = client.node
+    address_staking, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
+    address, _ = economic.account.generate_account(node.web3, economic.delegate_limit * 10)
+    result = client.staking.create_staking(0, address_staking, address_staking)
     assert_code(result, 0)
 
     # create delegate
-    result = client_new_node.delegate.delegate(0, address)
-    log.info(result)
+    result = client.delegate.delegate(0, address, amount=economic.delegate_limit * 2)
+    assert_code(result, 0)
+
+    economic.wait_settlement(node)
+
+    pledge_amount1, block_reward, slash_blocks = get_out_block_penalty_parameters(client, node, 'Released')
+    print(pledge_amount1, block_reward, slash_blocks)
 
     log.info("Close one node")
-    client_new_node.node.stop()
-    node = client_consensus.node
+    node.stop()
+    # node = client_consensus.node
 
-    msg = client_consensus.ppos.getCandidateInfo(client_new_node.node.node_id)
+    client_consensus.economic.wait_settlement(client_consensus.node)
+    msg = client_consensus.ppos.getCandidateInfo(node.node_id)
+    print(msg)
+
+    amount = client_consensus.node.eth.getBalance(address)
+    log.info("The wallet balance:{}".format(amount))
+
     staking_blocknum = msg["Ret"]["StakingBlockNum"]
-    log.info("The next two periods")
-    client_consensus.economic.wait_settlement(node, 2)
+    result = client_consensus.delegate.withdrew_delegate(staking_blocknum, address, node.node_id)
+    assert_code(result, 0)
 
-    log.info("Restart the node")
-    client_new_node.node.start()
-    amount1 = client_new_node.node.eth.getBalance(address)
+    amount1 = client_consensus.node.eth.getBalance(address)
     log.info("The wallet balance:{}".format(amount1))
 
-    result = client_new_node.delegate.withdrew_delegate(staking_blocknum, address)
-    log.info(result)
+    assert amount + client_consensus.economic.delegate_limit - amount1 < client_consensus.node.web3.toWei(0.001, 'ether')
 
-    amount2 = client_new_node.node.eth.getBalance(address)
+    client_consensus.economic.wait_settlement(client_consensus.node, 1)
+
+    result = client_consensus.delegate.withdrew_delegate(staking_blocknum, address, node.node_id)
+    assert_code(result, 0)
+
+    amount2 = client_consensus.node.eth.getBalance(address)
     log.info("The wallet balance:{}".format(amount2))
-    delegate_limit = client_new_node.economic.delegate_limit
-    assert delegate_limit - (amount2 - amount1) < client_new_node.node.web3.toWei(1, "ether")
+
+    assert amount1 + client_consensus.economic.delegate_limit - amount2 < client_consensus.node.web3.toWei(0.001, 'ether')
 
 
 @pytest.mark.P3
