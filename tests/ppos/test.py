@@ -157,7 +157,7 @@ def get_RestrictingPlan(url, address):
     web3 = connect_web3(url)
     ppos = Ppos(web3)
     result = ppos.getRestrictingInfo(address)
-    # print(result)
+    print(result)
     return result
 
 
@@ -258,7 +258,7 @@ if __name__ == '__main__':
     # url = 'http://154.85.34.8:6789'
     # url = 'http://192.168.21.186:6771'
     url = 'https://openapi.alaya.network/rpc'
-    account = '0x1000000000000000000000000000000000000002'
+    account = 'atp1std7ff5cjdezwe6pz7eq278jpmcaq2mef6d4e6'
     pri_key = 'a872ee498a5a92b87b1780b1d3d71dd0cfce2980f59960b76318f5d409908303'
     account1 = 'atx1zkrxx6rf358jcvr7nruhyvr9hxpwv9unj58er9'
     pri_key1 = 'f51ca759562e1daf9e5302d121f933a8152915d34fcbc27e542baf256b5e4b74'
@@ -339,11 +339,11 @@ if __name__ == '__main__':
     # get_RestrictingPlan(url, account)
     # fff(url)
     # sendTransaction(url, account1, pri_key1, account, Web3.toWei(1, 'ether'), 201030)
-    # web3 = connect_web3(url)
-    # ppos = Ppos(web3)
-    # platon = Eth(web3)
+    web3 = connect_web3(url)
+    ppos = Ppos(web3)
+    platon = Eth(web3)
     # print(web3.is)
-    # print(platon.blockNumber)
+    print(platon.blockNumber)
     # # print(platon.gasPrice)
     # tmp_amount = 0
     # tmp_amount1 = 0
@@ -361,8 +361,8 @@ if __name__ == '__main__':
     #         x = amount - tmp_amount
     #         tmp_amount = amount
     #         print("锁仓合约余额差：", x)
-    # amount = platon.getBalance(account)
-    # print(account, amount)
+    amount = platon.getBalance(account)
+    print(account, amount)
     # amount = platon.getBalance(ppos.restrictingAddress)
     # print(ppos.restrictingAddress, amount)
     # amount = platon.getBalance(web3.stakingAddress)
@@ -400,9 +400,9 @@ if __name__ == '__main__':
     # time.sleep(2)
     # increase_staking(url, 1, node_id1, amount, pri_key)
     # createstaking(url, 1, pri_key, Web3.toWei(10000, 'ether'))
-    get_candinfo(url, node_id)
+    # get_candinfo(url, node_id)
     # getDelegateInfo(url, 127, account, node_id)
-    # get_RestrictingPlan(url, account)
+    get_RestrictingPlan(url, account)
     # get_RestrictingPlan(url, 'atp10llx4zpnjv52sst2skwyzxsd29lzk45neyspuy')
     list = ["atp1eshshnxuva6f4zqmwj9xszfj65y5vhalr7nyed",
             "atp166ue9gzupre59qsj9xvdxjwrzdrheentp9xlue",
