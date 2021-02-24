@@ -271,6 +271,7 @@ class TestUpgradedST:
         proposalinfo_version = pip.get_effect_proposal_info_of_vote()
         log.info('Get version proposal information {}'.format(proposalinfo_version))
         wait_block_number(pip.node, proposalinfo_version.get('ActiveBlock'))
+        #
         assert pip.get_status_of_proposal(proposalinfo_version.get('ProposalID')) == 5
         assert pip.chain_version == pip.cfg.version5
         assert pip.get_accuverifiers_count(proposalinfo_version.get('ProposalID')) == [4, 3, 0, 0]

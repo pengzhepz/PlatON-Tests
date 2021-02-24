@@ -21,7 +21,6 @@ class PipConfig:
     PLATON_NEW_BIN6 = os.path.abspath(os.path.join(BASE_DIR, "deploy/bin/newpackage/version6/platon"))
     PLATON_NEW_BIN7 = os.path.abspath(os.path.join(BASE_DIR, "deploy/bin/newpackage/version7/platon"))
     PLATON_NEW_BIN0 = os.path.abspath(os.path.join(BASE_DIR, "deploy/bin/platon"))
-    PLATON_NEW_BIN120 = os.path.abspath(os.path.join(BASE_DIR, "deploy/bin/newpackage/diffcodeversion/platon"))
     text_proposal = 1
     cancel_proposal = 4
     version_proposal = 2
@@ -29,16 +28,16 @@ class PipConfig:
     vote_option_yeas = 1
     vote_option_nays = 2
     vote_option_Abstentions = 3
-    version1 = 1537
-    version2 = 3841
-    version3 = 3849
-    version4 = 4096
-    version5 = 4097
-    version6 = 4105
-    version7 = 4352
-    version8 = 591617
-    version9 = 526081
-    version0 = 3840
+    version1 = 67073
+    version2 = 65536
+    version3 = 65545
+    version4 = 65792
+    version5 = 65793
+    version6 = 65801
+    version7 = 66048
+    version8 = 657153
+    version9 = 591617
+    version0 = 65536
     transaction_cfg = {"gasPrice": 3000000000000000, "gas": 1000000}
     # Lock account account address
     FOUNDATION_LOCKUP_ADDRESS = "atx1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpd3er4y"
