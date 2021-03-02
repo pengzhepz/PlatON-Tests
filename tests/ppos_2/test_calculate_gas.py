@@ -32,11 +32,11 @@ def test_staking_gas(client_new_node):
                                 rlp.encode(economic.create_staking_limit), rlp.encode(600), rlp.encode(node.program_version),
                                 rlp.encode(bytes.fromhex(program_version_sign_)), rlp.encode(bytes.fromhex(node.blspubkey)),
                                 rlp.encode(bytes.fromhex(node.schnorr_NIZK_prove))])).hex()
-    esgas = node.eth.estimateGas({"from": benifit_address, "to": node.web3.stakingAddress, "data": data})
+    esgas = node.eth.estimateGas({"from": benifit_address, "to": node.ppos.stakingAddress, "data": data})
     print('esgas', esgas)
     gas = get_the_dynamic_parameter_gas_fee(data) + 21000 + 6000 + 32000
     log.info('gas: {}'.format(gas))
-    gasPrice = node.web3.platon.gasPrice
+    gasPrice = node.eth.gasPrice
     log.info(gasPrice)
     time.sleep(2)
     balance2 = node.eth.getBalance(benifit_address)
@@ -65,7 +65,7 @@ def test_delegate_gas(client_new_node):
                        rlp.encode(economic.delegate_limit)])
     gas = get_the_dynamic_parameter_gas_fee(data) + 21000 + 6000 + 16000
     log.info(gas)
-    gasPrice = node.web3.platon.gasPrice
+    gasPrice = node.eth.gasPrice
     log.info(gasPrice)
     assert balance1 - economic.delegate_limit - gas * gasPrice == balance2
 
@@ -96,7 +96,7 @@ def test_withdrewDelegate_gas(client_new_node):
          rlp.encode(economic.delegate_limit)])
     gas = get_the_dynamic_parameter_gas_fee(data) + 21000 + 6000 + 8000
     log.info(gas)
-    gasPrice = node.web3.platon.gasPrice
+    gasPrice = node.eth.gasPrice
     log.info(gasPrice)
     assert balance1 - gas * gasPrice == balance2 - economic.delegate_limit
 
@@ -121,7 +121,7 @@ def test_increase_staking_gas(client_new_node):
          rlp.encode(economic.add_staking_limit)])
     gas = get_the_dynamic_parameter_gas_fee(data) + 21000 + 6000 + 20000
     log.info(gas)
-    gasPrice = node.web3.platon.gasPrice
+    gasPrice = node.eth.gasPrice
     log.info(gasPrice)
     assert balance1 - economic.delegate_limit - gas * gasPrice == balance2
 
@@ -132,28 +132,38 @@ def test_edit_candidate_gas(client_new_node):
     node_name = "node_name"
     website = "website"
     details = "details"
+    reward_per = 0
     client = client_new_node
     node = client.node
     economic = client.economic
+    client.ppos.need_quota_gas = False
     benifit_address, pri_key = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
     result = client.staking.create_staking(0, benifit_address, benifit_address)
     assert_code(result, 0)
     balance1 = node.eth.getBalance(benifit_address)
     log.info(balance1)
     result = client.ppos.editCandidate(benifit_address, node.node_id, external_id, node_name, website, details,
-                                       pri_key, reward_per=0)
+                                       pri_key, reward_per=reward_per)
     assert_code(result, 0)
     balance2 = node.eth.getBalance(benifit_address)
     log.info(balance2)
-    data = rlp.encode(
-        [rlp.encode(int(1001)), rlp.encode(bech32_address_bytes(benifit_address)),
-         rlp.encode(bytes.fromhex(node.node_id)),
-         rlp.encode("external_id"), rlp.encode("node_name"), rlp.encode("website"), rlp.encode("details"),
-         rlp.encode(0)])
+    rlp_benifit_address = rlp.encode(bech32_address_bytes(benifit_address)) if benifit_address else b''
+    rlp_external_id = rlp.encode(external_id) if external_id else b''
+    rlp_node_name = rlp.encode(node_name) if node_name else b''
+    rlp_website = rlp.encode(website) if website else b''
+    rlp_details = rlp.encode(details) if details else b''
+    rlp_reward_per = rlp.encode(reward_per) if reward_per else b''
+    data = HexBytes(rlp.encode([rlp.encode(int(1001)), rlp_benifit_address, rlp.encode(bytes.fromhex(node.node_id)), rlp_reward_per, rlp_external_id,
+                                rlp_node_name, rlp_website, rlp_details]))
+
+    # transaction_data = {"to": client.ppos.stakingAddress, "data": data, "from": benifit_address}
+    # estimateGas = node.eth.estimateGas(transaction_data)
+    # print(estimateGas)
+
     gas = get_the_dynamic_parameter_gas_fee(data) + 21000 + 6000 + 12000
     log.info(gas)
 
-    gasPrice = node.web3.platon.gasPrice
+    gasPrice = node.eth.gasPrice
     log.info(gasPrice)
     assert balance1 - gas * gasPrice == balance2
 
@@ -176,6 +186,6 @@ def test_withdrew_staking_gas(client_new_node):
     data = rlp.encode([rlp.encode(int(1003)), rlp.encode(bytes.fromhex(node.node_id))])
     gas = get_the_dynamic_parameter_gas_fee(data) + 21000 + 6000 + 20000
     log.info(gas)
-    gasPrice = node.web3.platon.gasPrice
+    gasPrice = node.eth.gasPrice
     log.info(gasPrice)
     assert balance1 - gas * gasPrice == balance2 - economic.create_staking_limit
