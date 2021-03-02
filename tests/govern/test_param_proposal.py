@@ -60,7 +60,7 @@ def vote(pip, pip_id, vote_option=PipConfig.vote_option_yeas):
     result = pip.vote(pip.node.node_id, pip_id, vote_option,
                       pip.node.staking_address, transaction_cfg=pip.cfg.transaction_cfg)
     log.info(f'Node {pip.node.node_id} vote param proposal result {result}')
-    return result
+    return result.get('code')
 
 
 def votes(pip_id, pips, vote_options):
@@ -108,7 +108,7 @@ def make_0mb_slash(slash_client, check_client):
 
 class TestParam:
     @pytest.mark.P0
-    @pytest.mark.parametrize('value, code', [(81*10**18, 0), (100000*10**18, 0)])
+    @pytest.mark.parametrize('value, code', [(501*10**18, 0), (100000*10**18, 0)])
     def test_param_of_minimumRelease(self, noproposal_pips, client_consensus, value, code):
         client = client_consensus
         pips = noproposal_pips
@@ -134,7 +134,7 @@ class TestParam:
         assert_code(result, 304014)
 
     @pytest.mark.P0
-    @pytest.mark.parametrize('value, code', [(str(80*10**18), 302034), (80*10**18, 3), (str(79*10**18), 3), (str(100001*10**18), 3)])
+    @pytest.mark.parametrize('value, code', [(str(500*10**18), 302034), (100*10**18, 3), (str(99*10**18), 3), (str(10000001*10**18), 3)])
     def test_invalid_param_of_minimumRelease(self, noproposal_pips, value, code):
         pips = noproposal_pips
         pip = pips[0]
@@ -155,7 +155,7 @@ class TestParam:
         pip = pips[0]
         # 提案前创建锁仓
         from_address, _ = client.economic.account.generate_account(client.node.web3, pip.economic.create_staking_limit)
-        to_address  = 'atx1c85wwztzpjefcvaev6wxpsrqp2gpfjyp6lmfqd'
+        to_address = 'atx1c85wwztzpjefcvaev6wxpsrqp2gpfjyp6lmfqd'
         plan = [{'Epoch': 1, 'Amount': pip.economic.delegate_limit * 80}, {'Epoch': 2, 'Amount': pip.economic.delegate_limit * 160}, {'Epoch': 3, 'Amount': pip.economic.delegate_limit * 240}]
         result = client.restricting.createRestrictingPlan(to_address, plan, from_address)
         assert_code(result, 0)

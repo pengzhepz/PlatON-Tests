@@ -22,32 +22,36 @@ def version_proposal(pip, to_version, voting_rounds):
     result = pip.submitVersion(pip.node.node_id, str(time.time()), to_version, voting_rounds,
                                pip.node.staking_address,
                                transaction_cfg=pip.cfg.transaction_cfg)
-    log.info('submit version proposal result : {}'.format(result))
-    return get_proposal_result(pip, pip.cfg.version_proposal, result)
+    code = result.get('code')
+    log.info('submit version proposal result : {}'.format(code))
+    return get_proposal_result(pip, pip.cfg.version_proposal, code)
 
 
 def param_proposal(pip, module, name, value):
     result = pip.submitParam(pip.node.node_id, str(time.time()), module, name, value, pip.node.staking_address,
                              transaction_cfg=pip.cfg.transaction_cfg)
-    log.info('submit param proposal result : {}'.format(result))
-    return get_proposal_result(pip, pip.cfg.param_proposal, result)
+    code = result.get('code')
+    log.info('submit param proposal result : {}'.format(code))
+    return get_proposal_result(pip, pip.cfg.param_proposal, code)
 
 
 def text_proposal(pip):
     result = pip.submitText(pip.node.node_id, str(time.time()), pip.node.staking_address,
                             transaction_cfg=pip.cfg.transaction_cfg)
-    log.info('submit text proposal result:'.format(result))
-    return get_proposal_result(pip, pip.cfg.text_proposal, result)
+    code = result.get('code')
+    log.info('submit text proposal result:'.format(code))
+    return get_proposal_result(pip, pip.cfg.text_proposal, code)
 
 
 def cancel_proposal(pip, pip_id, voting_rounds):
     result = pip.submitCancel(pip.node.node_id, str(time.time()), voting_rounds, pip_id,
                               pip.node.staking_address, transaction_cfg=pip.cfg.transaction_cfg)
-    log.info('submit cancel proposal result : {}'.format(result))
-    return get_proposal_result(pip, pip.cfg.cancel_proposal, result)
+    code = result.get('code')
+    log.info('submit cancel proposal result : {}'.format(code))
+    return get_proposal_result(pip, pip.cfg.cancel_proposal, code)
 
 
-def get_proposal_result(pip, proposal_type, code):
+def get_proposal_result(pip: object, proposal_type: object, code: object) -> object:
     if code == 0:
         pip_info = pip.get_effect_proposal_info_of_vote(proposal_type)
         log.info(f"proposal id is {pip_info['ProposalID']}")
@@ -395,7 +399,7 @@ class TestSlashing:
         # step1：
         pips = get_pips(verifiers)
         pip = pips[0]
-        pip_id = version_proposal(pip, pip.cfg.version5, 10)
+        pip_id = version_proposal(pip, pip.cfg.version5, 20)
         upload_platon(pip.node, pip.cfg.PLATON_NEW_BIN)
         vote(pip, pip_id)
         # step2：停止节点，等待节点被零出块处罚

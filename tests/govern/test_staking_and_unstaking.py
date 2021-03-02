@@ -75,7 +75,7 @@ class TestVotingProposalStaking:
         if platon_bin != pip.cfg.PLATON_NEW_BIN1:
             assert_code(result, 0)
         else:
-            assert_code(result, 301004)
+            assert_code(result, 301005)
 
 
 class TestNoProposalStaking:
@@ -91,7 +91,7 @@ class TestNoProposalStaking:
     def test_ST_NO_002(self, new_node_no_proposal):
         pip = new_node_no_proposal
         result = replace_platon_and_staking(pip, pip.cfg.PLATON_NEW_BIN1)
-        assert_code(result, 301004)
+        assert_code(result, 301005)
 
     @pytest.mark.P1
     @allure.title('No proposal, verify stake function')
@@ -151,7 +151,7 @@ class TestPreactiveProposalStaking:
         pip = new_node_no_proposal
         self.preactive_proposal(all_clients)
         result = replace_platon_and_staking(pip, pip.cfg.PLATON_NEW_BIN1)
-        assert_code(result, 301004)
+        assert_code(result, 301005)
 
     @pytest.mark.P1
     @allure.title('There is preactive proposal, verify stake function')
@@ -991,14 +991,14 @@ class TestSlashing:
     def verify_amount_block(self, pip, address, shares, value, tag=True):
         wait_block_number(pip.node, value * pip.economic.settlement_size)
         balance_before = pip.node.eth.getBalance(address, value * pip.economic.settlement_size - 1)
-        balance_before_lockup = pip.node.eth.getBalance(pip.cfg.FOUNDATION_LOCKUP_ADDRESS,
+        balance_before_lockup = pip.node.eth.getBalance(pip.economic.cfg.FOUNDATION_LOCKUP_ADDRESS,
                                                         value * pip.economic.settlement_size - 1)
         log.info('Block bumber {} staking address balance {}'.format(value * pip.economic.settlement_size - 1,
                                                                      balance_before))
         log.info('Block bumber {} FOUNDATION_LOCKUP_ADDRESS balance {}'.format(value * pip.economic.settlement_size - 1,
                                                                                balance_before_lockup))
         balance_after = pip.node.eth.getBalance(address, value * pip.economic.settlement_size)
-        balance_after_lockup = pip.node.eth.getBalance(pip.cfg.FOUNDATION_LOCKUP_ADDRESS,
+        balance_after_lockup = pip.node.eth.getBalance(pip.economic.cfg.FOUNDATION_LOCKUP_ADDRESS,
                                                        value * pip.economic.settlement_size)
         log.info('Block bumber {} staking address balance {}'.format(value * pip.economic.settlement_size,
                                                                      balance_after))
