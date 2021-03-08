@@ -1,5 +1,8 @@
+from random import randint
+
 from common.log import log
 from tests.lib import EconomicConfig
+from tests.lib.client import get_client_by_nodeid
 from tests.lib.utils import assert_code, get_pledge_list
 from common.key import mock_duplicate_sign
 from tests.lib.utils import wait_block_number, get_the_dynamic_parameter_gas_fee, get_getDelegateReward_gas_fee
@@ -1341,6 +1344,104 @@ class TestwithdrawDelegateReward():
         log.info('Address {} after withdraw balance {}'.format(address2, balance_address2))
         gas = get_getDelegateReward_gas_fee(client1, 1, 1)
         assert balance_address2_before_withdraw - gas + reward_address2 == balance_address2
+
+
+def test_IN_DR_021(clients_noconsensus, client_consensus):
+    """
+    委托节点数>20，则只领取前20个节点的委托收益
+    """
+    client = client_consensus
+    economic = client.economic
+    node = client.node
+    # node.ppos.need_analyze = False
+    node_id_list = [i['id'] for i in economic.env.noconsensus_node_config_list]
+    print('可质押节点id列表：', node_id_list)
+    node_length = len(economic.env.noconsensus_node_config_list)
+    amount1 = node.web3.toWei(8330 * 2, 'ether')
+    amount2 = node.web3.toWei(8370 * 2, 'ether')
+    plan = [{'Epoch': 5, 'Amount': amount1},
+            {'Epoch': 6, 'Amount': amount1},
+            {'Epoch': 30, 'Amount': amount1},
+            {'Epoch': 40, 'Amount': amount1},
+            {'Epoch': 50, 'Amount': amount1},
+            {'Epoch': 60, 'Amount': amount1},
+            {'Epoch': 70, 'Amount': amount1},
+            {'Epoch': 80, 'Amount': amount1},
+            {'Epoch': 90, 'Amount': amount1},
+            {'Epoch': 100, 'Amount': amount1},
+            {'Epoch': 110, 'Amount': amount1},
+            {'Epoch': 120, 'Amount': amount2}]
+    staking_list = []
+    for i in range(node_length):
+        address, _ = economic.account.generate_account(node.web3, economic.delegate_limit * 10)
+        staking_list.append(address)
+        result = client.restricting.createRestrictingPlan(address, plan, economic.account.account_with_money['address'])
+        assert_code(result, 0)
+    print('质押节点地址列表：', staking_list)
+    delegate_address, _ = economic.account.generate_account(node.web3, economic.delegate_limit * 5)
+    result = client.restricting.createRestrictingPlan(delegate_address, plan,
+                                                          economic.account.account_with_money['address'])
+    assert_code(result, 0)
+    print('委托钱包地址列表', delegate_address)
+
+    for i in range(len(staking_list)):
+        reward_per = randint(100, 10000)
+
+        print('钱包地址：', staking_list[i], ":", '账户余额：', node.eth.getBalance(staking_list[i]), '锁仓计划：',
+              node.ppos.getRestrictingInfo(staking_list[i]))
+        print('质押节点ip: ', clients_noconsensus[i].node.node_mark)
+        result = clients_noconsensus[i].staking.create_staking(1, staking_list[i], staking_list[i],
+                                                               amount=economic.create_staking_limit * 2,
+                                                               reward_per=reward_per)
+        assert_code(result, 0)
+        result = client.delegate.delegate(1, delegate_address, clients_noconsensus[i].node.node_id,
+                                              amount=economic.delegate_limit * 100)
+        assert_code(result, 0)
+
+    economic.wait_settlement(node, 2)
+
+    delagate_reward = node.ppos.getDelegateReward(delegate_address)["Ret"]
+    print('delagate_reward', delagate_reward)
+
+    result = client.delegate.withdraw_delegate_reward(delegate_address)
+    assert_code(result, 0)
+    delagate_reward1 = node.ppos.getDelegateReward(delegate_address)["Ret"]
+    delagate_reward.extend(delagate_reward[:2])
+    del delagate_reward[:2]
+    for i in range(len(delagate_reward1)):
+        assert delagate_reward[i]["nodeID"] == delagate_reward1[i]["nodeID"]
+
+    result = client.delegate.withdraw_delegate_reward(delegate_address)
+    assert_code(result, 0)
+    delagate_reward2 = node.ppos.getDelegateReward(delegate_address)["Ret"]
+    delagate_reward1.extend(delagate_reward1[:2])
+    del delagate_reward1[:2]
+    for i in range(len(delagate_reward2)):
+        assert delagate_reward2[i]["nodeID"] == delagate_reward1[i]["nodeID"]
+
+    economic.wait_settlement(node)
+    delagate_reward3 = node.ppos.getDelegateReward(delegate_address)["Ret"]
+    for i in range(len(delagate_reward3)):
+        assert delagate_reward3[i]["nodeID"] == delagate_reward2[i]["nodeID"]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class TestGas:

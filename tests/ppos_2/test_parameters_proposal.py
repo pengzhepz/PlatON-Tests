@@ -316,7 +316,7 @@ def test_POP_012(client_consensus, client_new_node):
     assert_code(result, 0)
     address_delegate, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
                                                                             10 ** 18 * 10000000)
-    delegate_amount = client_consensus.economic.delegate_limit + client_consensus.node.web3.toWei(80, "ether")
+    delegate_amount = client_consensus.economic.delegate_limit + client_consensus.node.web3.toWei(1000, "ether")
 
     log.info("Own funds to initiate the commission")
     result = client_new_node.delegate.delegate(0, address_delegate, amount=delegate_amount)

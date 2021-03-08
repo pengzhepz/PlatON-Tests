@@ -9,9 +9,11 @@ from dacite import from_dict
 from common.log import log
 from client_sdk_python import Web3
 
-from tests.lib import Genesis
-from tests.lib.utils import get_pledge_list, get_block_count_number, assert_code
+from tests.lib import Genesis, EconomicConfig
+from tests.lib.utils import get_pledge_list, get_block_count_number, assert_code, get_governable_parameter_value, \
+    check_node_in_list
 from common.key import generate_key
+from tests.ppos.test_punishment_related import verification_duplicate_sign
 from tests.ppos_2.conftest import calculate
 
 
@@ -441,28 +443,25 @@ def test_RV_012(global_test_env, clients_noconsensus):
     Candidate cancels pledge
     """
     global_test_env.deploy_all()
-    address1, _ = clients_noconsensus[0].economic.account.generate_account(clients_noconsensus[0].node.web3,
-                                                                           10 ** 18 * 10000000)
-    address2, _ = clients_noconsensus[0].economic.account.generate_account(clients_noconsensus[0].node.web3,
-                                                                           10 ** 18 * 10000000)
+    client1 = clients_noconsensus[0]
+    client2 = clients_noconsensus[1]
+    address1, _ = client1.economic.account.generate_account(client1.node.web3, client1.economic.create_staking_limit * 2)
+    address2, _ = client1.economic.account.generate_account(client1.node.web3, client1.economic.create_staking_limit * 2)
 
-    result = clients_noconsensus[0].staking.create_staking(0, address1, address1,
-                                                           amount=clients_noconsensus[
-                                                                      0].economic.create_staking_limit * 2)
+    result = client1.staking.create_staking(0, address1, address1, amount=client1.economic.create_staking_limit)
     assert_code(result, 0)
 
-    result = clients_noconsensus[1].staking.create_staking(0, address2, address2,
-                                                           amount=clients_noconsensus[1].economic.create_staking_limit)
+    result = client2.staking.create_staking(0, address2, address2, amount=client2.economic.create_staking_limit)
     assert_code(result, 0)
 
     log.info("Next settlement period")
-    clients_noconsensus[1].economic.wait_settlement(clients_noconsensus[1].node)
-    msg = clients_noconsensus[1].ppos.getVerifierList()
-    log.info(msg)
-    verifierlist = get_pledge_list(clients_noconsensus[1].ppos.getVerifierList)
+    client2.economic.wait_settlement(client2.node)
+    # msg = clients_noconsensus[1].ppos.getVerifierList()
+    # log.info(msg)
+    verifierlist = get_pledge_list(client2.ppos.getVerifierList)
     log.info("verifierlist:{}".format(verifierlist))
-    assert clients_noconsensus[1].node.node_id not in verifierlist
-    msg = clients_noconsensus[1].staking.withdrew_staking(address2)
+    assert client2.node.node_id not in verifierlist
+    msg = client2.staking.withdrew_staking(address2)
     assert_code(msg, 0)
 
 
@@ -646,14 +645,13 @@ def test_RV_022(client_new_node):
     """
     Non-pledged wallets are pledged back
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
-    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                    10 ** 18 * 10000000)
-    result = client_new_node.staking.create_staking(0, address, address)
+    client = client_new_node
+    address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 2)
+    address1, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 2)
+    result = client.staking.create_staking(0, address, address)
     assert_code(result, 0)
     log.info("Node exit pledge")
-    result = client_new_node.staking.withdrew_staking(address1)
+    result = client.staking.withdrew_staking(address1)
     assert_code(result, 301006)
 
 
@@ -673,7 +671,7 @@ def test_RV_023(new_genesis_env, client_new_node):
     client = client_new_node
     node = client.node
     economic = client.economic
-    staking_address, _ = client_new_node.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 2)
+    staking_address, _ = client_new_node.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 3)
     delegate_address, _ = client_new_node.economic.account.generate_account(client.node.web3, client.economic.delegate_limit * 3)
     result = client.staking.create_staking(0, staking_address, staking_address)
     assert_code(result, 0)
@@ -710,6 +708,7 @@ def test_RV_023(new_genesis_env, client_new_node):
     log.info(msg)
     staking_result = client.staking.create_staking(0, staking_address, staking_address)
     assert_code(staking_result, 0)
+
     candidate_info = node.ppos.getCandidateInfo(node.node_id)
     log.info(candidate_info)
     staking_blocknum = candidate_info["Ret"]["StakingBlockNum"]

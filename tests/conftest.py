@@ -196,7 +196,11 @@ def new_genesis_env(global_test_env):
     cfg = copy(global_test_env.cfg)
     yield global_test_env
     log.info("reset deploy.................")
+<<<<<<< Updated upstream
     global_test_env.set_cfg(cfg)
+=======
+    # global_test_env.set_cfg(cfg)
+>>>>>>> Stashed changes
     global_test_env.deploy_all()
 
 

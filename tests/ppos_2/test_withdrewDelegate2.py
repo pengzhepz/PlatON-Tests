@@ -83,7 +83,7 @@ def test_ROE_038(staking_delegate_client):
     economic = client.economic
     log.info("The next cycle")
     economic.wait_settlement(node)
-    lockup_amount = client.node.web3.toWei(80, "ether")
+    lockup_amount = client.node.web3.toWei(500, "ether")
     plan = [{'Epoch': 1, 'Amount': lockup_amount}]
     # Create a lock plan
     result = client.restricting.createRestrictingPlan(delegate_address, plan, delegate_address)
@@ -113,7 +113,7 @@ def test_ROE_039(staking_delegate_client):
     economic = client.economic
     log.info("The next cycle")
     economic.wait_settlement(node)
-    lockup_amount = client.node.web3.toWei(80, "ether")
+    lockup_amount = client.node.web3.toWei(500, "ether")
     plan = [{'Epoch': 1, 'Amount': lockup_amount}]
     # Create a lock plan
     result = client.restricting.createRestrictingPlan(delegate_address, plan, delegate_address)
@@ -304,7 +304,7 @@ def test_ROE_049(staking_delegate_client):
     economic = client.economic
     log.info("The next cycle")
     economic.wait_settlement(node)
-    lockup_amount = client.node.web3.toWei(80, "ether")
+    lockup_amount = client.node.web3.toWei(500, "ether")
     plan = [{'Epoch': 1, 'Amount': lockup_amount}]
     # Create a lock plan
     result = client.restricting.createRestrictingPlan(delegate_address, plan, delegate_address)

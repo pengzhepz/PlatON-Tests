@@ -3768,8 +3768,8 @@ def test_EI_BC_089(clients_noconsensus, client_consensus):
     # node.ppos.need_analyze = False
     node_id_list = [i['id'] for i in economic.env.noconsensus_node_config_list]
     print('可质押节点id列表：', node_id_list)
-    amount1 = node.web3.toWei(833, 'ether')
-    amount2 = node.web3.toWei(837, 'ether')
+    amount1 = node.web3.toWei(8330, 'ether')
+    amount2 = node.web3.toWei(8370, 'ether')
     plan = [{'Epoch': 1, 'Amount': amount1},
             {'Epoch': 3, 'Amount': amount1},
             {'Epoch': 4, 'Amount': amount1},
@@ -3792,6 +3792,7 @@ def test_EI_BC_089(clients_noconsensus, client_consensus):
         assert_code(result, 0)
     print('非法委托钱包地址列表', delegate_address_list)
     print('锁仓合约余额', node.eth.getBalance(node.ppos.restrictingAddress))
+    balance_befor = node.eth.getBalance(node.ppos.restrictingAddress)
     # for i in delegate_address_list:
     #     restricting_info = node.ppos.getRestrictingInfo(i)['Ret']
     #     print("1", restricting_info)
@@ -3829,11 +3830,14 @@ def test_EI_BC_089(clients_noconsensus, client_consensus):
                                                    amount=economic.create_staking_limit)
         assert_code(result, 0)
     print('赎回委托后锁仓合约余额', node.eth.getBalance(node.ppos.restrictingAddress))
+    balance_after = node.eth.getBalance(node.ppos.restrictingAddress)
+    assert balance_befor - amount1 * 10 == balance_after
     # economic.wait_settlement(node)
     for i in delegate_address_list:
         restricting_info = node.ppos.getRestrictingInfo(i)['Ret']
         print(i, restricting_info)
         print(i, node.eth.getBalance(i))
+        assert economic.create_staking_limit * 2 + amount1 - node.eth.getBalance(i) < node.web3.toWei(0.01, 'ether')
 
     amount3 = node.web3.toWei(100000, 'ether')
     plan_1 = [{'Epoch': 100, 'Amount': amount3}]
@@ -3877,8 +3881,8 @@ def test_EI_BC_089(clients_noconsensus, client_consensus):
     #     f'address1: {address}, Balance: {opt_client.node.eth.getBalance(address)}, Restricting: {node.ppos.getRestrictingInfo(address)}')
 
     # 3、锁仓+委托，锁仓金额不够，扣除部分委托金额
-    address = addressList[0]
-    client = clients_noconsensus[1]
+    # address = addressList[0]
+    # client = clients_noconsensus[1]
     # result = client.delegate.delegate(0, address, opt_client.node.node_id, amount=1000 * 10 ** 18)  # 自由金额锁仓不受影响
     # assert result == 0
     # result = client.delegate.delegate(1, address, opt_client.node.node_id, amount=19167 * 10 ** 18)
