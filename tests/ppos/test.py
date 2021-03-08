@@ -251,23 +251,22 @@ if __name__ == '__main__':
     # url = 'http://192.168.10.224:6790'
     # url = 'http://192.168.9.221:6789'
     # url = 'http://192.168.120.141:6789'
-    # url = 'http://10.1.1.51:6789'
+    url = 'http://10.1.1.51:6789'
     # url = 'http://192.168.120.121:6789'
     # url = 'http:// 47.241.4.217:6789'
     # url = 'http://154.85.35.163:80'
     # url = 'http://154.85.34.8:6789'
     # url = 'http://192.168.21.186:6771'
-    url = 'https://openapi.alaya.network/rpc'
-    account = 'atp1std7ff5cjdezwe6pz7eq278jpmcaq2mef6d4e6'
+    # url = 'https://openapi.alaya.network/rpc'
+    account = 'lat1gsd3nurrv2xq7924rpwlrqtxpc7kqrjwd3r39m'
     pri_key = 'a872ee498a5a92b87b1780b1d3d71dd0cfce2980f59960b76318f5d409908303'
-    account1 = 'atx1zkrxx6rf358jcvr7nruhyvr9hxpwv9unj58er9'
-    pri_key1 = 'f51ca759562e1daf9e5302d121f933a8152915d34fcbc27e542baf256b5e4b74'
+    account1 = 'lat1rzw6lukpltqn9rk5k59apjrf5vmt2ncv8uvfn7'
+    pri_key1 = 'f90fd6808860fe869631d978b0582bb59db6189f7908b578a886d582cb6fccfa'
     # from_address = 'atx1zkrxx6rf358jcvr7nruhyvr9hxpwv9unj58er9'
     # epoch1 = 10
     # epoch2 = 20
     # create_account(url)
-    amount1 = Web3.toWei(833, 'ether')
-    amount2 = Web3.toWei(837, 'ether')
+
     # list = ['atx1r8pvmt7hk6lk8uk7dtnfyrpcy9l8rfjry34uq9',
     #         'atx1nccsq48wery09qlma3rapree588cafwlpll8cr',
     #         'atx14w3m34dmx5xjr7wc5yhg6xtp59j3qy4m77t4vl',
@@ -312,19 +311,21 @@ if __name__ == '__main__':
     # plan = [{'Epoch': 32, 'Amount': Web3.toWei(1000, 'ether')}]
     # createRestrictingPlan(url, account, plan, pri_key)
     # delegate(url, 0, nodeid, amount, pri_key)
-    # plan = [{'Epoch': 1, 'Amount': amount1},
-    #         {'Epoch': 8, 'Amount': amount1},
-    #         {'Epoch': 16, 'Amount': amount1},
-    #         {'Epoch': 32, 'Amount': amount1},
-    #         {'Epoch': 64, 'Amount': amount1},
-    #         {'Epoch': 128, 'Amount': amount1},
-    #         {'Epoch': 300, 'Amount': amount1},
-    #         {'Epoch': 400, 'Amount': amount1},
-    #         {'Epoch': 500, 'Amount': amount1},
-    #         {'Epoch': 600, 'Amount': amount1},
-    #         {'Epoch': 700, 'Amount': amount1},
-    #         {'Epoch': 800, 'Amount': amount2}]
-    plan = [{'Epoch': 200, 'Amount': Web3.toWei(1000, 'ether')}]
+    amount1 = Web3.toWei(8330, 'ether')
+    amount2 = Web3.toWei(8370, 'ether')
+    plan = [{'Epoch': 10, 'Amount': amount1},
+            {'Epoch': 80, 'Amount': amount1},
+            {'Epoch': 16, 'Amount': amount1},
+            {'Epoch': 32, 'Amount': amount1},
+            {'Epoch': 64, 'Amount': amount1},
+            {'Epoch': 128, 'Amount': amount1},
+            {'Epoch': 300, 'Amount': amount1},
+            {'Epoch': 400, 'Amount': amount1},
+            {'Epoch': 500, 'Amount': amount1},
+            {'Epoch': 600, 'Amount': amount1},
+            {'Epoch': 700, 'Amount': amount1},
+            {'Epoch': 800, 'Amount': amount2}]
+    # plan = [{'Epoch': 200, 'Amount': Web3.toWei(1000, 'ether')}]
     # address = 'atp1xsp5qwy9hgj26yujead2jmjlknhp2s7cqyh37u'
     # address = 'atx1lmcpsdp8cw899lu3wzmr5hxxplze82s2y3k4h9'
     node_id = '77861e48684ab9b35b6aafdbbb9028da0ff0bbe669f0485a8f387fa5ae83c2c9d54fabf3c027684b1371cad8f21b37981c053a5ff54eb8db2914f28ece651575'
@@ -338,12 +339,12 @@ if __name__ == '__main__':
     # time.sleep(2)
     # get_RestrictingPlan(url, account)
     # fff(url)
-    # sendTransaction(url, account1, pri_key1, account, Web3.toWei(1, 'ether'), 201030)
+    sendTransaction(url, account1, pri_key1, account, Web3.toWei(500, 'ether'), 100)
     web3 = connect_web3(url)
     ppos = Ppos(web3)
     platon = Eth(web3)
     # print(web3.is)
-    print(platon.blockNumber)
+    # print(platon.blockNumber)
     # # print(platon.gasPrice)
     # tmp_amount = 0
     # tmp_amount1 = 0
@@ -392,8 +393,8 @@ if __name__ == '__main__':
     # delegate(url, 0, i, amount, pri_key)
     #     time.sleep(1)
     # getValidatorList(url)
-    amount = Web3.toWei(9718188019, 'ether')
-    print(amount)
+    # amount = Web3.toWei(150000, 'ether')
+    # print(amount)
     # amount = 6167000000000000000000
     # delegate(url, 1, node_id, amount, pri_key)
     # for pri_key in privateKey:
@@ -403,7 +404,7 @@ if __name__ == '__main__':
     # createstaking(url, 1, pri_key, Web3.toWei(10000, 'ether'))
     # get_candinfo(url, node_id)
     # getDelegateInfo(url, 127, account, node_id)
-    get_RestrictingPlan(url, account)
+    # get_RestrictingPlan(url, account)
     # get_RestrictingPlan(url, 'atp10llx4zpnjv52sst2skwyzxsd29lzk45neyspuy')
     list = ["atp1eshshnxuva6f4zqmwj9xszfj65y5vhalr7nyed",
             "atp166ue9gzupre59qsj9xvdxjwrzdrheentp9xlue",

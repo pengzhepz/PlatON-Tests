@@ -372,7 +372,7 @@ def test_UP_FV_009(clients_new_node):
     client2.economic.wait_settlement(client2.node, 3)
     balance1 = client2.node.eth.getBalance(address1)
     print(balance1)
-    assert balance + economic.create_staking_limit - punishment_amonut == balance1
+    assert balance == balance1
 
 
 @pytest.mark.P2

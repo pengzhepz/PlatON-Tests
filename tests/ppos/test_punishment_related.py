@@ -615,7 +615,7 @@ def test_VP_PV_030(client_consensus, reset_environment):
     proportion_reward, incentive_pool_reward = economic.get_report_reward(pledge_amount1, penalty_ratio,
                                                                           proportion_ratio)
     data = rlp.encode([rlp.encode(int(3000)), rlp.encode(1), rlp.encode(report_information)])
-    transaction_data = {"to": client.node.web3.penaltyAddress, "data": data, "from": report_address}
+    transaction_data = {"to": client.ppos.penaltyAddress, "data": data, "from": report_address}
     estimate_gas = node.eth.estimateGas(transaction_data)
     dynamic_gas = get_the_dynamic_parameter_gas_fee(data)
     gas_total = 21000 + 21000 + 21000 + 21000 + dynamic_gas

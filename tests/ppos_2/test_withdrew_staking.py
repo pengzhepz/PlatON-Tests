@@ -664,7 +664,7 @@ def test_RV_023(new_genesis_env, client_new_node):
     Return amount after the highest penalty
     """
     genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
-    genesis.economicModel.slashing.slashBlocksReward = 15
+    genesis.economicModel.slashing.slashBlocksReward = 1
     new_file = new_genesis_env.cfg.env_tmp + "/genesis_0.13.0.json"
     genesis.to_file(new_file)
     new_genesis_env.deploy_all(new_file)

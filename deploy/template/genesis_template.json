@@ -1,6 +1,6 @@
 {
     "config": {
-        "chainId": 201018,
+        "chainId": 100,
         "eip155Block": 3,
         "cbft": {
             "initialNodes": [
@@ -49,12 +49,12 @@
         },
         "reward": {
             "newBlockRate": 50,
-            "platONFoundationYear": 2,
-            "increaseIssuanceRatio": 500,
+            "platONFoundationYear": 10,
+            "increaseIssuanceRatio": 250,
             "theNumberOfDelegationsReward": 2
         },
         "restricting": {
-            "minimumRelease": 500000000000000000000
+            "minimumRelease": 100000000000000000000
         },
         "innerAcc": {
             "platonFundAccount": "lat1drz94my95tskswnrcnkdvnwq43n8jt6dmzf8h8",

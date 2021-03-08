@@ -1180,7 +1180,7 @@ def test_EI_BC_031_032_033(client_new_node, amount, reset_environment):
     print(result)
     blocknum = result['Ret']['StakingBlockNum']
     print("DelegateInfo: ", client.node.ppos.getDelegateInfo(blocknum, address, node.node_id))
-    redemption_amount = node.web3.toWei(amount, 'ether')
+    redemption_amount = economic.delegate_limit * amount
     result = client.delegate.withdrew_delegate(blocknum, address, amount=redemption_amount)
     assert_code(result, 0)
     block_reward, staking_reward = economic.get_current_year_reward(node)

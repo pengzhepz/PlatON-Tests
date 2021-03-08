@@ -1638,7 +1638,7 @@ class TestNet:
         new_cfg = copy(global_test_env.cfg)
         new_cfg.init_chain = False
         if net == 'main':
-            new_cfg.append_cmd = "--alaya"
+            new_cfg.append_cmd = "--main"
         elif net == 'alayatestnet':
             new_cfg.append_cmd = "--alayatestnet"
         elif net == 'rallynet':
@@ -1672,8 +1672,8 @@ class TestNet:
 
     @pytest.mark.P2
     def test_DD_NE_002(self, global_test_env):
-        test_node = self.deploy_me(global_test_env, 'alayatestnet')
-        assert test_node.admin.nodeInfo.get('protocols').get('platon').get('config').get('chainId') == 201030
+        test_node = self.deploy_me(global_test_env, 'main')
+        assert test_node.admin.nodeInfo.get('protocols').get('platon').get('config').get('chainId') == 100
         assert test_node.admin.nodeInfo.get('protocols').get('platon').get('network') == 1
 
     @pytest.mark.P2
