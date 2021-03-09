@@ -2787,7 +2787,7 @@ def test_LS_UPV_026(client_new_node):
     print(68632 * node.eth.gasPrice)
     # plan = [{'Epoch': epoch, 'Amount': amount}]
     print(80 * 10 ** 18 + 80 * 10 ** 18)
-    plan = [{'Epoch': 1, 'Amount': 80 * 10 ** 18}, {'Epoch': 2, 'Amount': 80 * 10 ** 18}]
+    plan = [{'Epoch': 1, 'Amount': 100 * 10 ** 18}, {'Epoch': 2, 'Amount': 100 * 10 ** 18}]
     result = client.restricting.createRestrictingPlan(address, plan, address)
     time.sleep(2)
     assert_code(result, 0)

@@ -20,7 +20,7 @@ def create_account_amount(client, amount1, amount2):
 
 def restricting_plan_validation_release(client, economic, node):
     # create account
-    address1, _ = economic.account.generate_account(node.web3, von_amount(economic.create_staking_limit, 2))
+    address1, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
     # create Restricting Plan
     amount = economic.create_staking_limit
     plan = [{'Epoch': 1, 'Amount': amount}]
@@ -50,6 +50,7 @@ def test_UP_FV_001(client_new_node):
     client = client_new_node
     economic = client.economic
     node = client.node
+    node.ppos.need_analyze = True
     # create restricting plan
     address1 = restricting_plan_validation_release(client, economic, node)
     # view Account balance
@@ -834,7 +835,7 @@ def test_dsas(client_new_node):
     # create account
     amount = economic.create_staking_limit
     first_address, second_address = create_account_amount(client, amount, 0)
-    plan = [{'Epoch': 2, 'Amount': economic.delegate_limit}]
+    plan = [{'Epoch': 2, 'Amount': economic.delegate_limit * 10}]
 
     # create Restricting Plan1
     result = client.restricting.createRestrictingPlan(second_address, plan, first_address)
