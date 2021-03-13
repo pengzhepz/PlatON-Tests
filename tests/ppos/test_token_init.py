@@ -4,6 +4,7 @@ from decimal import Decimal
 
 import allure
 import pytest
+from alaya.eth import Eth
 from client_sdk_python import Web3
 from client_sdk_python.packages.platon_keys.utils.address import address_bytes_to_bech32_address
 from dacite import from_dict

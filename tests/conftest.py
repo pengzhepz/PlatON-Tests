@@ -21,7 +21,7 @@ def global_running_env(global_test_env):
     if id_cfg != id(global_test_env.cfg) or id(genesis) != id(global_test_env.genesis_config):
         log.info("Environment configuration changes, restore configuration files and redeploy")
         global_test_env.set_cfg(backup_cfg)
-        global_test_env.deploy_all()
+        # global_test_env.deploy_all()
 
 
 @pytest.fixture()
@@ -196,11 +196,8 @@ def new_genesis_env(global_test_env):
     cfg = copy(global_test_env.cfg)
     yield global_test_env
     log.info("reset deploy.................")
-<<<<<<< Updated upstream
-    global_test_env.set_cfg(cfg)
-=======
+
     # global_test_env.set_cfg(cfg)
->>>>>>> Stashed changes
     global_test_env.deploy_all()
 
 

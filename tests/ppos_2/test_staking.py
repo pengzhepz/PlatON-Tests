@@ -1170,12 +1170,7 @@ def test_IV_047(new_genesis_env, client_new_node, client_consensus):
     client1 = client_consensus
     economic = client.economic
     node = client.node
-<<<<<<< Updated upstream
-    slash_block = economic.genesis.economicModel.slashing.slashBlocksReward
-=======
-
     # slash_block = economic.genesis.economicModel.slashing.slashBlocksReward
->>>>>>> Stashed changes
     # 使用锁仓金额质押
     staking_address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit)
     benifit_address, _ = economic.account.generate_account(node.web3, 0)
@@ -1400,7 +1395,7 @@ def test_IV_049(new_genesis_env, clients_noconsensus):
     assert incentive_pool_balance - amount + incentive_pool_reward == incentive_pool_balance1
     assert staking_address_balance + candidate_info1['RestrictingPlan'] == staking_address_balance1
     # assert incentive_pool_balance - amount_reware + incentive_pool_reward == incentive_pool_balance1
-    assert staking_address_balance + candidate_info['RestrictingPlan'] + node.web3.toWei(20000 - 12000,
+    assert staking_address_balance + candidate_info['RestrictingPlan'] + node.web3.toWei(20000 - 12000)
 
 
 
@@ -2102,7 +2097,7 @@ def test_IV_058(new_genesis_env, clients_noconsensus):
     print('staking_address1', staking_address_balance1)
 
     assert report_address_balance + proportion_reward - report_address_balance1 < node.web3.toWei(0.01, 'ether')
-    assert staking_address_balance + candidate_info1['RestrictingPlan'] - economic.add_staking_limit + node.web3.toWei(100000, 'ether') == staking_address_balance1
+    assert staking_address_balance + candidate_info1['RestrictingPlan'] - economic.add_staking_limit + node.web3.toWei(80000 - 20000, 'ether') == staking_address_balance1
     # assert incentive_pool_balance - amount_reware + incentive_pool_reward == incentive_pool_balance1
 
 

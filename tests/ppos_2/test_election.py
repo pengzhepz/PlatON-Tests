@@ -410,6 +410,7 @@ def test_CS_CL_013_031(clients_new_node, client_consensus):
     assert client.node.node_id not in verifierlist
 
 
+
 @pytest.mark.P2
 @pytest.mark.parametrize('status', [0, 1, 2])
 def test_CS_CL_014_015_016_029(status, clients_new_node, clients_consensus):
@@ -693,3 +694,45 @@ def test_CS_CL_033(clients_new_node):
     verifierlist = get_pledge_list(client.ppos.getVerifierList)
     log.info("verifierlist:{}".format(verifierlist))
     assert client.node.node_id in verifierlist
+
+
+@pytest.mark.P1
+@pytest.mark.compatibility
+def test_CS_CL_034(clients_new_node):
+    """
+    After the abnormal node state is restored, the weight is updated
+    :param client_new_node:
+    :param client_consensus_obj:
+    :return:
+    """
+
+
+    client = clients_new_node[0]
+    client1 = clients_new_node[1]
+    address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
+    address1, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
+    result = client.staking.create_staking(0, address, address, amount=client.economic.create_staking_limit * 80)
+    assert_code(result, 0)
+    result = client1.staking.create_staking(0, address1, address1, amount=client.economic.create_staking_limit * 80)
+    assert_code(result, 0)
+
+    # Next settlement period
+    client.economic.wait_settlement(client.node)
+    verifierlist = get_pledge_list(client.ppos.getVerifierList)
+    assert verifierlist[0] == client.node.node_id and verifierlist[1] == client1.node.node_id
+    log.info("Close one node")
+    client.node.stop()
+    node = client1.node
+    log.info("The next  periods")
+
+    # Next settlement period
+    client1.economic.wait_settlement(node)
+    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
+    assert client.node.node_id not in verifierlist and client1.node.node_id in verifierlist
+    # assert client1.node.node_id in verifierlist
+
+    # Next settlement period
+    client1.economic.wait_settlement(node)
+    log.info("The next  periods")
+    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
+    assert verifierlist[1] == client.node.node_id and verifierlist[0] == client1.node.node_id

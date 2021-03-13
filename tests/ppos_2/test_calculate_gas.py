@@ -13,19 +13,11 @@ def test_staking_gas(client_new_node):
     node = client_new_node.node
     economic = client_new_node.economic
     benifit_address1, pri_key = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
-<<<<<<< Updated upstream
     balance1 = node.eth.getBalance(benifit_address1)
     log.info(balance1)
     program_version_sign_ = node.program_version_sign[2:]
     benifit_address = bech32_address_bytes(benifit_address1)
-=======
-    print(benifit_address1, pri_key)
-    balance1 = node.eth.getBalance(benifit_address1)
-    log.info(balance1)
-    program_version_sign_ = node.program_version_sign[2:]
-    print(program_version_sign_)
-    benifit_address = bech32_address_bytes(benifit_address1)
-    print(benifit_address)
+
     # result = client_new_node.ppos.createStaking(0, benifit_address, node.node_id, external_id,
     #                                             node_name, website,
     #                                             details, economic.create_staking_limit,
@@ -34,7 +26,6 @@ def test_staking_gas(client_new_node):
     #                                             pri_key, reward_per=0)
     #
     # assert_code(result, 0)
->>>>>>> Stashed changes
     data = HexBytes(rlp.encode([rlp.encode(int(1000)), rlp.encode(0), rlp.encode(benifit_address),
                                 rlp.encode(bytes.fromhex(node.node_id)), rlp.encode(external_id), rlp.encode(node_name),
                                 rlp.encode(website), rlp.encode(details),

@@ -71,12 +71,7 @@ def free_locked_delegate_client(client_new_node):
 
 
 def check_receipt(node, hash, key, expected_result):
-<<<<<<< Updated upstream
-    result = node.eth.waitForTransactionReceipt(hash['hash'])
-    print(result)
-=======
     result = node.eth.waitForTransactionReceipt(hash["hash"])
->>>>>>> Stashed changes
     if result["logs"] and key in result["logs"][0]:
         value = result["logs"][0][key]
         assert value == expected_result, "Value contrast error"
