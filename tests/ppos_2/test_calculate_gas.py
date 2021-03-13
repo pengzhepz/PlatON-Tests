@@ -12,11 +12,20 @@ def test_staking_gas(client_new_node):
     details = "details"
     node = client_new_node.node
     economic = client_new_node.economic
-    benifit_address, pri_key = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
-    balance1 = node.eth.getBalance(benifit_address)
+    benifit_address1, pri_key = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
+<<<<<<< Updated upstream
+    balance1 = node.eth.getBalance(benifit_address1)
     log.info(balance1)
     program_version_sign_ = node.program_version_sign[2:]
-    benifit_address = bech32_address_bytes(benifit_address)
+    benifit_address = bech32_address_bytes(benifit_address1)
+=======
+    print(benifit_address1, pri_key)
+    balance1 = node.eth.getBalance(benifit_address1)
+    log.info(balance1)
+    program_version_sign_ = node.program_version_sign[2:]
+    print(program_version_sign_)
+    benifit_address = bech32_address_bytes(benifit_address1)
+    print(benifit_address)
     # result = client_new_node.ppos.createStaking(0, benifit_address, node.node_id, external_id,
     #                                             node_name, website,
     #                                             details, economic.create_staking_limit,
@@ -25,21 +34,21 @@ def test_staking_gas(client_new_node):
     #                                             pri_key, reward_per=0)
     #
     # assert_code(result, 0)
-
+>>>>>>> Stashed changes
     data = HexBytes(rlp.encode([rlp.encode(int(1000)), rlp.encode(0), rlp.encode(benifit_address),
                                 rlp.encode(bytes.fromhex(node.node_id)), rlp.encode(external_id), rlp.encode(node_name),
                                 rlp.encode(website), rlp.encode(details),
                                 rlp.encode(economic.create_staking_limit), rlp.encode(600), rlp.encode(node.program_version),
                                 rlp.encode(bytes.fromhex(program_version_sign_)), rlp.encode(bytes.fromhex(node.blspubkey)),
-                                rlp.encode(bytes.fromhex(node.schnorr_NIZK_prove))])).hex()
-    esgas = node.eth.estimateGas({"from": benifit_address, "to": node.ppos.stakingAddress, "data": data})
+                                rlp.encode(bytes.fromhex(node.schnorr_NIZK_prove))]))
+    esgas = node.eth.estimateGas({"from": benifit_address1, "to": node.ppos.stakingAddress, "data": data})
     print('esgas', esgas)
     gas = get_the_dynamic_parameter_gas_fee(data) + 21000 + 6000 + 32000
     log.info('gas: {}'.format(gas))
     gasPrice = node.eth.gasPrice
     log.info(gasPrice)
     time.sleep(2)
-    balance2 = node.eth.getBalance(benifit_address)
+    balance2 = node.eth.getBalance(benifit_address1)
     log.info(balance2)
     assert esgas == gas
     # assert (balance1 - economic.create_staking_limit) - gas * gasPrice == balance2
@@ -155,11 +164,6 @@ def test_edit_candidate_gas(client_new_node):
     rlp_reward_per = rlp.encode(reward_per) if reward_per else b''
     data = HexBytes(rlp.encode([rlp.encode(int(1001)), rlp_benifit_address, rlp.encode(bytes.fromhex(node.node_id)), rlp_reward_per, rlp_external_id,
                                 rlp_node_name, rlp_website, rlp_details]))
-
-    # transaction_data = {"to": client.ppos.stakingAddress, "data": data, "from": benifit_address}
-    # estimateGas = node.eth.estimateGas(transaction_data)
-    # print(estimateGas)
-
     gas = get_the_dynamic_parameter_gas_fee(data) + 21000 + 6000 + 12000
     log.info(gas)
 

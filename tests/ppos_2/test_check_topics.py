@@ -33,7 +33,7 @@ def test_delegate_receipt(set_not_need_analyze):
     address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
     address, pri_key = economic.account.generate_account(node.web3, economic.delegate_limit * 10)
     hash = client.staking.create_staking(0, address, address)
-    node.eth.waitForTransactionReceipt(hash)
+    node.eth.waitForTransactionReceipt(hash['hash'])
     hash = client.delegate.delegate(0, address)
     log.info(hash)
     key = "topics"
@@ -70,7 +70,7 @@ def test_increase_staking_receipt(set_not_need_analyze):
     log.info(client.ppos.need_analyze)
 
     hash = client.staking.create_staking(0, address, address)
-    node.eth.waitForTransactionReceipt(hash)
+    node.eth.waitForTransactionReceipt(hash["hash"])
     hash = client.staking.increase_staking(0, address)
     log.info(hash)
     key = "topics"
@@ -85,7 +85,7 @@ def test_edit_candidate_receipt(set_not_need_analyze):
     economic = client.economic
     address, pri_key = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
     hash = client.staking.create_staking(0, address, address)
-    node.eth.waitForTransactionReceipt(hash)
+    node.eth.waitForTransactionReceipt(hash["hash"])
     hash = client.staking.edit_candidate(address, address)
     key = "topics"
     expected_result = []
@@ -100,7 +100,7 @@ def test_withdrew_staking_receipt(set_not_need_analyze):
     address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
 
     hash = client.staking.create_staking(0, address, address)
-    node.eth.waitForTransactionReceipt(hash)
+    node.eth.waitForTransactionReceipt(hash["hash"])
     hash = client.staking.withdrew_staking(address)
     key = "topics"
     expected_result = []

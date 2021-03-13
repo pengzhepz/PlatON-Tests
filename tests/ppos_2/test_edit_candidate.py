@@ -359,7 +359,7 @@ def NodeDeployment(clients_noconsensus):
 
     economic.wait_settlement(node, 1)
     time.sleep(1)
-    print(client1.node.ppos.getVerifierList())
+    print('verifierList:', client1.node.ppos.getVerifierList())
     result = check_node_in_list(client1.node.node_id, client1.ppos.getVerifierList)
     # assert result
     result = check_node_in_list(client2.node.node_id, client1.ppos.getVerifierList)
@@ -398,27 +398,30 @@ def test_MPI_018(new_genesis_env, clients_noconsensus):
     result = client1.staking.edit_candidate(address1, reward_per=580)
     assert_code(result, 0)
     candidate_info = node.ppos.getCandidateInfo(node.node_id)['Ret']
+    log.info(candidate_info)
     assert candidate_info['RewardPer'] == 80
     assert candidate_info['NextRewardPer'] == 580
     result = client2.staking.edit_candidate(address2, address2, reward_per=580)
     assert_code(result, 0)
     candidate_info = node.ppos.getCandidateInfo(client2.node.node_id)['Ret']
+    log.info(candidate_info)
     assert candidate_info['RewardPer'] == 80
     assert candidate_info['NextRewardPer'] == 580
 
     economic.wait_settlement(node)
 
     candidate_info = node.ppos.getCandidateInfo(node.node_id)['Ret']
-    print(candidate_info)
+    print('candidate_info', candidate_info)
     assert candidate_info['RewardPer'] == 580
     assert candidate_info['NextRewardPer'] == 580
 
     candidate_info1 = node.ppos.getCandidateInfo(client2.node.node_id)['Ret']
-    print(candidate_info1)
+    print('candidate_info1', candidate_info1)
     assert candidate_info1['RewardPer'] == 80
     assert candidate_info1['NextRewardPer'] == 580
 
     result = client2.staking.increase_staking(0, address2, amount=economic.delegate_limit * 100)
+    print(result)
     assert_code(result, 0)
     economic.wait_settlement(node)
     result = check_node_in_list(client1.node.node_id, client1.ppos.getVerifierList)
@@ -426,7 +429,7 @@ def test_MPI_018(new_genesis_env, clients_noconsensus):
     result = check_node_in_list(client2.node.node_id, client1.ppos.getVerifierList)
     assert result
     candidate_info3 = node.ppos.getCandidateInfo(client2.node.node_id)['Ret']
-    print(candidate_info1)
+    print('candidate_info3', candidate_info3)
     assert candidate_info3['RewardPer'] == 580
     assert candidate_info3['NextRewardPer'] == 580
 

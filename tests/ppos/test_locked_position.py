@@ -26,7 +26,7 @@ def test_LS_FV_001(client_consensus):
     lock_up_amount = client_consensus.node.eth.getBalance(client_consensus.node.ppos.restrictingAddress)
     log.info("Lock in contract amount: {}".format(lock_up_amount))
     # view Lockup plan
-    result = client_consensus.ppos.getRestrictingInfo(EconomicConfig.INCENTIVEPOOL_ADDRESS)
+    result = client_consensus.ppos.getRestrictingInfo(client_consensus.economic.account.raw_accounts[1]['address'])
     assert_code(result, 304005)
     # release_plans_list = result['Ret']['plans']
     # assert_code(result, 0)
@@ -169,7 +169,7 @@ def test_LS_UPV_003(client_new_node):
 @pytest.mark.P1
 def test_LS_UPV_004_1(client_new_node):
     """
-    锁仓参数的有效性验证:number 1, amount 0.1
+    锁仓参数的有效性验证:number 1, amount 500
                       number 0.1, amount 10
     :param client_new_node:
     :return:
@@ -314,19 +314,23 @@ def test_LS_RV_002(client_new_node, balance1, balance2):
     :return:
     """
     # create restricting plan
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   client_new_node.node.web3.toWei(1000,
-                                                                                                   'ether'))
-    lock_up_balance1 = client_new_node.node.web3.toWei(balance1, 'ether')
-    lock_up_balance2 = client_new_node.node.web3.toWei(balance2, 'ether')
+    client = client_new_node
+    economic = client.economic
+    node = client.node
+    address, _ = economic.account.generate_account(node.web3, economic.delegate_limit * 110)
+    balance = node.eth.getBalance(address)
+    lock_up_balance1 = node.web3.toWei(balance1, 'ether')
+    lock_up_balance2 = node.web3.toWei(balance2, 'ether')
     plan = [{'Epoch': 1, 'Amount': lock_up_balance1}, {'Epoch': 2, 'Amount': lock_up_balance2}]
-    result = client_new_node.restricting.createRestrictingPlan(address, plan, address)
-    if 0 < balance1 + balance2 < 1000:
-        assert_code(result, 0)
-    elif 1000 <= balance1 + balance2:
-        assert_code(result, 304004)
-    else:
+    result = client.restricting.createRestrictingPlan(address, plan, address)
+    if lock_up_balance1 == 0 or lock_up_balance2 == 0:
         assert_code(result, 304011)
+    elif 0 < lock_up_balance1 < economic.genesis.economicModel.restricting.minimumRelease or 0 < lock_up_balance2 < economic.genesis.economicModel.restricting.minimumRelease:
+        assert_code(result, 304014)
+    elif economic.genesis.economicModel.restricting.minimumRelease * 2 <= lock_up_balance1 + lock_up_balance2 < balance:
+        assert_code(result, 0)
+    elif lock_up_balance1 + lock_up_balance2 >= balance:
+        assert_code(result, 304004)
 
 
 def create_restricting_plan(client, plan, benifit_address, address):
@@ -355,24 +359,20 @@ def test_LS_RV_003(client_new_node):
     :param client_new_node:
     :return:
     """
+    client = client_new_node
+    economic = client.economic
+    node = client.node
     # create account
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   client_new_node.node.web3.toWei(1000,
-                                                                                                   'ether'))
-    louk_up_balace = client_new_node.node.web3.toWei(100, 'ether')
+    address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit)
+    louk_up_balace = economic.genesis.economicModel.restricting.minimumRelease
+    print(type(louk_up_balace), louk_up_balace)
     plan = [{'Epoch': 1, 'Amount': louk_up_balace}, {'Epoch': 1, 'Amount': louk_up_balace}]
     # create restricting plan
-    restricting_info = create_restricting_plan(client_new_node, plan, address, address)
+    restricting_info = create_restricting_plan(client, plan, address, address)
     # assert restricting plan
-    assert restricting_info['Ret']['balance'] == louk_up_balace * 2, "ErrMsg:Restricting balance：{}".format(
-        restricting_info['Ret']['balance'])
-    assert restricting_info['Ret']['plans'][0][
-               'blockNumber'] == client_new_node.economic.get_switchpoint_by_settlement(
-        client_new_node.node), "ErrMsg:Restricting blockNumber {}".format(
-        restricting_info['Ret']['plans'][0]['blockNumber'])
-    assert restricting_info['Ret']['plans'][0][
-               'amount'] == louk_up_balace * 2, "ErrMsg:Restricting amount {}".format(
-        restricting_info['Ret']['plans'][0]['amount'])
+    assert restricting_info['Ret']['balance'] == louk_up_balace * 2
+    assert restricting_info['Ret']['plans'][0]['blockNumber'] == economic.get_switchpoint_by_settlement(node)
+    assert restricting_info['Ret']['plans'][0]['amount'] == louk_up_balace * 2
 
 
 @pytest.mark.P1
@@ -382,27 +382,19 @@ def test_LS_RV_004(client_new_node):
     :param client_new_node:
     :return:
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   client_new_node.node.web3.toWei(1000,
-                                                                                                   'ether'))
-
-    louk_up_balace = client_new_node.node.web3.toWei(100, 'ether')
+    client = client_new_node
+    economic = client.economic
+    node = client.node
+    address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit)
+    louk_up_balace = economic.genesis.economicModel.restricting.minimumRelease
     plan = [{'Epoch': 1, 'Amount': louk_up_balace}, {'Epoch': 2, 'Amount': louk_up_balace}]
     # create restricting plan
-    restricting_info = create_restricting_plan(client_new_node, plan, address, address)
+    restricting_info = create_restricting_plan(client, plan, address, address)
     # assert restricting plan
-    assert restricting_info['Ret']['balance'] == louk_up_balace * 2, "ErrMsg:Restricting balance：{}".format(
-        restricting_info['Ret']['balance'])
-    assert restricting_info['Ret']['plans'][0][
-               'blockNumber'] == client_new_node.economic.get_switchpoint_by_settlement(
-        client_new_node.node), "ErrMsg:Restricting blockNumber {}".format(
-        restricting_info['Ret']['plans'][0]['blockNumber'])
-    assert restricting_info['Ret']['plans'][0][
-               'amount'] == louk_up_balace, "ErrMsg:Restricting amount {}".format(
-        restricting_info['Ret']['plans'][0]['amount'])
-    assert restricting_info['Ret']['plans'][1][
-               'amount'] == louk_up_balace, "ErrMsg:Restricting amount {}".format(
-        restricting_info['Ret']['plans'][1]['amount'])
+    assert restricting_info['Ret']['balance'] == louk_up_balace * 2
+    assert restricting_info['Ret']['plans'][0]['blockNumber'] == economic.get_switchpoint_by_settlement(node)
+    assert restricting_info['Ret']['plans'][0]['amount'] == louk_up_balace
+    assert restricting_info['Ret']['plans'][1]['amount'] == louk_up_balace
 
 
 @pytest.mark.P1
@@ -412,28 +404,23 @@ def test_LS_RV_005(client_new_node):
     :param client_new_node:
     :return:
     """
+    client = client_new_node
+    economic = client.economic
+    node = client.node
     # create account
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   client_new_node.node.web3.toWei(1000,
-                                                                                                   'ether'))
-
-    louk_up_balace = client_new_node.node.web3.toWei(100, 'ether')
+    address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit)
+    louk_up_balace = economic.genesis.economicModel.restricting.minimumRelease
     plan = [{'Epoch': 1, 'Amount': louk_up_balace}]
     # create restricting plan
-    create_restricting_plan(client_new_node, plan, address, address)
+    create_restricting_plan(client, plan, address, address)
     # create restricting plan
-    restricting_info = create_restricting_plan(client_new_node, plan, address, address)
+    restricting_info = create_restricting_plan(client, plan, address, address)
     time.sleep(2)
     # assert restricting plan
-    assert restricting_info['Ret']['balance'] == louk_up_balace * 2, "ErrMsg:Restricting balance：{}".format(
-        restricting_info['Ret']['balance'])
-    assert restricting_info['Ret']['plans'][0][
-               'blockNumber'] == client_new_node.economic.get_switchpoint_by_settlement(
-        client_new_node.node), "ErrMsg:Restricting blockNumber {}".format(
-        restricting_info['Ret']['plans'][0]['blockNumber'])
-    assert restricting_info['Ret']['plans'][0][
-               'amount'] == louk_up_balace * 2, "ErrMsg:Restricting amount {}".format(
-        restricting_info['Ret']['plans'][0]['amount'])
+    assert restricting_info['Ret']['balance'] == louk_up_balace * 2
+    assert restricting_info['Ret']['plans'][0]['blockNumber'] == client_new_node.economic.get_switchpoint_by_settlement(
+        node)
+    assert restricting_info['Ret']['plans'][0]['amount'] == louk_up_balace * 2
 
 
 def create_lock_release_amount(client, first_amount, second_amount):
@@ -451,30 +438,25 @@ def test_LS_RV_006(client_new_node):
     :param client_new_node:
     :return:
     """
+    client = client_new_node
+    economic = client.economic
+    node = client.node
     # create account
-    amount1 = client_new_node.node.web3.toWei(1000, 'ether')
-    amount2 = client_new_node.node.web3.toWei(1000, 'ether')
+    amount1 = node.web3.toWei(2000, 'ether')
+    amount2 = node.web3.toWei(2000, 'ether')
     address1, address2 = create_lock_release_amount(client_new_node, amount1, amount2)
-    louk_up_balace = client_new_node.node.web3.toWei(100, 'ether')
+    louk_up_balace = economic.genesis.economicModel.restricting.minimumRelease
     plan = [{'Epoch': 1, 'Amount': louk_up_balace}, {'Epoch': 2, 'Amount': louk_up_balace}]
     # create restricting plan1
-    restricting_info = create_restricting_plan(client_new_node, plan, address1, address1)
+    create_restricting_plan(client_new_node, plan, address1, address1)
     # create restricting plan2
     restricting_info = create_restricting_plan(client_new_node, plan, address1, address2)
     # assert restricting plan1
     time.sleep(1)
-    assert restricting_info['Ret']['balance'] == louk_up_balace * 4, "ErrMsg:Restricting balance：{}".format(
-        restricting_info['Ret']['balance'])
-    assert restricting_info['Ret']['plans'][0][
-               'blockNumber'] == client_new_node.economic.get_switchpoint_by_settlement(
-        client_new_node.node), "ErrMsg:Restricting blockNumber {}".format(
-        restricting_info['Ret']['plans'][0]['blockNumber'])
-    assert restricting_info['Ret']['plans'][0][
-               'amount'] == louk_up_balace * 2, "ErrMsg:Restricting amount {}".format(
-        restricting_info['Ret']['plans'][0]['amount'])
-    assert restricting_info['Ret']['plans'][1][
-               'amount'] == louk_up_balace * 2, "ErrMsg:Restricting amount {}".format(
-        restricting_info['Ret']['plans'][1]['amount'])
+    assert restricting_info['Ret']['balance'] == louk_up_balace * 4
+    assert restricting_info['Ret']['plans'][0]['blockNumber'] == economic.get_switchpoint_by_settlement(node)
+    assert restricting_info['Ret']['plans'][0]['amount'] == louk_up_balace * 2
+    assert restricting_info['Ret']['plans'][1]['amount'] == louk_up_balace * 2
 
 
 @pytest.mark.P1
@@ -484,39 +466,32 @@ def test_LS_RV_007(client_new_node):
     :param client_new_node:
     :return:
     """
+    client = client_new_node
+    economic = client.economic
+    node = client.node
     # create account
-    amount1 = client_new_node.node.web3.toWei(1000, 'ether')
-    amount2 = client_new_node.node.web3.toWei(1000, 'ether')
-    address1, address2 = create_lock_release_amount(client_new_node, amount1, amount2)
-    louk_up_balace = client_new_node.node.web3.toWei(100, 'ether')
+    amount1 = node.web3.toWei(2000, 'ether')
+    amount2 = node.web3.toWei(2000, 'ether')
+    address1, address2 = create_lock_release_amount(client, amount1, amount2)
+    louk_up_balace = economic.genesis.economicModel.restricting.minimumRelease
     plan1 = [{'Epoch': 1, 'Amount': louk_up_balace}, {'Epoch': 2, 'Amount': louk_up_balace}]
     plan2 = [{'Epoch': 1, 'Amount': louk_up_balace}, {'Epoch': 3, 'Amount': louk_up_balace}]
     # create restricting plan1
-    restricting_info = create_restricting_plan(client_new_node, plan1, address1, address1)
+    create_restricting_plan(client, plan1, address1, address1)
     # create restricting plan2
-    restricting_info = create_restricting_plan(client_new_node, plan2, address1, address2)
+    restricting_info = create_restricting_plan(client, plan2, address1, address2)
     # assert restricting plan1
-    assert restricting_info['Ret']['balance'] == louk_up_balace * 4, "ErrMsg:Restricting balance：{}".format(
-        restricting_info['Ret']['balance'])
-    assert restricting_info['Ret']['plans'][0][
-               'blockNumber'] == client_new_node.economic.get_switchpoint_by_settlement(
-        client_new_node.node), "ErrMsg:Restricting blockNumber {}".format(
-        restricting_info['Ret']['plans'][0]['blockNumber'])
-    assert restricting_info['Ret']['plans'][0][
-               'amount'] == louk_up_balace * 2, "ErrMsg:Restricting amount {}".format(
-        restricting_info['Ret']['plans'][0]['amount'])
-    assert restricting_info['Ret']['plans'][1][
-               'amount'] == louk_up_balace, "ErrMsg:Restricting amount {}".format(
-        restricting_info['Ret']['plans'][1]['amount'])
-    assert restricting_info['Ret']['plans'][2][
-               'amount'] == louk_up_balace, "ErrMsg:Restricting amount {}".format(
-        restricting_info['Ret']['plans'][2]['amount'])
+    assert restricting_info['Ret']['balance'] == louk_up_balace * 4
+    assert restricting_info['Ret']['plans'][0]['blockNumber'] == client.economic.get_switchpoint_by_settlement(node)
+    assert restricting_info['Ret']['plans'][0]['amount'] == louk_up_balace * 2
+    assert restricting_info['Ret']['plans'][1]['amount'] == louk_up_balace
+    assert restricting_info['Ret']['plans'][2]['amount'] == louk_up_balace
 
 
 def create_restricting_plan_and_staking(client, economic, node):
     # create account
-    amount1 = von_amount(economic.create_staking_limit, 4)
-    amount2 = client.node.web3.toWei(1000, 'ether')
+    amount1 = economic.create_staking_limit * 4
+    amount2 = economic.delegate_limit * 1000
     address1, address2 = create_lock_release_amount(client, amount1, amount2)
     # create Restricting Plan
     plan = [{'Epoch': 1, 'Amount': economic.create_staking_limit}]
@@ -616,7 +591,7 @@ def test_LS_RV_010(client_new_node):
 
 def create_restricting_plan_and_entrust(client, node, economic):
     # create account
-    amount1 = von_amount(economic.create_staking_limit, 2)
+    amount1 = economic.create_staking_limit * 2
     amount2 = client.node.web3.toWei(1000, 'ether')
     address1, address2 = create_lock_release_amount(client, amount1, amount2)
     # create Restricting Plan
@@ -682,7 +657,7 @@ def test_LS_RV_012(new_genesis_env, clients_new_node):
     # Change configuration parameters
     genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
     genesis.economicModel.slashing.slashBlocksReward = 60
-    new_file = new_genesis_env.cfg.env_tmp + "/genesis_0.14.0.json"
+    new_file = new_genesis_env.cfg.env_tmp + "/genesis_1.0.0.json"
     genesis.to_file(new_file)
     new_genesis_env.deploy_all(new_file)
 
@@ -730,8 +705,8 @@ def test_LS_RV_019(new_genesis_env, clients_noconsensus):
     """
     # Change configuration parameters
     genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
-    genesis.economicModel.slashing.slashBlocksReward = 5
-    new_file = new_genesis_env.cfg.env_tmp + "/genesis_0.15.1.json"
+    genesis.economicModel.slashing.slashBlocksReward = 1
+    new_file = new_genesis_env.cfg.env_tmp + "/genesis_1.0.0.json"
     genesis.to_file(new_file)
     new_genesis_env.deploy_all(new_file)
 
@@ -766,6 +741,8 @@ def test_LS_RV_019(new_genesis_env, clients_noconsensus):
     # Amount of penalty
     punishment_amonut = int(Decimal(str(block_reward)) * Decimal(str(slash_blocks)))
     log.info("punishment_amonut: {}".format(punishment_amonut))
+    candidate_info = client2.ppos.getCandidateInfo(node.node_id)
+    print('candidate_info', candidate_info)
     # view Restricting Plan
     restricting_info = client2.ppos.getRestrictingInfo(address2)
     log.info("restricting info: {}".format(restricting_info))
@@ -777,7 +754,7 @@ def test_LS_RV_019(new_genesis_env, clients_noconsensus):
     assert info['balance'] == pledge_amount - punishment_amonut
     assert balance == balance1
     # create Restricting Plan again
-    staking_amount = von_amount(economic.create_staking_limit, 2)
+    staking_amount = economic.create_staking_limit * 2
     plan = [{'Epoch': 1, 'Amount': staking_amount}]
     result = client2.restricting.createRestrictingPlan(address2, plan, address1)
     assert_code(result, 0)
@@ -788,7 +765,8 @@ def test_LS_RV_019(new_genesis_env, clients_noconsensus):
     info2 = restricting_info3['Ret']
     balance2 = client2.node.eth.getBalance(address2)
     print(balance2)
-    assert info2['balance'] == staking_amount + pledge_amount - punishment_amonut - info['debt'], "rrMsg: restricting balance amount {}".format(info2['balance'])
+    assert info2['balance'] == staking_amount + pledge_amount - punishment_amonut - info[
+        'debt'], "rrMsg: restricting balance amount {}".format(info2['balance'])
     assert info2['debt'] == 0, "rrMsg: restricting debt amount {}".format(info2['debt'])
     assert info2['plans'][0]['amount'] == staking_amount, "rrMsg: restricting plans amount {}".format(
         info2['plans'][0]['amount'])
@@ -1198,6 +1176,7 @@ def test_LS_PV_010(client_new_node):
     economic = client.economic
     node = client.node
     status = True
+    client.ppos.need_quota_gas = False
     # create account
     amount1 = economic.create_staking_limit * 2
     amount2 = EconomicConfig.fixed_gas * node.eth.gasPrice
@@ -1903,6 +1882,7 @@ def test_LS_IV_002(client_new_node):
     economic = client.economic
     node = client.node
     status = True
+    client.ppos.need_quota_gas = False
     # create account
     address1, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
     address2, _ = economic.account.generate_account(node.web3,
@@ -1956,7 +1936,7 @@ def test_LS_IV_003(clients_new_node, reset_environment):
 
 def restricting_plan_verification_pledge(client, economic, node):
     # create account
-    address1, _ = economic.account.generate_account(node.web3, von_amount(economic.create_staking_limit, 2))
+    address1, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
     # create Restricting Plan
     amount = economic.create_staking_limit
     plan = [{'Epoch': 1, 'Amount': amount}]
@@ -2257,14 +2237,14 @@ def test_LS_CSV_012(client_new_node):
     result = client.staking.create_staking(1, address1, address1)
     assert_code(result, 0)
     # create account
-    address2, _ = economic.account.generate_account(node.web3, node.web3.toWei(1000, 'ether'))
+    address2, _ = economic.account.generate_account(node.web3, economic.delegate_limit * 1000)
     # Waiting for the end of the settlement period
     economic.wait_settlement(node)
     # Application for return of pledge
     result = client.staking.withdrew_staking(address1)
     assert_code(result, 0)
     # create Restricting Plan
-    amount = von_amount(economic.delegate_limit, 100)
+    amount = economic.genesis.economicModel.restricting.minimumRelease
     plan = [{'Epoch': 1, 'Amount': amount}]
     result = client.restricting.createRestrictingPlan(address2, plan, address2)
     assert_code(result, 0)
@@ -2313,7 +2293,7 @@ def steps_of_returning_pledge(client, economic, node):
     result = client.staking.create_staking(1, address1, address1)
     assert_code(result, 0)
     # create account
-    address2, _ = economic.account.generate_account(node.web3, node.web3.toWei(1000, 'ether'))
+    address2, _ = economic.account.generate_account(node.web3, economic.delegate_limit * 1000)
     # Waiting for the end of the settlement period
     economic.wait_settlement(node)
     # Application for return of pledge
@@ -2362,7 +2342,7 @@ def test_LS_CSV_015(client_new_node):
     # After returning the deposit
     address1, address2 = steps_of_returning_pledge(client, economic, node)
     # create Restricting Plan
-    amount = von_amount(economic.delegate_limit, 100)
+    amount = economic.genesis.economicModel.restricting.minimumRelease
     plan = [{'Epoch': 1, 'Amount': amount}]
     result = client.restricting.createRestrictingPlan(address2, plan, address2)
     assert_code(result, 0)
@@ -2420,12 +2400,19 @@ def test_LS_UPV_020(client_new_node, amount):
         assert_code(result, 0)
 
 
-def test_LS_UPV_021(clients_noconsensus, client_consensus):
+@pytest.mark.P2
+def test_LS_UPV_021(new_genesis_env, clients_noconsensus, client_consensus):
     """
     多个锁仓释放期零出块处罚后
     :param :
     :return:
     """
+    genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
+    genesis.economicModel.slashing.slashBlocksReward = 1
+    new_file = new_genesis_env.cfg.env_tmp + "/genesis_1.0.0.json"
+    genesis.to_file(new_file)
+    new_genesis_env.deploy_all(new_file)
+
     clinet = clients_noconsensus[0]
     print(clinet.node.node_mark)
     clinet1 = client_consensus
@@ -2441,9 +2428,9 @@ def test_LS_UPV_021(clients_noconsensus, client_consensus):
     address2, _ = economic.account.generate_account(node.web3, node.web3.toWei(1, 'ether'))
     print(address2, _)
     address3, _ = economic.account.generate_account(node.web3, 0)
-    slashBlocks = economic.genesis.economicModel.slashing.slashBlocksReward
-    amount1 = Web3.toWei(833, 'ether')
-    amount2 = Web3.toWei(837, 'ether')
+    balance_restrictingAddress = node.eth.getBalance(node.ppos.restrictingAddress)
+    amount1 = Web3.toWei(8330, 'ether')
+    amount2 = Web3.toWei(8370, 'ether')
     plan = [{'Epoch': 1, 'Amount': amount1},
             {'Epoch': 2, 'Amount': amount1},
             {'Epoch': 3, 'Amount': amount1},
@@ -2458,10 +2445,12 @@ def test_LS_UPV_021(clients_noconsensus, client_consensus):
             {'Epoch': 12, 'Amount': amount2}]
     result = clinet.restricting.createRestrictingPlan(address2, plan, address1)
     assert_code(result, 0)
-    plan = [{'Epoch': 100, 'Amount': economic.create_staking_limit * 10}]
-    result = clinet.restricting.createRestrictingPlan(address1, plan, address1)
-    assert_code(result, 0)
+    # plan = [{'Epoch': 100, 'Amount': economic.create_staking_limit * 10}]
+    # result = clinet.restricting.createRestrictingPlan(address1, plan, address1)
+    # assert_code(result, 0)
     time.sleep(3)
+    balance_restrictingAddress1 = node.eth.getBalance(node.ppos.restrictingAddress)
+    assert balance_restrictingAddress + economic.create_staking_limit == balance_restrictingAddress1
     restricting_info1 = clinet1.node.ppos.getRestrictingInfo(address2)['Ret']
     print(restricting_info1)
     result = clinet.staking.create_staking(1, address3, address2)
@@ -2471,32 +2460,43 @@ def test_LS_UPV_021(clients_noconsensus, client_consensus):
     economic.wait_settlement(node)
     block_reward, staking_reward = clinet.economic.get_current_year_reward(node)
     clinet.node.stop()
-    clinet1.economic.wait_settlement(clinet1.node, 3)
-    release_amonut = int(Decimal(str(amount1)) * Decimal(str(5)))
-    print(release_amonut)
+    clinet1.economic.wait_settlement(clinet1.node, 4)
+    release_amonut = int(Decimal(str(amount1)) * Decimal(str(6)))
+    print(release_amonut)  # 49980,000000000000000000
     restricting_info2 = clinet1.node.ppos.getRestrictingInfo(address2)['Ret']
     print(restricting_info2)
     balance1 = clinet1.node.eth.getBalance(address2)
-    print('balance', balance1)
-    punishment_amonut = int(Decimal(str(block_reward)) * Decimal(str(slashBlocks)))
-    print('punishment_amonut', punishment_amonut)
+    print('balance', balance1)  # 49980,999993475600000000  锁仓释放+原有的-手续费
+    punishment_amonut = int(Decimal(str(block_reward)) * Decimal(str(1)))
+    print('punishment_amonut', punishment_amonut)  # 43819,475601604278074866
     assert restricting_info1['balance'] - release_amonut - punishment_amonut == restricting_info2['balance']
     assert balance + release_amonut == balance1
     clinet1.economic.wait_settlement(clinet1.node)
     balance2 = clinet1.node.eth.getBalance(address2)
-    print('balance', balance2)
-    assert restricting_info1['balance'] - release_amonut - punishment_amonut == restricting_info2['balance']
-    assert balance + release_amonut + amount1 == balance2
+    print('balance', balance2)  # 56181,524391871321925134
+    restricting_info3 = clinet1.node.ppos.getRestrictingInfo(address2)["Ret"]
+    print(restricting_info3)
+    assert restricting_info3["balance"] == 0
+    balance3 = clinet1.node.eth.getBalance(address2)
+    print(address2, balance3)
+    print(clinet1.node.ppos.restrictingAddress, clinet1.node.eth.getBalance(clinet1.node.ppos.restrictingAddress))
+    assert balance1 + amount1 == balance3 + restricting_info3["debt"]
     list = clinet1.node.ppos.getRestrictingInfo(address2)['Ret']['plans']
-    for i in range(len(list) + 1):
-        restricting_info = clinet1.node.ppos.getRestrictingInfo(address2)
-        print(restricting_info)
-        balance1 = clinet1.node.eth.getBalance(address2)
-        print(address2, balance1)
-        print(clinet1.node.ppos.restrictingAddress, clinet1.node.eth.getBalance(clinet1.node.ppos.restrictingAddress))
+    for i in range(len(list)):
+        restricting_info = clinet1.node.ppos.getRestrictingInfo(address2)["Ret"]
+        log.info(restricting_info)
+        balance = clinet1.node.eth.getBalance(address2)
+        log.info(balance)
         economic.wait_settlement(clinet1.node)
+    assert restricting_info["debt"] + amount2 == punishment_amonut
+    balance = clinet1.node.eth.getBalance(address2)
+    log.info(balance)
+    assert balance == balance3
+    balance_restrictingAddress2 = node.eth.getBalance(node.ppos.restrictingAddress)
+    assert balance_restrictingAddress2 == balance_restrictingAddress
 
 
+@pytest.mark.P2
 def test_LS_UPV_022(client_new_node, client_consensus):
     """
     多个锁仓释放期质押主动退回质押
@@ -2516,8 +2516,8 @@ def test_LS_UPV_022(client_new_node, client_consensus):
     address2, _ = economic.account.generate_account(node.web3, node.web3.toWei(1, 'ether'))
     print(address2, _)
     address3, _ = economic.account.generate_account(node.web3, 0)
-    amount1 = Web3.toWei(833, 'ether')
-    amount2 = Web3.toWei(837, 'ether')
+    amount1 = Web3.toWei(8330, 'ether')
+    amount2 = Web3.toWei(8370, 'ether')
     plan = [{'Epoch': 1, 'Amount': amount1},
             {'Epoch': 2, 'Amount': amount1},
             {'Epoch': 3, 'Amount': amount1},
@@ -2568,6 +2568,7 @@ def test_LS_UPV_022(client_new_node, client_consensus):
         # assert restricting_info1['balance'] - int(Decimal(str(amount1)) * Decimal(str(3))) == restricting_info2['balance']
 
 
+@pytest.mark.P2
 def test_LS_UPV_023(client_new_node):
     """
     锁仓多个释放期，委托赎回
@@ -2696,6 +2697,7 @@ def test_LS_UPV_024(client_new_node, client_consensus):
         clinet1.economic.wait_settlement(clinet1.node)
 
 
+@pytest.mark.P2
 def test_LS_UPV_025(client_new_node, client_consensus):
     """
     多个锁仓释放，增持主动退回
@@ -2765,6 +2767,7 @@ def test_LS_UPV_025(client_new_node, client_consensus):
         # assert restricting_info1['balance'] - int(Decimal(str(amount1)) * Decimal(str(3))) == restricting_info2['balance']
 
 
+@pytest.mark.P2
 def test_LS_UPV_026(client_new_node):
     """
     正常创建锁仓计划
@@ -2784,11 +2787,10 @@ def test_LS_UPV_026(client_new_node):
     print(68632 * node.eth.gasPrice)
     # plan = [{'Epoch': epoch, 'Amount': amount}]
     print(80 * 10 ** 18 + 80 * 10 ** 18)
-    plan = [{'Epoch': 1, 'Amount': 80 * 10 ** 18}, {'Epoch': 2, 'Amount': 80 * 10 ** 18}]
+    plan = [{'Epoch': 1, 'Amount': 100 * 10 ** 18}, {'Epoch': 2, 'Amount': 100 * 10 ** 18}]
     result = client.restricting.createRestrictingPlan(address, plan, address)
     time.sleep(2)
     assert_code(result, 0)
     restricting_info = client_new_node.ppos.getRestrictingInfo(address)
     print(restricting_info)
     print(node.eth.getBalance(address))
-

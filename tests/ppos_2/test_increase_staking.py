@@ -12,8 +12,8 @@ def test_AS_001_002_009(client_new_node):
     002:The verifier initiates the overweight with the amount of free account, meeting the minimum threshold
     009:Hesitation period add pledge, inquire pledge information
     """
-    StakeThreshold = get_governable_parameter_value(client_new_node, "StakeThreshold")
-    log.info(StakeThreshold)
+    stakeThreshold = get_governable_parameter_value(client_new_node, "stakeThreshold")
+    log.info(stakeThreshold)
     address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
                                                                    10 ** 18 * 10000000)
     result = client_new_node.staking.create_staking(0, address, address)
@@ -203,12 +203,12 @@ def test_AS_016(client_new_node):
     node = client_new_node.node
     amount = node.eth.getBalance(address)
     log.info("Wallet balance{}".format(amount))
-    locked_amount = 100000000000000000000
+    locked_amount = client_new_node.node.web3.toWei(1000, 'ether')
     plan = [{'Epoch': 1, 'Amount': locked_amount}]
     result = client_new_node.restricting.createRestrictingPlan(address, plan, address)
     log.info(result)
     assert_code(result, 0)
-    value = 101000000000000000000
+    value = client_new_node.node.web3.toWei(1001, 'ether')
     result = client_new_node.staking.increase_staking(1, address, amount=value)
     log.info(result)
     assert_code(result, 304013)

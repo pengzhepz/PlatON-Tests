@@ -353,3 +353,6 @@ def test_IP_CP_005(reset_cfg_env_node, value):
     new_file = reset_cfg_env_node.genesis_path
     genesis.to_file(new_file)
     assert_error_deploy(reset_cfg_env_node, new_file, "Abnormal chain id")
+
+if __name__ == '__main__':
+    pytest.main("-v -s")

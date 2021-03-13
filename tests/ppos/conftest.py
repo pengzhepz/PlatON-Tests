@@ -44,7 +44,7 @@ def staking_node_client(client_new_node):
 def delegate_node_client(client_new_node):
     reward = 1000
     staking_address, delegate_address = create_staking(client_new_node, reward)
-    result = client_new_node.delegate.delegate(0, delegate_address, amount=client_new_node.economic.add_staking_limit * 2)
+    result = client_new_node.delegate.delegate(0, delegate_address, amount=client_new_node.economic.delegate_limit * 2)
     assert_code(result, 0)
     setattr(client_new_node, "staking_address", staking_address)
     setattr(client_new_node, "delegate_address", delegate_address)

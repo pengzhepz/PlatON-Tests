@@ -54,7 +54,7 @@ def free_locked_delegate_client(client_new_node):
     result = client_new_node.delegate.delegate(0, delegate_address, amount=delegate_amount * 2)
     assert_code(result, 0)
 
-    lockup_amount = client_new_node.node.web3.toWei(80, "ether")
+    lockup_amount = client_new_node.node.web3.toWei(500, "ether")
     plan = [{'Epoch': 2, 'Amount': lockup_amount}]
     # Create a lock plan
     result = client_new_node.restricting.createRestrictingPlan(delegate_address, plan, delegate_address)
@@ -71,7 +71,12 @@ def free_locked_delegate_client(client_new_node):
 
 
 def check_receipt(node, hash, key, expected_result):
-    result = node.eth.waitForTransactionReceipt(hash)
+<<<<<<< Updated upstream
+    result = node.eth.waitForTransactionReceipt(hash['hash'])
+    print(result)
+=======
+    result = node.eth.waitForTransactionReceipt(hash["hash"])
+>>>>>>> Stashed changes
     if result["logs"] and key in result["logs"][0]:
         value = result["logs"][0][key]
         assert value == expected_result, "Value contrast error"
