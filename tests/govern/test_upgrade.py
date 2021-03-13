@@ -357,7 +357,7 @@ class TestUpgradeVP:
         address, _ = pip_test.economic.account.generate_account(pip_test.node.web3, 10**18 * 10000000)
         result = client_noconsensus.staking.create_staking(0, address, address, amount=10 ** 18 * 2000000,
                                                            transaction_cfg=pip_test.cfg.transaction_cfg)
-        log.info('Node {} staking result : {}'.format(pip_test.node.node_id, result))
+        log.info('Node {} staking result : {}'.format(pip_test.node.node_mark, result))
         programversion = client_noconsensus.staking.get_version()
         assert_code(programversion, pip.cfg.version0)
         pip_test.economic.wait_settlement(pip_test.node)
@@ -367,6 +367,7 @@ class TestUpgradeVP:
         assert pip_test.node.node_id in verifier_list
 
         submitvpandvote(clients_consensus, 5)
+        upload_platon(pip_test.node, pip_test.cfg.PLATON_NEW_BIN)
         programversion = clients_consensus[0].staking.get_version()
         assert_code(programversion, pip.cfg.version0)
         proposalinfo = pip.get_effect_proposal_info_of_vote()
