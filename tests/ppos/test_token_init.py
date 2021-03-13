@@ -187,7 +187,7 @@ def test_IT_SD_007(global_test_env):
 
 
 @pytest.mark.P0
-def test_IT_SD_008(global_test_env,client_consensus):
+def test_IT_SD_008(global_test_env, client_consensus):
     """
     二次分配：普通账户转platON基金会账户
     :return:

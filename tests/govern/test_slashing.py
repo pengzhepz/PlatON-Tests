@@ -214,7 +214,7 @@ class TestSlashing:
         pips = get_pips(verifiers)
         pip = pips[0]
         pip_id = version_proposal(pip, pip.cfg.version5, 5)
-        pip_id = cancel_proposal(pip, pip_id, 2)
+        pip_id = cancel_proposal(pip, pip_id, 5)
         vote(pip, pip_id)
         # step2：停止节点，等待节点被零出块处罚
         make_0mb_slash(verifiers[0], verifiers[1])
@@ -362,19 +362,19 @@ class TestSlashing:
         # step1：提交版本升级提案
         pips = get_pips(verifiers)
         pip = pips[0]
-        pip_id = version_proposal(pip, pip.cfg.version5, 5)
         # setp2：使用其他节点，对提案进行投票，使提案通过
+        upload_platon(pips[0].node, pips[0].cfg.PLATON_NEW_BIN)
         upload_platon(pips[1].node, pips[1].cfg.PLATON_NEW_BIN)
         upload_platon(pips[2].node, pips[2].cfg.PLATON_NEW_BIN)
         upload_platon(pips[3].node, pips[3].cfg.PLATON_NEW_BIN)
+        pip_id = version_proposal(pip, pip.cfg.version5, 5)
         vote(pips[1], pip_id)
         vote(pips[2], pip_id)
         vote(pips[3], pip_id)
         # setp3: 在投票期内，构造节点零出块，并等待提案通过
         start_block, end_block = make_0mb_slash(verifiers[0], verifiers[1])
         wait_proposal_active(pip, pip_id)
-        # step4：更新零出块节点二进制，进行版本声明
-        upload_platon(pip.node, pip.cfg.PLATON_NEW_BIN)
+        # step4：进行版本声明
         assert_code(version_declare(pip), 302023)
         # step5: 等待零出块冻结结束，进行版本声明
         wait_block_number(pip.node, end_block)
@@ -593,13 +593,9 @@ class TestSlashing:
         time.sleep(3)
         assert pip.pip.web3.isConnected() is False
 
-    def test_debug(self, all_clients):
-        pips = get_pips(all_clients)
-        pip = pips[0]
-        # step1: 链升级后，节点未进行升级
-        pip_id = version_proposal(pip, pip.cfg.version4, 20)
-        for pip in pips:
-            upload_platon(pip.node, pip.cfg.PLATON_NEW_BIN)
-            print(vote(pip, pip_id, pip.cfg.vote_option_yeas))
-        wait_proposal_active(pips[1], pip_id)
-        log.info(f'current active version: {pips[1].pip.getActiveVersion()}')
+    def test_debug(self, clients_noconsensus):
+        clients = clients_noconsensus
+        for client in clients:
+            address, private_key = client.economic.account.generate_account(client.node.web3, 2000000 * 10 ** 18)
+            print(f'address == {address}')
+            client.staking.create_staking(0, address, address)

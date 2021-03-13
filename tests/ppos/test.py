@@ -1,3 +1,6 @@
+import json
+
+import rlp
 from alaya import HTTPProvider, Web3, WebsocketProvider
 # from client_sdk_python import HTTPProvider, Web3, WebsocketProvider, Account
 from client_sdk_python.eth import Eth
@@ -10,6 +13,7 @@ from client_sdk_python.ppos import Ppos
 from hexbytes import HexBytes
 
 # from conf.settings import TMP_ADDRES, ACCOUNT_FILE, BASE_DIR
+from common.key import mock_duplicate_sign
 
 accounts = {}
 
@@ -28,6 +32,7 @@ def createRestrictingPlan(url, account, plan, pri_key):
     ppos = Ppos(web3)
     result = ppos.createRestrictingPlan(account, plan, pri_key)
     print(result)
+
 
 #
 # def createstaking(url, typ, pri_key, amount, reward_per=1000):
@@ -235,23 +240,33 @@ def submitVersion(url, nodeid, pip_id, new_version, rounds, pri_key):
     resutl = pip.submitVersion(nodeid, pip_id, new_version, rounds, pri_key)
     print(resutl)
 
-def fff(url):
-    web3 = connect_web3(url)
-    platon = Eth(web3)
-    # print(platon.g)
-    a = Web3.fromWei(6657754010695187165780, 'ether')
-    print(a)
-    # result = platon.getTransactionCount(from_address)
-    # result = platon.getBalance(from_address)
-    # print(platon.blockNumber)
-    # print(result)
+
+def fff(data):
+    result = rlp.encode(data)
+    bytes(result).hex()
+    print(bytes(result).hex())
+
+
+def ttt(data):
+    # data = transaction_receipt['logs'][0]['data']
+    if data[:2] == '0x':
+        data = data[2:]
+    data_bytes = rlp.decode(bytes.fromhex(data))
+    print(data_bytes)
+    event_data = bytes.decode(data_bytes)
+    print(event_data)
+    # event_data = json.loads(event_data)
+    # print(event_data)
+
+def duplicate_sign():
+    mock_duplicate_sign()
 
 
 if __name__ == '__main__':
     # url = 'http://192.168.10.224:6790'
     # url = 'http://192.168.9.221:6789'
     # url = 'http://192.168.120.141:6789'
-    url = 'http://10.1.1.51:6789'
+    # url = 'http://10.1.1.51:6789'
     # url = 'http://192.168.120.121:6789'
     # url = 'http:// 47.241.4.217:6789'
     # url = 'http://154.85.35.163:80'
@@ -339,10 +354,10 @@ if __name__ == '__main__':
     # time.sleep(2)
     # get_RestrictingPlan(url, account)
     # fff(url)
-    sendTransaction(url, account1, pri_key1, account, Web3.toWei(500, 'ether'), 100)
-    web3 = connect_web3(url)
-    ppos = Ppos(web3)
-    platon = Eth(web3)
+    # sendTransaction(url, account1, pri_key1, account, Web3.toWei(500, 'ether'), 100)
+    # web3 = connect_web3(url)
+    # ppos = Ppos(web3)
+    # platon = Eth(web3)
     # print(web3.is)
     # print(platon.blockNumber)
     # # print(platon.gasPrice)
@@ -362,8 +377,8 @@ if __name__ == '__main__':
     #         x = amount - tmp_amount
     #         tmp_amount = amount
     #         print("锁仓合约余额差：", x)
-    amount = platon.getBalance(account)
-    print(account, amount)
+    # amount = platon.getBalance(account)
+    # print(account, amount)
     # amount = platon.getBalance(ppos.restrictingAddress)
     # print(ppos.restrictingAddress, amount)
     # amount = platon.getBalance(web3.stakingAddress)
@@ -462,7 +477,7 @@ if __name__ == '__main__':
     #     balance = restricting_info['balance']
     #     if pledge > balance:
     #         print(i, balance, debt, pledge, pledge - balance)
-            # fix_account.append(i)
+    # fix_account.append(i)
 
     # print(fix_account)
     # staking_address_list = []
@@ -477,4 +492,5 @@ if __name__ == '__main__':
     #             print(j)
 
     # print(fix_account)
-
+    # fff('Liu Xing is the richest')
+    ttt('0x974c69752058696e67206973207468652072696368657374')

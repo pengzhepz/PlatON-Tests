@@ -145,11 +145,6 @@ def test_PP_SU_021(new_genesis_env, client_consensus):
 @allure.title('Submit version proposal function verification')
 def test_VP_VE_001_to_VP_VE_005(no_vp_proposal):
     pip_tmp = no_vp_proposal
-    result = pip_tmp.submitVersion(pip_tmp.node.node_id, str(time.time()), pip_tmp.cfg.version1, 1,
-                                       pip_tmp.node.staking_address, transaction_cfg=pip_tmp.cfg.transaction_cfg)
-    log.info('Submit version proposal result : {}'.format(result))
-    assert_code(result, 302011)
-
     result = pip_tmp.submitVersion(pip_tmp.node.node_id, str(time.time()), pip_tmp.cfg.version2, 1,
                                        pip_tmp.node.staking_address, transaction_cfg=pip_tmp.cfg.transaction_cfg)
     log.info('Submit version proposal result : {}'.format(result))
@@ -1040,7 +1035,7 @@ class TestPP:
         assert_code(result, 3)
 
         result = pip.submitParam(pip.node.node_id, str(time.time()), 'staking', 'maxValidators',
-                                     '502', pip.node.staking_address, transaction_cfg=pip.cfg.transaction_cfg)
+                                     '10001', pip.node.staking_address, transaction_cfg=pip.cfg.transaction_cfg)
         log.info('Submit param proposal result : {}'.format(result))
         assert_code(result, 3)
 
@@ -1050,8 +1045,8 @@ class TestPP:
         log.info('Submit param proposal result : {}'.format(result))
         assert_code(result, 302034)
 
-        if int(get_governable_parameter_value(client, 'maxValidators')) != 4:
-            result = pip.submitParam(pip.node.node_id, str(time.time()), 'staking', 'maxValidators', '4',
+        if int(get_governable_parameter_value(client, 'maxValidators')) != 10000:
+            result = pip.submitParam(pip.node.node_id, str(time.time()), 'staking', 'maxValidators', '10000',
                                          pip.node.staking_address, transaction_cfg=pip.cfg.transaction_cfg)
             log.info('Submit param proposal result : {}'.format(result))
             assert_code(result, 0)

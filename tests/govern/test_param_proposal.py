@@ -134,7 +134,7 @@ class TestParam:
         assert_code(result, 304014)
 
     @pytest.mark.P0
-    @pytest.mark.parametrize('value, code', [(str(500*10**18), 302034), (100*10**18, 3), (str(99*10**18), 3), (str(10000001*10**18), 3)])
+    @pytest.mark.parametrize('value, code', [(str(500*10**18), 302034), (100*10**18, 3), (str(99*10**18), 3), (str(10000001*10**18), 3), (str(100001*10**18), 0), (str(80*10**18), 3), (str(81*10**18), 3)])
     def test_invalid_param_of_minimumRelease(self, noproposal_pips, value, code):
         pips = noproposal_pips
         pip = pips[0]
