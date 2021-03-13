@@ -418,8 +418,9 @@ def test_LS_RV_005(client_new_node):
     time.sleep(2)
     # assert restricting plan
     assert restricting_info['Ret']['balance'] == louk_up_balace * 2
-    assert restricting_info['Ret']['plans'][0]['blockNumber'] == client_new_node.economic.get_switchpoint_by_settlement( node)
-    assert restricting_info['Ret']['plans'][0][ 'amount'] == louk_up_balace * 2
+    assert restricting_info['Ret']['plans'][0]['blockNumber'] == client_new_node.economic.get_switchpoint_by_settlement(
+        node)
+    assert restricting_info['Ret']['plans'][0]['amount'] == louk_up_balace * 2
 
 
 def create_lock_release_amount(client, first_amount, second_amount):
@@ -656,7 +657,7 @@ def test_LS_RV_012(new_genesis_env, clients_new_node):
     # Change configuration parameters
     genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
     genesis.economicModel.slashing.slashBlocksReward = 60
-    new_file = new_genesis_env.cfg.env_tmp + "/genesis_0.14.0.json"
+    new_file = new_genesis_env.cfg.env_tmp + "/genesis_1.0.0.json"
     genesis.to_file(new_file)
     new_genesis_env.deploy_all(new_file)
 
@@ -2398,6 +2399,7 @@ def test_LS_UPV_020(client_new_node, amount):
     else:
         assert_code(result, 0)
 
+
 @pytest.mark.P2
 def test_LS_UPV_021(new_genesis_env, clients_noconsensus, client_consensus):
     """
@@ -2460,18 +2462,18 @@ def test_LS_UPV_021(new_genesis_env, clients_noconsensus, client_consensus):
     clinet.node.stop()
     clinet1.economic.wait_settlement(clinet1.node, 4)
     release_amonut = int(Decimal(str(amount1)) * Decimal(str(6)))
-    print(release_amonut)  #49980,000000000000000000
+    print(release_amonut)  # 49980,000000000000000000
     restricting_info2 = clinet1.node.ppos.getRestrictingInfo(address2)['Ret']
     print(restricting_info2)
     balance1 = clinet1.node.eth.getBalance(address2)
-    print('balance', balance1)  #49980,999993475600000000  锁仓释放+原有的-手续费
+    print('balance', balance1)  # 49980,999993475600000000  锁仓释放+原有的-手续费
     punishment_amonut = int(Decimal(str(block_reward)) * Decimal(str(1)))
-    print('punishment_amonut', punishment_amonut)  #43819,475601604278074866
+    print('punishment_amonut', punishment_amonut)  # 43819,475601604278074866
     assert restricting_info1['balance'] - release_amonut - punishment_amonut == restricting_info2['balance']
     assert balance + release_amonut == balance1
     clinet1.economic.wait_settlement(clinet1.node)
     balance2 = clinet1.node.eth.getBalance(address2)
-    print('balance', balance2)  #56181,524391871321925134
+    print('balance', balance2)  # 56181,524391871321925134
     restricting_info3 = clinet1.node.ppos.getRestrictingInfo(address2)["Ret"]
     print(restricting_info3)
     assert restricting_info3["balance"] == 0
@@ -2492,7 +2494,6 @@ def test_LS_UPV_021(new_genesis_env, clients_noconsensus, client_consensus):
     assert balance == balance3
     balance_restrictingAddress2 = node.eth.getBalance(node.ppos.restrictingAddress)
     assert balance_restrictingAddress2 == balance_restrictingAddress
-
 
 
 @pytest.mark.P2
@@ -2565,6 +2566,7 @@ def test_LS_UPV_022(client_new_node, client_consensus):
         # result = clinet.delegate.withdrew_delegate(staking_blocknum, address2, amount=amount)
         # assert_code(result, 0)
         # assert restricting_info1['balance'] - int(Decimal(str(amount1)) * Decimal(str(3))) == restricting_info2['balance']
+
 
 @pytest.mark.P2
 def test_LS_UPV_023(client_new_node):
@@ -2642,8 +2644,6 @@ def test_LS_UPV_023(client_new_node):
             print(node.ppos.restrictingAddress, node.eth.getBalance(node.ppos.restrictingAddress))
 
 
-
-@pytest.mark.P2
 def test_LS_UPV_024(client_new_node, client_consensus):
     """
     多个释放期，全部释放之后

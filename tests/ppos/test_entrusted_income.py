@@ -119,13 +119,13 @@ def test_EI_BC_001_005_009_015_051_057(client_new_node):
     client = client_new_node
     economic = client.economic
     node = client.node
-    delegate_address, _ = economic.account.generate_account(node.web3, von_amount(economic.delegate_limit, 10))
+    delegate_address, _ = economic.account.generate_account(node.web3, economic.delegate_limit * 10)
     log.info("Create delegate account：{}".format(delegate_address))
     create_staking_node(client)
     log.info("Create pledge node id :{}".format(node.node_id))
 
     # initiate a commission
-    result = client.delegate.delegate(0, delegate_address, amount=von_amount(economic.delegate_limit, 5))
+    result = client.delegate.delegate(0, delegate_address, amount=economic.delegate_limit * 5)
     assert_code(result, 0)
     delegate_epoch, cumulative_income = get_dividend_information(client, node.node_id, delegate_address)
     assert delegate_epoch == 1, "ErrMsg: Last time delegate epoch {}".format(delegate_epoch)
