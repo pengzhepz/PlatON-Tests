@@ -452,9 +452,9 @@ def test_more_zero_out_block_N(new_genesis_env, clients_noconsensus):
     economic = first_client.economic
     node = first_client.node
     log.info("Start creating a pledge account address")
-    address, _ = economic.account.generate_account(node.web3, von_amount(economic.create_staking_limit, 3))
+    address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 3)
     log.info("Start applying for a pledge node")
-    result = first_client.staking.create_staking(0, address, address, amount=von_amount(economic.create_staking_limit, 2))
+    result = first_client.staking.create_staking(0, address, address, amount=economic.create_staking_limit * 2)
     assert_code(result, 0)
     log.info("Pledge completed, waiting for the end of the current billing cycle")
     economic.wait_settlement(node)
@@ -503,7 +503,7 @@ def test_more_zero_out_block_N(new_genesis_env, clients_noconsensus):
     assert result is False, "error: Node not kicked out VerifierList"
     result = check_node_in_list(first_client.node.node_id, second_client.ppos.getValidatorList)
     assert result is False, "error: Node not kicked out ValidatorList"
-    log.info("candidate info".format(second_client.node.ppos.getCandidateInfo(first_client.node.node_id)))
+    log.info("candidate info {}".format(second_client.node.ppos.getCandidateInfo(first_client.node.node_id)))
     second_client.economic.wait_settlement(second_client.node)
     node_status = second_client.node.ppos.getCandidateInfo(first_client.node.node_id)['Ret']['Status']
     assert node_status == 0
@@ -511,7 +511,7 @@ def test_more_zero_out_block_N(new_genesis_env, clients_noconsensus):
     assert result, "error: Node not kicked out CandidateList"
     result = check_node_in_list(first_client.node.node_id, second_client.ppos.getVerifierList)
     assert result, "error: Node not kicked out VerifierList"
-    result = node.ppos.getCandidateInfo(node.node_id)
+    result = second_client.node.ppos.getCandidateInfo(node.node_id)
     assert_code(result, 0)
 
 
@@ -1153,7 +1153,7 @@ def test_VP_GPFV_016(new_genesis_env, clients_noconsensus):
     """
     # Change configuration parameters
     genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
-    genesis.economicModel.slashing.slashBlocksReward = 3
+    genesis.economicModel.slashing.slashBlocksReward = 5
     new_file = new_genesis_env.cfg.env_tmp + "/genesis_1.0.0.json"
     genesis.to_file(new_file)
     new_genesis_env.deploy_all(new_file)
@@ -1165,7 +1165,7 @@ def test_VP_GPFV_016(new_genesis_env, clients_noconsensus):
     economic = client1.economic
     node = client1.node
     # create account
-    address, _ = economic.account.generate_account(node.web3, von_amount(economic.create_staking_limit, 4))
+    address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 4)
     # create Restricting Plan
     amount = economic.create_staking_limit
     plan = [{'Epoch': 1, 'Amount': amount}]
@@ -1174,7 +1174,7 @@ def test_VP_GPFV_016(new_genesis_env, clients_noconsensus):
     # Get governable parameters
     slash_blocks = get_governable_parameter_value(client1, 'slashBlocksReward')
     # create staking
-    staking_amount = von_amount(economic.create_staking_limit, 2)
+    staking_amount = economic.create_staking_limit * 2
     result = client1.staking.create_staking(0, address, address, amount=staking_amount)
     assert_code(result, 0)
     # increase staking
