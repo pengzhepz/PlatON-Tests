@@ -1,20 +1,13 @@
-from decimal import Decimal
-
+import time
 import allure
 import pytest
-import time
-
-from dacite import from_dict
-
-from common.log import log
 from client_sdk_python import Web3
-
-from tests.lib import Genesis, EconomicConfig
-from tests.lib.utils import get_pledge_list, get_block_count_number, assert_code, get_governable_parameter_value, \
-    check_node_in_list
+from dacite import from_dict
+from tests.ppos.conftest import calculate
 from common.key import generate_key
-from tests.ppos.test_punishment_related import verification_duplicate_sign
-from tests.ppos_2.conftest import calculate
+from common.log import log
+from tests.lib import Genesis
+from tests.lib.utils import get_pledge_list, get_block_count_number, assert_code
 
 
 @pytest.fixture()

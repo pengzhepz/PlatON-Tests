@@ -1,10 +1,10 @@
 import time
-from typing import List
 import pytest
+from typing import List
 from common.log import log
 from tests.lib import check_node_in_list, upload_platon, wait_block_number, assert_code
 from tests.lib.genesis import to_genesis
-from tests.ppos.test_general_punishment import verify_low_block_rate_penalty, get_out_block_penalty_parameters
+from tests.ppos.slashing.test_general_punishment import verify_low_block_rate_penalty, get_out_block_penalty_parameters
 from tests.lib.client import Client, get_client_by_nodeid
 from tests.lib.config import PipConfig
 

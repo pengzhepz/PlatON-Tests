@@ -1,10 +1,9 @@
 import time
-from typing import List
 import pytest
+from typing import List
+from tests.ppos.slashing.test_general_punishment import verify_low_block_rate_penalty, get_out_block_penalty_parameters
 from common.log import log
-from tests.lib import check_node_in_list, upload_platon, wait_block_number, assert_code
-from tests.lib.genesis import to_genesis
-from tests.ppos.test_general_punishment import verify_low_block_rate_penalty, get_out_block_penalty_parameters
+from tests.lib import check_node_in_list, wait_block_number, assert_code
 from tests.lib.client import Client
 from tests.lib.config import PipConfig
 
@@ -56,6 +55,7 @@ def get_proposal_id(pip, proposal_type):
     log.info(f"proposal id is {pip_info['ProposalID']}")
     return pip_info['ProposalID']
 
+
 def vote(pip, pip_id, vote_option=PipConfig.vote_option_yeas):
     result = pip.vote(pip.node.node_id, pip_id, vote_option,
                       pip.node.staking_address, transaction_cfg=pip.cfg.transaction_cfg)
@@ -105,10 +105,9 @@ def make_0mb_slash(slash_client, check_client):
     return start_num, end_num
 
 
-
 class TestParam:
     @pytest.mark.P0
-    @pytest.mark.parametrize('value, code', [(501*10**18, 0), (100000*10**18, 0)])
+    @pytest.mark.parametrize('value, code', [(501 * 10 ** 18, 0), (100000 * 10 ** 18, 0)])
     def test_param_of_minimumRelease(self, noproposal_pips, client_consensus, value, code):
         client = client_consensus
         pips = noproposal_pips
@@ -124,17 +123,19 @@ class TestParam:
         assert param_value.get('Code') == code
         assert param_value.get('Ret') == str(value)
         # 验证实际锁仓生效
-        from_address, _ = client.economic.account.generate_account(client.node.web3, value + 1*10**18)
+        from_address, _ = client.economic.account.generate_account(client.node.web3, value + 1 * 10 ** 18)
         to_address = 'atx1c85wwztzpjefcvaev6wxpsrqp2gpfjyp6lmfqd'
         plan = [{'Epoch': 1, 'Amount': value}]
         result = client.restricting.createRestrictingPlan(to_address, plan, from_address)
         assert_code(result, 0)
-        plan = [{'Epoch': 1, 'Amount': value-1}]
+        plan = [{'Epoch': 1, 'Amount': value - 1}]
         result = client.restricting.createRestrictingPlan(to_address, plan, from_address)
         assert_code(result, 304014)
 
     @pytest.mark.P0
-    @pytest.mark.parametrize('value, code', [(str(500*10**18), 302034), (100*10**18, 3), (str(99*10**18), 3), (str(10000001*10**18), 3), (str(100001*10**18), 0), (str(80*10**18), 3), (str(81*10**18), 3)])
+    @pytest.mark.parametrize('value, code',
+                             [(str(500 * 10 ** 18), 302034), (100 * 10 ** 18, 3), (str(99 * 10 ** 18), 3), (str(10000001 * 10 ** 18), 3),
+                              (str(100001 * 10 ** 18), 0), (str(80 * 10 ** 18), 3), (str(81 * 10 ** 18), 3)])
     def test_invalid_param_of_minimumRelease(self, noproposal_pips, value, code):
         pips = noproposal_pips
         pip = pips[0]
@@ -147,7 +148,7 @@ class TestParam:
         pips = noproposal_pips
         pip = pips[0]
         result = pip.node.debug.economicConfig()
-        assert result.get('restricting').get('minimumRelease') == str(80*10**18)
+        assert result.get('restricting').get('minimumRelease') == str(80 * 10 ** 18)
 
     def test_govern_minimumRelease_after_restricted(self, client_consensus, noproposal_pips):
         client = client_consensus
@@ -156,7 +157,8 @@ class TestParam:
         # 提案前创建锁仓
         from_address, _ = client.economic.account.generate_account(client.node.web3, pip.economic.create_staking_limit)
         to_address = 'atx1c85wwztzpjefcvaev6wxpsrqp2gpfjyp6lmfqd'
-        plan = [{'Epoch': 1, 'Amount': pip.economic.delegate_limit * 80}, {'Epoch': 2, 'Amount': pip.economic.delegate_limit * 160}, {'Epoch': 3, 'Amount': pip.economic.delegate_limit * 240}]
+        plan = [{'Epoch': 1, 'Amount': pip.economic.delegate_limit * 80}, {'Epoch': 2, 'Amount': pip.economic.delegate_limit * 160},
+                {'Epoch': 3, 'Amount': pip.economic.delegate_limit * 240}]
         result = client.restricting.createRestrictingPlan(to_address, plan, from_address)
         assert_code(result, 0)
         # 提案增加minimumRelease
@@ -164,9 +166,9 @@ class TestParam:
         assert_code(result, 0)
         pip_id = get_proposal_id(pip, pip.cfg.param_proposal)
         # 提案后创建锁仓
-        from_address, _ = client.economic.account.generate_account(client.node.web3, 241*10**18)
+        from_address, _ = client.economic.account.generate_account(client.node.web3, 241 * 10 ** 18)
         to_address = 'atx1gp3meyfrt7lp8tqtf7383n98ua3y7cqkxfphqr'
-        plan = [{'Epoch': 1, 'Amount': 80*10**18}, {'Epoch': 2, 'Amount': 160*10**18}]
+        plan = [{'Epoch': 1, 'Amount': 80 * 10 ** 18}, {'Epoch': 2, 'Amount': 160 * 10 ** 18}]
         result = client.restricting.createRestrictingPlan(to_address, plan, from_address)
         assert_code(result, 0)
         # 投票并等待提案生效
@@ -174,8 +176,8 @@ class TestParam:
         wait_proposal_active(pip, pip_id)
         param_value = pip.pip.getGovernParamValue('restricting', 'minimumRelease')
         assert param_value.get('Code') == 0
-        assert param_value.get('Ret') == str(500*10**18)
+        assert param_value.get('Ret') == str(500 * 10 ** 18)
         # 验证锁仓释放金额是否正确
         pip.economic.wait_settlement(pip.node, 3)
-        assert pip.node.eth.getBalance('atx1c85wwztzpjefcvaev6wxpsrqp2gpfjyp6lmfqd') == 480*10**18
-        assert pip.node.eth.getBalance('atx1gp3meyfrt7lp8tqtf7383n98ua3y7cqkxfphqr') == 240*10**18
+        assert pip.node.eth.getBalance('atx1c85wwztzpjefcvaev6wxpsrqp2gpfjyp6lmfqd') == 480 * 10 ** 18
+        assert pip.node.eth.getBalance('atx1gp3meyfrt7lp8tqtf7383n98ua3y7cqkxfphqr') == 240 * 10 ** 18

@@ -247,7 +247,7 @@ def param_governance_verify(client, module, name, newvalue, effectiveflag=True):
 
 def param_governance_verify_before_endblock(client, module, name, newvalue, effectiveflag=True):
     """
-    effectiveflag indicates whether it takes effect
+    effective flag indicates whether it takes effect
     :param client_obj:
     :param module:
     :param name:

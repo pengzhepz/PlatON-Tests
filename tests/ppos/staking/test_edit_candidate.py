@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from tests.lib.utils import *
 import pytest
 import allure

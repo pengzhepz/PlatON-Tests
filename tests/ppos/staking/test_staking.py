@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
+import allure
+import pytest
 from dacite import from_dict
-
 from tests.lib import Genesis
 from tests.lib.utils import *
-import pytest
 from tests.lib.config import EconomicConfig
-import allure
-
-from tests.ppos.test_general_punishment import penalty_proportion_and_income
-from tests.ppos.test_punishment_related import verification_duplicate_sign
-from tests.ppos_2.conftest import calculate
+from tests.ppos.slashing.test_punishment_related import verification_duplicate_sign
+from tests.ppos.conftest import calculate
 
 
 @pytest.fixture()

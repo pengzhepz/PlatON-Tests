@@ -35,8 +35,8 @@ def account_env(global_test_env) -> (Node, AccountEnv):
     remote_account_file = node.remote_keystore_dir + "/UTC--2019-08-23T12-33-18.192329788Z--2e95e3ce0a54951eb9a99152a6d5827872dfb4fd"
     # node.upload_file("./deploy/keystore/UTC--2019-10-15T10-27-31.520865283Z--c198603d3793c11e5362c8564a65d3880bae341b", remote_account_file)
 
-    remote_key_file = node.remote_keystore_dir + "/key.pri"
-    node.upload_file("./deploy/key.pri", remote_key_file)
+    remote_key_file = node.remote_keystore_dir + "/key1.pri"
+    node.upload_file("./deploy/key1.pri", remote_key_file)
 
     account_env = AccountEnv()
     account_env.remote_pwd_file = remote_pwd_file
@@ -178,8 +178,8 @@ def test_CMD_007(account_env):
     return_list = run_ssh_cmd(node.ssh, "{} account list --datadir {}".format(node.remote_bin_file, node.remote_data_dir))
     old_counts = len(return_list) - 1
 
-    remote_key_file = node.remote_keystore_dir + "/key.pri"
-    node.upload_file("./deploy/key.pri", remote_key_file)
+    remote_key_file = node.remote_keystore_dir + "/key1.pri"
+    node.upload_file("./deploy/key1.pri", remote_key_file)
 
     run_ssh_cmd(node.ssh, "{} account import {} --datadir {}".format(node.remote_bin_file, remote_key_file, node.remote_data_dir), "88888888", "88888888")
     time.sleep(2)
@@ -199,8 +199,8 @@ def test_CMD_010_CMD_034(account_env):
     return_list = run_ssh_cmd(node.ssh, "{} account list --keystore {}".format(node.remote_bin_file, node.remote_keystore_dir))
     old_counts = len(return_list) - 1
 
-    remote_key_file = node.remote_keystore_dir + "/key.pri_2"
-    node.upload_file("./deploy/key.pri_2", remote_key_file)
+    remote_key_file = node.remote_keystore_dir + "/key2.pri"
+    node.upload_file("./deploy/file/key2.pri", remote_key_file)
 
     run_ssh_cmd(node.ssh, "{} account import {} --keystore {}".format(node.remote_bin_file, remote_key_file, node.remote_keystore_dir), "88888888", "88888888")
     time.sleep(0.2)
@@ -220,8 +220,8 @@ def test_CMD_009(account_env):
     return_list = run_ssh_cmd(node.ssh, "{} account list --datadir {}".format(node.remote_bin_file, node.remote_data_dir))
     old_counts = len(return_list) - 1
 
-    remote_key_file = node.remote_keystore_dir + "/key.pri_3"
-    node.upload_file("./deploy/key.pri_3", remote_key_file)
+    remote_key_file = node.remote_keystore_dir + "/key3.pri"
+    node.upload_file("./deploy/file/key3.pri", remote_key_file)
 
     run_ssh_cmd(node.ssh, "{} account import {} --datadir {} --password {}".format(node.remote_bin_file, remote_key_file, node.remote_data_dir, env.remote_pwd_file))
     time.sleep(0.2)
@@ -241,8 +241,8 @@ def test_CMD_008(account_env):
     return_list = run_ssh_cmd(node.ssh, "{} account list --keystore {}".format(node.remote_bin_file, node.remote_keystore_dir))
     old_counts = len(return_list) - 1
 
-    remote_key_file = node.remote_keystore_dir + "/key.pri_4"
-    node.upload_file("./deploy/key.pri_4", remote_key_file)
+    remote_key_file = node.remote_keystore_dir + "/key4.pri"
+    node.upload_file("./deploy/file.key4.pri", remote_key_file)
 
     run_ssh_cmd(node.ssh, "{} account import {} --keystore {}  --password {}".format(node.remote_bin_file, remote_key_file, node.remote_keystore_dir, env.remote_pwd_file))
     time.sleep(0.2)
