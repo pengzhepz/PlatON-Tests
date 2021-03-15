@@ -904,7 +904,7 @@ class TestwithdrawDelegateReward():
         staking_and_delegate(client1, address1)
         staking_num0 = client0.staking.get_stakingblocknum()
         staking_num1 = client1.staking.get_stakingblocknum()
-        result = client1.delegate.delegate(0, address1, node_id=client0.node.node_id)
+        result = client1.delegate.delegate(0, address1, node_id=client0.node.node_id, amount=client1.economic.delegate_limit * 2)
         assert_code(result, 0)
         client0.economic.wait_settlement(client0.node, 1)
         rewards0 = client0.delegate.get_delegate_reward_by_nodeid(address0)
@@ -1186,7 +1186,7 @@ class TestwithdrawDelegateReward():
         staking_and_delegate(client1, address1)
         staking_and_delegate(client2, address1)
         stakingnum1 = client1.staking.get_stakingblocknum(client1.node)
-        result = client1.delegate.delegate(0, address2)
+        result = client1.delegate.delegate(0, address2, amount=client1.economic.delegate_limit * 2)
         assert_code(result, 0)
         client1.economic.wait_settlement(client1.node)
         verifier_list = get_pledge_list(client1.ppos.getVerifierList)
@@ -1706,8 +1706,8 @@ class TestGas:
         log.info('After withdraw address {} balance {}'.format(address0, balance_after_withdraw0))
         balance_after_withdraw1 = client0.node.eth.getBalance(address1)
         log.info('After withdraw address {} balance {}'.format(address1, balance_after_withdraw1))
-        assert balance_before_withdraw0 - gas0 + int(delegate_amount / 2) == balance_after_withdraw0
-        assert balance_before_withdraw1 - gas1 + delegate_amount + rewards == balance_after_withdraw1
+        assert balance_before_withdraw0 - gas0 + client1.economic.delegate_limit == balance_after_withdraw0
+        assert balance_before_withdraw1 - gas1 + client1.economic.delegate_limit * 2 + rewards == balance_after_withdraw1
 
 
 class TestNet:

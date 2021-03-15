@@ -418,8 +418,9 @@ def test_LS_RV_005(client_new_node):
     time.sleep(2)
     # assert restricting plan
     assert restricting_info['Ret']['balance'] == louk_up_balace * 2
-    assert restricting_info['Ret']['plans'][0]['blockNumber'] == client_new_node.economic.get_switchpoint_by_settlement( node)
-    assert restricting_info['Ret']['plans'][0][ 'amount'] == louk_up_balace * 2
+    assert restricting_info['Ret']['plans'][0]['blockNumber'] == client_new_node.economic.get_switchpoint_by_settlement(
+        node)
+    assert restricting_info['Ret']['plans'][0]['amount'] == louk_up_balace * 2
 
 
 def create_lock_release_amount(client, first_amount, second_amount):
@@ -2398,7 +2399,7 @@ def test_LS_UPV_020(client_new_node, amount):
     else:
         assert_code(result, 0)
 
-@pytest.mark.P1
+
 def test_LS_UPV_021(new_genesis_env, clients_noconsensus, client_consensus):
     """
     多个锁仓释放期零出块处罚后
@@ -2474,8 +2475,6 @@ def test_LS_UPV_021(new_genesis_env, clients_noconsensus, client_consensus):
     assert balance_restrictingAddress2 == balance_restrictingAddress
 
 
-
-@pytest.mark.P1
 def test_LS_UPV_022(client_new_node, client_consensus):
     """
     多个锁仓释放期质押主动退回质押
@@ -2529,7 +2528,7 @@ def test_LS_UPV_022(client_new_node, client_consensus):
         balance_benefit = node.eth.getBalance(benefit_address, economic.settlement_size * i)
         assert balance_staking - balance_staking1 < node.web3.toWei(0.01, 'ether')
         clinet1.economic.wait_settlement(clinet1.node)
-    #Check the income to the account
+    # Check the income to the account
     assert balance_benefit == block_reward * 40 + staking_reward
     list = clinet1.node.ppos.getRestrictingInfo(staking_address)['Ret']['plans']
 
@@ -2542,12 +2541,12 @@ def test_LS_UPV_022(client_new_node, client_consensus):
         clinet.economic.wait_settlement(node)
         time.sleep(1)
         restricting_info2 = clinet.node.ppos.getRestrictingInfo(staking_address)['Ret']
-        #Verify each cycle release
+        # Verify each cycle release
         assert restricting_info1["balance"] - restricting_info2["balance"] == amount1
     assert restricting_info2["balance"] == amount2
     clinet.economic.wait_settlement(node)
     balance_restrictingAddress2 = node.eth.getBalance(node.ppos.restrictingAddress)
-    #Verify the amount of lockup contract
+    # Verify the amount of lockup contract
     assert balance_restrictingAddress2 == balance_restrictingAddress
     balance_staking3 = node.eth.getBalance(staking_address)
     assert balance_staking3 == balance_staking1 + economic.create_staking_limit
@@ -2555,7 +2554,6 @@ def test_LS_UPV_022(client_new_node, client_consensus):
     print(restricting_info3)
 
 
-@pytest.mark.P2
 def test_LS_UPV_023(client_new_node):
     """
     锁仓多个释放期，委托赎回
@@ -2602,23 +2600,23 @@ def test_LS_UPV_023(client_new_node):
             economic.wait_settlement(node)
             restricting_info2 = clinet.node.ppos.getRestrictingInfo(staking_address)['Ret']
             staking_blocknum = node.ppos.getCandidateInfo(node.node_id)['Ret']['StakingBlockNum']
-            result = clinet.delegate.withdrew_delegate(staking_blocknum, staking_address, amount=restricting_info2['Pledge'])
+            result = clinet.delegate.withdrew_delegate(staking_blocknum, staking_address,
+                                                       amount=restricting_info2['Pledge'])
             assert_code(result, 0)
             balance_withdrew = node.eth.getBalance(staking_address)
-            #Verify each cycle release
+            # Verify each cycle release
             assert amount1 * (i + 1) + node.web3.toWei(1, 'ether') - balance_withdrew < node.web3.toWei(0.01, 'ether')
 
         else:
             assert_code(restricting_info, 304005)
             balance = node.eth.getBalance(staking_address)
-            assert economic.create_staking_limit + node.web3.toWei(1, 'ether') - balance < node.web3.toWei(0.01, 'ether')
+            assert economic.create_staking_limit + node.web3.toWei(1, 'ether') - balance < node.web3.toWei(0.01,
+                                                                                                           'ether')
             balance_restrictingAddress1 = node.eth.getBalance(node.ppos.restrictingAddress)
-            #Verify the amount of lockup contract
+            # Verify the amount of lockup contract
             assert balance_restrictingAddress == balance_restrictingAddress1
 
 
-
-@pytest.mark.P1
 def test_LS_UPV_024(client_new_node, client_consensus):
     """
     多个释放期，全部释放之后
@@ -2670,8 +2668,6 @@ def test_LS_UPV_024(client_new_node, client_consensus):
     assert restricting_info_end["debt"] == economic.create_staking_limit
 
 
-
-@pytest.mark.P2
 def test_LS_UPV_025(client_new_node, client_consensus):
     """
     多个锁仓释放，增持主动退回
@@ -2744,31 +2740,3 @@ def test_LS_UPV_025(client_new_node, client_consensus):
         # assert_code(result, 0)
         # assert restricting_info1['balance'] - int(Decimal(str(amount1)) * Decimal(str(3))) == restricting_info2['balance']
 
-
-@pytest.mark.P2
-def test_LS_UPV_026(client_new_node):
-    """
-    正常创建锁仓计划
-    :param client_new_node:
-    :return:
-    """
-    client = client_new_node
-    economic = client.economic
-    node = client.node
-    node.ppos.need_quota_gas = False
-    address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
-    benifit_address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
-    print(node.eth.getBalance(address))
-    epoch = 1
-    # amount = economic.delegate_limit * 100
-    # print(amount)
-    print(68632 * node.eth.gasPrice)
-    # plan = [{'Epoch': epoch, 'Amount': amount}]
-    print(80 * 10 ** 18 + 80 * 10 ** 18)
-    plan = [{'Epoch': 1, 'Amount': 100 * 10 ** 18}, {'Epoch': 2, 'Amount': 100 * 10 ** 18}]
-    result = client.restricting.createRestrictingPlan(address, plan, address)
-    time.sleep(2)
-    assert_code(result, 0)
-    restricting_info = client_new_node.ppos.getRestrictingInfo(address)
-    print(restricting_info)
-    print(node.eth.getBalance(address))
