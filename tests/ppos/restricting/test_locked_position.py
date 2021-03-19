@@ -418,8 +418,9 @@ def test_LS_RV_005(client_new_node):
     time.sleep(2)
     # assert restricting plan
     assert restricting_info['Ret']['balance'] == louk_up_balace * 2
-    assert restricting_info['Ret']['plans'][0]['blockNumber'] == client_new_node.economic.get_switchpoint_by_settlement( node)
-    assert restricting_info['Ret']['plans'][0][ 'amount'] == louk_up_balace * 2
+    assert restricting_info['Ret']['plans'][0]['blockNumber'] == client_new_node.economic.get_switchpoint_by_settlement(
+        node)
+    assert restricting_info['Ret']['plans'][0]['amount'] == louk_up_balace * 2
 
 
 def create_lock_release_amount(client, first_amount, second_amount):
@@ -2398,7 +2399,7 @@ def test_LS_UPV_020(client_new_node, amount):
     else:
         assert_code(result, 0)
 
-@pytest.mark.P1
+
 def test_LS_UPV_021(new_genesis_env, clients_noconsensus, client_consensus):
     """
     多个锁仓释放期零出块处罚后
@@ -2474,9 +2475,13 @@ def test_LS_UPV_021(new_genesis_env, clients_noconsensus, client_consensus):
     assert balance_restrictingAddress2 == balance_restrictingAddress
 
 
+<<<<<<< HEAD:tests/ppos/test_locked_position.py
 
 @pytest.mark.P1
 def test_LS_UPV_022(client_new_node):
+=======
+def test_LS_UPV_022(client_new_node, client_consensus):
+>>>>>>> 72e9dacf4b230936f9593b2aadbe09ee79c1e7f2:tests/ppos/restricting/test_locked_position.py
     """
     多个锁仓释放期质押主动退回质押
     :param client_new_node:
@@ -2527,8 +2532,13 @@ def test_LS_UPV_022(client_new_node):
         balance_staking1 = node.eth.getBalance(staking_address)
         balance_benefit = node.eth.getBalance(benefit_address, economic.settlement_size * i)
         assert balance_staking - balance_staking1 < node.web3.toWei(0.01, 'ether')
+<<<<<<< HEAD:tests/ppos/test_locked_position.py
         economic.wait_settlement(node)
     #Check the income to the account
+=======
+        clinet1.economic.wait_settlement(clinet1.node)
+    # Check the income to the account
+>>>>>>> 72e9dacf4b230936f9593b2aadbe09ee79c1e7f2:tests/ppos/restricting/test_locked_position.py
     assert balance_benefit == block_reward * 40 + staking_reward
     list = node.ppos.getRestrictingInfo(staking_address)['Ret']['plans']
 
@@ -2541,12 +2551,12 @@ def test_LS_UPV_022(client_new_node):
         clinet.economic.wait_settlement(node)
         time.sleep(1)
         restricting_info2 = clinet.node.ppos.getRestrictingInfo(staking_address)['Ret']
-        #Verify each cycle release
+        # Verify each cycle release
         assert restricting_info1["balance"] - restricting_info2["balance"] == amount1
     assert restricting_info2["balance"] == amount2
     clinet.economic.wait_settlement(node)
     balance_restrictingAddress2 = node.eth.getBalance(node.ppos.restrictingAddress)
-    #Verify the amount of lockup contract
+    # Verify the amount of lockup contract
     assert balance_restrictingAddress2 == balance_restrictingAddress
     balance_staking3 = node.eth.getBalance(staking_address)
     assert balance_staking3 == balance_staking1 + economic.create_staking_limit
@@ -2554,7 +2564,6 @@ def test_LS_UPV_022(client_new_node):
     print(restricting_info3)
 
 
-@pytest.mark.P2
 def test_LS_UPV_023(client_new_node):
     """
     锁仓多个释放期，委托赎回
@@ -2601,24 +2610,30 @@ def test_LS_UPV_023(client_new_node):
             economic.wait_settlement(node)
             restricting_info2 = clinet.node.ppos.getRestrictingInfo(staking_address)['Ret']
             staking_blocknum = node.ppos.getCandidateInfo(node.node_id)['Ret']['StakingBlockNum']
-            result = clinet.delegate.withdrew_delegate(staking_blocknum, staking_address, amount=restricting_info2['Pledge'])
+            result = clinet.delegate.withdrew_delegate(staking_blocknum, staking_address,
+                                                       amount=restricting_info2['Pledge'])
             assert_code(result, 0)
             balance_withdrew = node.eth.getBalance(staking_address)
-            #Verify each cycle release
+            # Verify each cycle release
             assert amount1 * (i + 1) + node.web3.toWei(1, 'ether') - balance_withdrew < node.web3.toWei(0.01, 'ether')
 
         else:
             assert_code(restricting_info, 304005)
             balance = node.eth.getBalance(staking_address)
-            assert economic.create_staking_limit + node.web3.toWei(1, 'ether') - balance < node.web3.toWei(0.01, 'ether')
+            assert economic.create_staking_limit + node.web3.toWei(1, 'ether') - balance < node.web3.toWei(0.01,
+                                                                                                           'ether')
             balance_restrictingAddress1 = node.eth.getBalance(node.ppos.restrictingAddress)
-            #Verify the amount of lockup contract
+            # Verify the amount of lockup contract
             assert balance_restrictingAddress == balance_restrictingAddress1
 
 
+<<<<<<< HEAD:tests/ppos/test_locked_position.py
 
 @pytest.mark.P1
 def test_LS_UPV_024(client_new_node):
+=======
+def test_LS_UPV_024(client_new_node, client_consensus):
+>>>>>>> 72e9dacf4b230936f9593b2aadbe09ee79c1e7f2:tests/ppos/restricting/test_locked_position.py
     """
     多个释放期，全部释放之后
     :param client_new_node:
@@ -2669,9 +2684,13 @@ def test_LS_UPV_024(client_new_node):
     assert restricting_info_end["debt"] == economic.create_staking_limit
 
 
+<<<<<<< HEAD:tests/ppos/test_locked_position.py
 
 @pytest.mark.P2
 def test_LS_UPV_025(client_new_node):
+=======
+def test_LS_UPV_025(client_new_node, client_consensus):
+>>>>>>> 72e9dacf4b230936f9593b2aadbe09ee79c1e7f2:tests/ppos/restricting/test_locked_position.py
     """
     多个锁仓释放，增持主动退回
     :param client_new_node:
@@ -2728,6 +2747,7 @@ def test_LS_UPV_025(client_new_node):
     result = node.ppos.getRestrictingInfo(staking_address)
     assert_code(result, 304005)
 
+<<<<<<< HEAD:tests/ppos/test_locked_position.py
 
 
 
@@ -2752,3 +2772,5 @@ def test_LS_UPV_026(client_new_node):
     print(restricting_info)
     balance_after = node.eth.getBalance(address)
     assert balance - balance_after - amount * 2 < node.web3.toWei(0.01, 'ether')
+=======
+>>>>>>> 72e9dacf4b230936f9593b2aadbe09ee79c1e7f2:tests/ppos/restricting/test_locked_position.py

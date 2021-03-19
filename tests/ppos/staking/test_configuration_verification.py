@@ -1,8 +1,5 @@
-import time
-import json
-from copy import copy
-
 import pytest
+from copy import copy
 from dacite import from_dict
 from client_sdk_python import Web3
 from tests.lib.genesis import Genesis

@@ -196,9 +196,8 @@ def new_genesis_env(global_test_env):
     cfg = copy(global_test_env.cfg)
     yield global_test_env
     log.info("reset deploy.................")
-
-    # global_test_env.set_cfg(cfg)
-    global_test_env.deploy_all()
+    global_test_env.set_cfg(cfg)
+    # global_test_env.deploy_all()
 
 
 def param_governance_verify(client, module, name, newvalue, effectiveflag=True):
@@ -247,7 +246,7 @@ def param_governance_verify(client, module, name, newvalue, effectiveflag=True):
 
 def param_governance_verify_before_endblock(client, module, name, newvalue, effectiveflag=True):
     """
-    effectiveflag indicates whether it takes effect
+    effective flag indicates whether it takes effect
     :param client_obj:
     :param module:
     :param name:

@@ -2,7 +2,7 @@
 from tests.lib.utils import *
 import pytest
 from common.key import mock_duplicate_sign
-from tests.ppos_2.conftest import check_receipt
+from tests.ppos.conftest import check_receipt
 
 
 @pytest.fixture()
