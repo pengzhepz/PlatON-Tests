@@ -2475,13 +2475,9 @@ def test_LS_UPV_021(new_genesis_env, clients_noconsensus, client_consensus):
     assert balance_restrictingAddress2 == balance_restrictingAddress
 
 
-<<<<<<< HEAD:tests/ppos/test_locked_position.py
 
-@pytest.mark.P1
-def test_LS_UPV_022(client_new_node):
-=======
 def test_LS_UPV_022(client_new_node, client_consensus):
->>>>>>> 72e9dacf4b230936f9593b2aadbe09ee79c1e7f2:tests/ppos/restricting/test_locked_position.py
+
     """
     多个锁仓释放期质押主动退回质押
     :param client_new_node:
@@ -2532,13 +2528,9 @@ def test_LS_UPV_022(client_new_node, client_consensus):
         balance_staking1 = node.eth.getBalance(staking_address)
         balance_benefit = node.eth.getBalance(benefit_address, economic.settlement_size * i)
         assert balance_staking - balance_staking1 < node.web3.toWei(0.01, 'ether')
-<<<<<<< HEAD:tests/ppos/test_locked_position.py
         economic.wait_settlement(node)
     #Check the income to the account
-=======
-        clinet1.economic.wait_settlement(clinet1.node)
-    # Check the income to the account
->>>>>>> 72e9dacf4b230936f9593b2aadbe09ee79c1e7f2:tests/ppos/restricting/test_locked_position.py
+
     assert balance_benefit == block_reward * 40 + staking_reward
     list = node.ppos.getRestrictingInfo(staking_address)['Ret']['plans']
 
@@ -2627,13 +2619,8 @@ def test_LS_UPV_023(client_new_node):
             assert balance_restrictingAddress == balance_restrictingAddress1
 
 
-<<<<<<< HEAD:tests/ppos/test_locked_position.py
 
-@pytest.mark.P1
-def test_LS_UPV_024(client_new_node):
-=======
 def test_LS_UPV_024(client_new_node, client_consensus):
->>>>>>> 72e9dacf4b230936f9593b2aadbe09ee79c1e7f2:tests/ppos/restricting/test_locked_position.py
     """
     多个释放期，全部释放之后
     :param client_new_node:
@@ -2684,13 +2671,8 @@ def test_LS_UPV_024(client_new_node, client_consensus):
     assert restricting_info_end["debt"] == economic.create_staking_limit
 
 
-<<<<<<< HEAD:tests/ppos/test_locked_position.py
 
-@pytest.mark.P2
-def test_LS_UPV_025(client_new_node):
-=======
 def test_LS_UPV_025(client_new_node, client_consensus):
->>>>>>> 72e9dacf4b230936f9593b2aadbe09ee79c1e7f2:tests/ppos/restricting/test_locked_position.py
     """
     多个锁仓释放，增持主动退回
     :param client_new_node:
@@ -2747,7 +2729,6 @@ def test_LS_UPV_025(client_new_node, client_consensus):
     result = node.ppos.getRestrictingInfo(staking_address)
     assert_code(result, 304005)
 
-<<<<<<< HEAD:tests/ppos/test_locked_position.py
 
 
 
@@ -2772,5 +2753,3 @@ def test_LS_UPV_026(client_new_node):
     print(restricting_info)
     balance_after = node.eth.getBalance(address)
     assert balance - balance_after - amount * 2 < node.web3.toWei(0.01, 'ether')
-=======
->>>>>>> 72e9dacf4b230936f9593b2aadbe09ee79c1e7f2:tests/ppos/restricting/test_locked_position.py
