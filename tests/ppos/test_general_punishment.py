@@ -511,7 +511,7 @@ def test_more_zero_out_block_N(new_genesis_env, clients_noconsensus):
     assert result, "error: Node not kicked out CandidateList"
     result = check_node_in_list(first_client.node.node_id, second_client.ppos.getVerifierList)
     assert result, "error: Node not kicked out VerifierList"
-    result = node.ppos.getCandidateInfo(node.node_id)
+    result = second_client.node.ppos.getCandidateInfo(node.node_id)
     assert_code(result, 0)
 
 

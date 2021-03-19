@@ -1332,7 +1332,7 @@ class TestwithdrawDelegateReward():
 
 def test_IN_DR_021(clients_noconsensus, client_consensus):
     """
-    委托节点数>20，则只领取前20个节点的委托收益
+    委托节点数>2，则只领取前2个节点的委托收益
     """
     client = client_consensus
     economic = client.economic

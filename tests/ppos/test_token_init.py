@@ -287,7 +287,6 @@ def sendTransaction_input_nonce(client, data, from_address, to_address, gasPrice
     account = client.economic.account.accounts[from_address]
     if check_address:
         to_address = Web3.toChecksumAddress(to_address)
-
     transaction_dict = {
         "to": to_address,
         "gasPrice": gasPrice,
@@ -412,6 +411,26 @@ def test_IT_SD_010(client_consensus):
         assert balance1 == balance + node.web3.toWei(500, 'ether'), "ErrMsg:Account balance after transfer：{}".format(
             balance1)
 
+@pytest.mark.P0
+def test_IT_SD_011(global_test_env, client_consensus):  #需要更改
+    """
+    二次分配：普通账户转platON基金会账户
+    :return:
+    """
+    node = global_test_env.get_rand_node()
+    value = node.web3.toWei(1000, 'ether')
+    address, _ = global_test_env.account.generate_account(node.web3, value)
+    balance = node.eth.getBalance(client_consensus.economic.account.raw_accounts[1]['address'])
+    result = global_test_env.account.sendTransaction(node.web3, '', address, client_consensus.economic.account.raw_accounts[1]['address'],
+                                                     node.eth.gasPrice, 21000, node.web3.toWei(100, 'ether'))
+    assert result is not None, "ErrMsg:Transfer result {}".format(result)
+    balance1 = node.eth.getBalance(client_consensus.economic.account.raw_accounts[1]['address'])
+    log.info("Account balance after transfer： {}".format(balance1))
+    log.info("Transaction fee： {}".format(node.eth.gasPrice * 21000))
+    assert balance1 == balance + node.web3.toWei(100, 'ether') + node.eth.gasPrice * 21000, "ErrMsg:Account balance after transfer：{}".format(
+        balance1)
+
+
 
 def consensus_node_pledge_award_assertion(client, address):
     """
@@ -498,6 +517,28 @@ def no_consensus_node_pledge_award_assertion(client, benifit_address, from_addre
         else:
             # wait consensus block
             client.economic.wait_consensus(client.node)
+
+
+@pytest.mark.p1
+def test_IT_SD_012(global_test_env, client_consensus):
+    """
+    特殊区块按正常逻辑打包交易
+    :return:
+    """
+    node = global_test_env.get_rand_node()
+    address, _ = global_test_env.account.generate_account(node.web3)
+    value = node.web3.toWei(100, 'ether')
+    count = 0
+    for i in range(100):
+        block_numner = global_test_env.account.sendTransaction(node.web3, '', client_consensus.economic.account.raw_accounts[0]['address'], address,
+                                                         node.eth.gasPrice, 21000, value)["blockNumber"]
+        count += 1
+        if block_numner % 20 == 0:
+            break
+    assert block_numner % 20 == 0
+    balance = node.eth.getBalance(address)
+    assert balance == value * count
+
 
 
 @pytest.mark.p1
