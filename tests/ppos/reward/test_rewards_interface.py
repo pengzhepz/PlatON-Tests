@@ -1422,7 +1422,7 @@ class TestGas:
         log.info('Address2 {} balance : {}'.format(address2, balance2))
         staking_and_delegate(client1, address1)
 
-        client1.economic.wait_consensus(client1.node)
+        # client1.economic.wait_consensus(client1.node)
         stakingnum = client1.staking.get_stakingblocknum()
 
         balance_address1 = client1.node.eth.getBalance(address1)
@@ -1430,7 +1430,6 @@ class TestGas:
         data = rlp.encode([rlp.encode(int(1004)), rlp.encode(0), rlp.encode(bytes.fromhex(client1.node.node_id)),
                            rlp.encode(client1.economic.delegate_limit * 2)])
         gas = (21000 + 6000 + 16000 + get_the_dynamic_parameter_gas_fee(data)) * client1.node.eth.gasPrice
-        print('gas', gas)
         assert balance - client1.economic.delegate_limit * 2 - gas == balance_address1
 
         balance_address1 = client1.node.eth.getBalance(address1)
@@ -1439,13 +1438,12 @@ class TestGas:
         time.sleep(5)
         balance_address1_1 = client2.node.eth.getBalance(address1)
         log.info('Address {} balance : {}'.format(address1, balance_address1_1))
-        data = rlp.encode([rlp.encode(int(1004)), rlp.encode(0), rlp.encode(bytes.fromhex(client1.node.node_id)),
+        data = rlp.encode([rlp.encode(int(1004)), rlp.encode(0), rlp.encode(bytes.fromhex(client2.node.node_id)),
                            rlp.encode(client1.economic.delegate_limit * 2)])
         gas = (21000 + 6000 + 16000 + get_the_dynamic_parameter_gas_fee(data)) * client1.node.eth.gasPrice
-        print('gas', gas)
         transaction_data = {"to": client1.node.ppos.stakingAddress, "data": data, "from": address1}
         estimated_gas = client1.node.eth.estimateGas(transaction_data)
-        print('estimated_gas', estimated_gas)
+
         assert gas == estimated_gas * client1.node.eth.gasPrice
         assert balance_address1 - gas - client1.economic.delegate_limit * 2 == balance_address1_1
 
