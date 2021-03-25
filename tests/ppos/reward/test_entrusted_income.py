@@ -104,8 +104,10 @@ def get_delegate_relevant_amount_and_epoch(client, node_id):
     return last_delegate_epoch, delegate_total, delegate_total_hes, delegate_reward_total
 
 
+
+@pytest.mark.parametrize('type', [0, 1])
 @pytest.mark.P1
-def test_EI_BC_001_005_009_015_051_057(client_new_node):
+def test_EI_BC_001_005_009_015_051_057(client_new_node, type):
     """
     自由金额首次委托，验证待领取的委托收益（未生效期N）
     锁仓金额首次委托，验证待领取的委托收益（未生效期N）
@@ -119,21 +121,22 @@ def test_EI_BC_001_005_009_015_051_057(client_new_node):
     client = client_new_node
     economic = client.economic
     node = client.node
-    delegate_address, _ = economic.account.generate_account(node.web3, economic.delegate_limit * 10)
-    log.info("Create delegate account：{}".format(delegate_address))
+    delegate_address, _ = economic.account.generate_account(node.web3, economic.delegate_limit * 100)
     create_staking_node(client)
-    log.info("Create pledge node id :{}".format(node.node_id))
+    plan = [{'Epoch': 1, 'Amount': economic.delegate_limit * 10}, {'Epoch': 2, 'Amount': economic.delegate_limit * 10}]
+    result = client.restricting.createRestrictingPlan(delegate_address, plan, delegate_address)
+    assert_code(result, 0)
 
     # initiate a commission
-    result = client.delegate.delegate(0, delegate_address, amount=economic.delegate_limit * 5)
+    result = client.delegate.delegate(type, delegate_address, amount=economic.delegate_limit * 5)
     assert_code(result, 0)
     delegate_epoch, cumulative_income = get_dividend_information(client, node.node_id, delegate_address)
-    assert delegate_epoch == 1, "ErrMsg: Last time delegate epoch {}".format(delegate_epoch)
+    assert delegate_epoch == 1, "ErrMsg: Last time delegate  epoch {}".format(delegate_epoch)
     assert cumulative_income == 0, "ErrMsg: Last time cumulative income {}".format(cumulative_income)
     economic.wait_consensus(node)
+
     # initiate redemption
-    result = client.ppos.getCandidateInfo(client.node.node_id)
-    blocknum = result['Ret']['StakingBlockNum']
+    blocknum = client.ppos.getCandidateInfo(node.node_id)['Ret']['StakingBlockNum']
     result = client.delegate.withdrew_delegate(blocknum, delegate_address)
     assert_code(result, 0)
     delegate_epoch, cumulative_income = get_dividend_information(client, node.node_id, delegate_address)
@@ -142,9 +145,9 @@ def test_EI_BC_001_005_009_015_051_057(client_new_node):
     time.sleep(3)
 
     # receive dividends
-    result = client.ppos.getDelegateReward(delegate_address)
-    log.info("result:{}".format(result))
-    assert result['Ret'][0]['reward'] == 0, "ErrMsg: Withdraw commission award {}".format(result['Ret'][0]['reward'])
+    delegate_reward_info = client.ppos.getDelegateReward(delegate_address)
+    log.info("delegate_reward_info:{}".format(delegate_reward_info))
+    assert delegate_reward_info['Ret'][0]['reward'] == 0, "ErrMsg: Withdraw commission award {}".format(delegate_reward_info['Ret'][0]['reward'])
     result = client.delegate.withdraw_delegate_reward(delegate_address)
     assert_code(result, 0)
     delegate_epoch, cumulative_income = get_dividend_information(client, node.node_id, delegate_address)
@@ -188,12 +191,12 @@ def test_EI_BC_002_006(clients_new_node, delegate_type):
     assert second_cumulative_income == 0, "ErrMsg: Last time cumulative income {}".format(second_cumulative_income)
 
     # initiate redemption
-    result = first_client.ppos.getCandidateInfo(first_node.node_id)
-    first_blocknum = result['Ret']['StakingBlockNum']
+    first_blocknum = first_client.ppos.getCandidateInfo(first_node.node_id)['Ret']['StakingBlockNum']
+    # first_blocknum = result['Ret']['StakingBlockNum']
     result = first_client.delegate.withdrew_delegate(first_blocknum, address)
     assert_code(result, 0)
-    result = second_client.ppos.getCandidateInfo(second_node.node_id)
-    second_blocknum = result['Ret']['StakingBlockNum']
+    second_blocknum = second_client.ppos.getCandidateInfo(second_node.node_id)['Ret']['StakingBlockNum']
+    # second_blocknum = result['Ret']['StakingBlockNum']
     result = first_client.delegate.withdrew_delegate(second_blocknum, address, node_id=second_node.node_id)
     assert_code(result, 0)
     first_delegate_epoch, first_cumulative_income = get_dividend_information(first_client, first_node.node_id, address)
@@ -237,7 +240,6 @@ def test_EI_BC_003_007(client_new_node, delegate_type, reset_environment):
     delegate_amount = von_amount(economic.delegate_limit, 10)
     result = client.delegate.delegate(delegate_type, address, amount=delegate_amount)
     assert_code(result, 0)
-    log.info("Commissioned successfully, commissioned amount：{}".format(delegate_amount))
     delegate_epoch, cumulative_income = get_dividend_information(client, node.node_id, address)
     assert delegate_epoch == 1, "ErrMsg: Last time delegate epoch {}".format(delegate_epoch)
     assert cumulative_income == 0, "ErrMsg: Last time cumulative income {}".format(cumulative_income)
@@ -250,10 +252,8 @@ def test_EI_BC_003_007(client_new_node, delegate_type, reset_environment):
     assert delegate_reward_total == 0, "Total delegated rewards currently issued by the candidate: {}".format(
         delegate_reward_total)
     economic.wait_settlement(node)
-    log.info("Current settlement block height：{}".format(node.eth.blockNumber))
     result = client.delegate.delegate(delegate_type, address, amount=delegate_amount)
     assert_code(result, 0)
-    log.info("Commissioned successfully, commissioned amount：{}".format(von_amount(delegate_amount, 2)))
     delegate_epoch, cumulative_income = get_dividend_information(client, node.node_id, address)
     assert delegate_epoch == 2, "ErrMsg: Last time delegate epoch {}".format(delegate_epoch)
     assert cumulative_income == 0, "ErrMsg: Last time cumulative income {}".format(cumulative_income)
@@ -267,15 +267,13 @@ def test_EI_BC_003_007(client_new_node, delegate_type, reset_environment):
     assert delegate_reward_total == 0, "Total delegated rewards currently issued by the candidate: {}".format(
         delegate_reward_total)
     block_reward, staking_reward = economic.get_current_year_reward(node)
-    log.info("The current node block reward: {} Pledge reward: {}".format(block_reward, staking_reward))
     economic.wait_settlement(node)
     log.info("Current settlement block height：{}".format(node.eth.blockNumber))
     commission_award = economic.calculate_delegate_reward(node, block_reward, staking_reward)
     current_commission_award = economic.delegate_cumulative_income(node, block_reward, staking_reward, delegate_amount,
                                                                    delegate_amount)
-    result = client.delegate.delegate(delegate_type, address, amount=delegate_amount)
+    result = client.delegate.delegate(delegate_type, address,amount=delegate_amount)
     assert_code(result, 0)
-    log.info("Commissioned successfully, commissioned amount：{}".format(von_amount(economic.delegate_limit, 2)))
     delegate_epoch, cumulative_income = get_dividend_information(client, node.node_id, address)
     assert delegate_epoch == 3, "ErrMsg: Last time delegate epoch {}".format(delegate_epoch)
     assert cumulative_income == current_commission_award, "ErrMsg: Last time cumulative income {}".format(
@@ -456,6 +454,7 @@ def test_EI_BC_010_016(client_new_node, delegate_type, reset_environment):
     result = client.delegate.withdrew_delegate(blocknum, address)
     assert_code(result, 0)
     delegate_epoch, cumulative_income = get_dividend_information(client, node.node_id, address)
+    #撤销委托会触发DelegateEpoch字段更新
     assert delegate_epoch == 2, "ErrMsg: Last time first delegate epoch {}".format(delegate_epoch)
     assert cumulative_income == 0, "ErrMsg: Last time first cumulative income {}".format(cumulative_income)
     last_delegate_epoch, delegate_total, delegate_total_hes, delegate_reward_total = get_delegate_relevant_amount_and_epoch(
