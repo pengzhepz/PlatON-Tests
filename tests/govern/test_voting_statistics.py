@@ -28,15 +28,6 @@ def submitvpandvote(clients, votingrounds=4, version=None):
 
 
 def createstaking(client, reward_per=0):
-    # if isinstance(obj, Client):
-    #     objs = []
-    #     objs.append(obj)
-    #     obj = objs
-    # for client in obj:
-    #     if platon_bin:
-    #         log.info('Need replace the platon of the node')
-    #         upload_platon(client.node, platon_bin)
-    #         client.node.restart()
     address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 3)
     result = client.staking.create_staking(0, address, address, amount=client.economic.create_staking_limit * 2, reward_per=reward_per)
     # log.info('Node {} staking result : {}'.format(client.node.node_id, result))
@@ -134,7 +125,8 @@ class TestVotingStatisticsVP:
         submitvpandvote(clients_consensus[0:-1], 5)
         proposalinfo = clients_consensus[0].pip.get_effect_proposal_info_of_vote(clients_consensus[0].pip.cfg.version_proposal)
         log.info('Version proposal information {}'.format(proposalinfo))
-        createstaking(clients_noconsensus[:3])
+        for client in clients_noconsensus[:3]:
+            createstaking(client)
         wait_block_number(clients_consensus[0].node, proposalinfo.get('EndVotingBlock'))
         result = clients_consensus[0].pip.get_accuverifiers_count(proposalinfo.get('ProposalID'))
         log.info('Get proposal vote infomation {}'.format(result))
@@ -154,7 +146,8 @@ class TestVotingStatisticsVP:
         proposalinfo = pip.get_effect_proposal_info_of_vote(pip.cfg.version_proposal)
         log.info('Version proposal info {}'.format(proposalinfo))
         log.info('{}'.format(clients_consensus[:2]))
-        createstaking(clients_noconsensus[:2])
+        for client in clients_noconsensus[:2]:
+            createstaking(client)
         pip.economic.wait_settlement(pip.node)
         result = pip.get_accuverifiers_count(proposalinfo.get('ProposalID'))
         log.info('Get proposal vote infomation {}'.format(result))
@@ -364,7 +357,8 @@ class TestVotingStatisticsTPCP:
         proposalinfo_cancel = clients_consensus[0].pip.get_effect_proposal_info_of_vote(
             clients_consensus[0].pip.cfg.cancel_proposal)
         log.info('Cancel proposal information {}'.format(proposalinfo_cancel))
-        createstaking(clients_noconsensus[:3])
+        for client in clients_noconsensus[:3]:
+            createstaking(client)
         result_text = clients_consensus[0].pip.get_accuverifiers_count(proposalinfo_text.get('ProposalID'))
         log.info('Get text proposal vote infomation {}'.format(result_text))
         result_cancel = clients_consensus[0].pip.get_accuverifiers_count(proposalinfo_cancel.get('ProposalID'))
@@ -387,7 +381,8 @@ class TestVotingStatisticsTPCP:
         log.info('Text proposal info {}'.format(proposalinfo_text))
         proposalinfo_cancel = pip.get_effect_proposal_info_of_vote(pip.cfg.cancel_proposal)
         log.info('Cancel proposal info {}'.format(proposalinfo_cancel))
-        createstaking(clients_noconsensus[:2])
+        for client in clients_noconsensus[:2]:
+            createstaking(client)
         pip.economic.wait_settlement(pip.node)
         result_text = pip.get_accuverifiers_count(proposalinfo_text.get('ProposalID'))
         log.info('Get text proposal vote infomation {}'.format(result_text))
@@ -800,7 +795,8 @@ class TestVotingStatisticsPP:
         submitppandvote(clients_consensus[0:-1], 1, 2, 3)
         proposalinfo = clients_consensus[0].pip.get_effect_proposal_info_of_vote(clients_consensus[0].pip.cfg.param_proposal)
         log.info('Param proposal information {}'.format(proposalinfo))
-        createstaking(clients_noconsensus[:3])
+        for client in clients_noconsensus[:3]:
+            createstaking(client)
         self.assert_accuverifiers_count(clients_consensus[0].pip, proposalinfo, [4, 1, 1, 1])
 
     @pytest.mark.P1
@@ -812,7 +808,8 @@ class TestVotingStatisticsPP:
         proposalinfo = pip.get_effect_proposal_info_of_vote(pip.cfg.param_proposal)
         log.info('Param proposal info {}'.format(proposalinfo))
         log.info('{}'.format(clients_consensus[:2]))
-        createstaking(clients_noconsensus[:2])
+        for client in clients_noconsensus[:2]:
+            createstaking(client)
         pip.economic.wait_settlement(pip.node)
         self.assert_accuverifiers_count(pip, proposalinfo, [6, 1, 1, 0])
 

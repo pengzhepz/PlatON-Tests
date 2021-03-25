@@ -214,7 +214,7 @@ class TestSlashing:
         pips = get_pips(verifiers)
         pip = pips[0]
         pip_id = version_proposal(pip, pip.cfg.version5, 5)
-        pip_id = cancel_proposal(pip, pip_id, 5)
+        pip_id = cancel_proposal(pip, pip_id, 3)
         vote(pip, pip_id)
         # step2：停止节点，等待节点被零出块处罚
         make_0mb_slash(verifiers[0], verifiers[1])
