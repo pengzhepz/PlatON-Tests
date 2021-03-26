@@ -221,8 +221,8 @@ def test_IT_SD_008_001(client_consensus):
     first_balance4 = node.eth.getBalance(node.ppos.delegateRewardAddress)
     first_balance5 = node.eth.getBalance(node.ppos.penaltyAddress)
     first_balance6 = node.eth.getBalance(economic.account.raw_accounts[1]['address'])
-    log.info("Balance of Staking : {}".format(first_balance2))
-    log.info("Balance of Restriction plan : {}".format(first_balance1))
+    log.info("Balance of Restriction plan : {}".format(first_balance2))
+    log.info("Balance of Staking : {}".format(first_balance1))
     log.info("Balance of entrusted_dividend_contract : {}".format(first_balance5))
     log.info("Balance of punishment : {}".format(first_balance4))
     log.info("Balance of Entrust reward pool : {}".format(first_balance6))
@@ -249,8 +249,8 @@ def test_IT_SD_008_001(client_consensus):
     second_balance4 = node.eth.getBalance(node.ppos.delegateRewardAddress)
     second_balance5 = node.eth.getBalance(node.ppos.penaltyAddress)
     second_balance6 = node.eth.getBalance(economic.account.raw_accounts[1]['address'])
-    log.info("Balance of Staking : {}".format(second_balance2))
-    log.info("Balance of Restriction plan : {}".format(second_balance1))
+    log.info("Balance of Restriction plan : {}".format(second_balance2))
+    log.info("Balance of Staking : {}".format(second_balance1))
     log.info("Balance of entrusted_dividend_contract : {}".format(second_balance4))
     log.info("Balance of punishment : {}".format(second_balance5))
     log.info("Balance of Entrust reward pool : {}".format(second_balance6))
@@ -405,14 +405,14 @@ def test_IT_SD_010(client_consensus):
                                     node.web3.toWei(600, 'ether'), nonce + 1)
     except Exception as e:
         log.info("Use case success, exception information：{} ".format(str(e)))
-        time.sleep(3)
-        balance1 = node.eth.getBalance(address1)
-        log.info("Account balance after transfer： {}".format(balance1))
-        assert balance1 == balance + node.web3.toWei(500, 'ether'), "ErrMsg:Account balance after transfer：{}".format(
-            balance1)
+    time.sleep(3)
+    balance1 = node.eth.getBalance(address1)
+    log.info("Account balance after transfer： {}".format(balance1))
+    assert balance1 == balance + node.web3.toWei(500, 'ether'), "ErrMsg:Account balance after transfer：{}".format(
+        balance1)
 
 @pytest.mark.P0
-def test_IT_SD_011(global_test_env, client_consensus):  #需要更改
+def test_IT_SD_011(global_test_env, client_consensus):
     """
     二次分配：普通账户转platON基金会账户
     :return:
@@ -520,7 +520,7 @@ def no_consensus_node_pledge_award_assertion(client, benifit_address, from_addre
 
 
 @pytest.mark.p1
-def test_IT_SD_012(global_test_env, client_consensus):
+def test_IT_SD_013(global_test_env, client_consensus):
     """
     特殊区块按正常逻辑打包交易
     :return:
@@ -950,10 +950,8 @@ def test_AL_NBI_007_to_009(client_new_node):
             # view account amount again
             benifit_balance1 = client_new_node.node.eth.getBalance(benifit_address)
             log.info("benifit_balance: {}".format(benifit_balance1))
-            assert benifit_balance + staking_reward + blocknumber * Decimal(
-                str(block_reward)) - benifit_balance1 < client_new_node.node.web3.toWei(1,
-                                                                                        'ether'), "ErrMsg:benifit_balance: {}".format(
-                benifit_balance1)
+            assert benifit_balance + staking_reward + blocknumber * Decimal(str(block_reward)) == benifit_balance1,  \
+                "ErrMsg:benifit_balance: {}".format(benifit_balance1)
             break
         else:
             # wait consensus block
@@ -983,9 +981,11 @@ def assert_benifit_reward(client, benifit_address, address):
         if result:
             # view benifit reward
             blocknumber = view_benifit_reward(client, address)
+            print('blocknum', blocknumber)
             # view account amount again
             benifit_balance1 = client.node.eth.getBalance(benifit_address)
             log.info("benifit_balance: {}".format(benifit_balance1))
+            print('qwq', benifit_balance + staking_reward + blocknumber * Decimal(str(block_reward)))
             assert benifit_balance + staking_reward + blocknumber * Decimal(
                 str(block_reward)) - benifit_balance1 < client.node.web3.toWei(1,
                                                                                'ether'), "ErrMsg:benifit_balance: {}".format(
@@ -1050,8 +1050,6 @@ def test_AL_NBI_014(client_new_node):
     block_reward, staking_reward = client_new_node.economic.get_current_year_reward(
         client_new_node.node)
     log.info("block_reward: {} staking_reward: {}".format(block_reward, staking_reward))
-    # view benifit_address amount again
-    benifit_balance = query_ccount_amount(client_new_node, benifit_address)
     # change benifit address
     for i in range(4):
         result = check_node_in_list(client_new_node.node.node_id, client_new_node.ppos.getValidatorList)
@@ -1060,11 +1058,11 @@ def test_AL_NBI_014(client_new_node):
             current_block = client_new_node.node.eth.blockNumber
             log.info("Current block:{}".format(current_block))
             for i in range(40):
-                nodeid = get_pub_key(client_new_node.node.url, current_block)
+                node_id = client_new_node.node.eth.ecrecover(current_block)
                 current_block = client_new_node.node.eth.blockNumber
                 log.info("当前块高:{}".format(current_block))
                 time.sleep(3)
-                if nodeid == client_new_node.node.node_id:
+                if node_id == client_new_node.node.node_id:
                     break
             # create account
             benifit_address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, 0)
@@ -1073,12 +1071,15 @@ def test_AL_NBI_014(client_new_node):
             assert_code(result, 0)
             # view benifit reward
             blocknumber = view_benifit_reward(client_new_node, address)
-
+            # view benifit_address amount again
+            benifit_balance = query_ccount_amount(client_new_node, benifit_address)
             # view benifit_address1 amount
             benifit_balance1 = query_ccount_amount(client_new_node, benifit_address1)
             assert benifit_balance + benifit_balance1 == int(Decimal(str(
                 block_reward)) * blocknumber) + staking_reward, "ErrMsg:benifit_balance + benifit_balance1: {}".format(
                 benifit_balance + benifit_balance1)
+        else:
+            client_new_node.economic.wait_consensus(client_new_node.node)
 
 
 @pytest.mark.P1
