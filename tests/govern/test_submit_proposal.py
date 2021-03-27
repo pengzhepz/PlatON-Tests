@@ -1,5 +1,7 @@
 from common.log import log
 from dacite import from_dict
+
+from tests.conftest import param_governance_verify
 from tests.lib import Genesis
 import pytest, allure
 from tests.lib.utils import wait_block_number, assert_code, get_governable_parameter_value
@@ -1066,6 +1068,7 @@ class TestPP:
     @pytest.mark.P0
     @allure.title('Submit parammeter  proposal function verification')
     def test_PP_SU_016_1(self, no_vp_proposal, all_clients, clients_noconsensus):
+        # all_clients[0].ppos.need_analyze = True
         pip = no_vp_proposal
 
         for client in clients_noconsensus:
@@ -1077,21 +1080,10 @@ class TestPP:
         pip.economic.wait_settlement(pip.node)
         assert len(pip.node.ppos.getVerifierList()['Ret']) == 5
 
-        if int(get_governable_parameter_value(all_clients[0], 'maxValidators')) != 4:
-            result = pip.submitParam(pip.node.node_id, str(time.time()), 'staking', 'maxValidators', '4',
-                                         pip.node.staking_address, transaction_cfg=pip.cfg.transaction_cfg)
-            log.info('Submit param proposal result : {}'.format(result))
-            assert_code(result, 0)
-
-        print(f'list::: {client.pip.pip.listProposal()}')
-        _, _, _, proposal_list = client.pip.get_proposal_info_list()
-        log.info(f'proposal list: {proposal_list}')
-
-        # for client in all_clients:
-        #     client.pip.vote(client.node.node_id, )
+        param_governance_verify(all_clients[0], 'staking', 'maxValidators', '4')
 
         pip.economic.wait_settlement(pip.node)
-        assert get_governable_parameter_value(all_clients[0], 'maxValidators') == 4
+        assert int(get_governable_parameter_value(all_clients[0], 'maxValidators')) == 4
         assert len(pip.node.ppos.getCandidateList()['Ret']) == 8
         assert len(pip.node.ppos.getVerifierList()['Ret']) == 4
         pip.economic.wait_consensus(pip.node)
@@ -1100,8 +1092,9 @@ class TestPP:
     @allure.title('Submit parammeter  proposal function verification')
     def test_PP_SU_016_2(self, no_vp_proposal, all_clients, clients_noconsensus):
         pip = no_vp_proposal
+
         for client in clients_noconsensus:
-            address, prikey = client.economic.account.generate_account(client.node.web3, 20000 * 10 ** 18)
+            address, prikey = client.economic.account.generate_account(client.node.web3, 2000000 * 10 ** 18)
             result = client.staking.create_staking(0, address, address)
             log.info(f'staking result: {result}')
             assert_code(result, 0)
@@ -1109,15 +1102,10 @@ class TestPP:
         pip.economic.wait_settlement(pip.node)
         assert len(pip.node.ppos.getVerifierList()['Ret']) == 5
 
-        client = get_client_by_nodeid(pip.node.node_id, all_clients)
-        if int(get_governable_parameter_value(client, 'maxValidators')) != 201:
-            result = pip.submitParam(pip.node.node_id, str(time.time()), 'staking', 'maxValidators', '201',
-                                         pip.node.staking_address, transaction_cfg=pip.cfg.transaction_cfg)
-            log.info('Submit param proposal result : {}'.format(result))
-            assert_code(result, 0)
+        param_governance_verify(all_clients[0], 'staking', 'maxValidators', '201')
 
         pip.economic.wait_settlement(pip.node)
-        assert get_governable_parameter_value(all_clients[0], 'maxValidators') == 4
+        assert int(get_governable_parameter_value(all_clients[0], 'maxValidators')) == 201
         assert len(pip.node.ppos.getCandidateList()['Ret']) == 8
         assert len(pip.node.ppos.getVerifierList()['Ret']) == 8
         pip.economic.wait_consensus(pip.node)
