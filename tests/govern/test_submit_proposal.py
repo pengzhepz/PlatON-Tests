@@ -1279,6 +1279,41 @@ class TestPP:
 
     @pytest.mark.P0
     @allure.title('Submit parammeter  proposal function verification')
+    def test_PP_SU_023_3(self, new_genesis_env, clients_consensus):
+        genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
+        genesis.economicModel.slashing.zeroProduceNumberThreshold = 2
+        genesis.economicModel.slashing.zeroProduceCumulativeTime = 3
+        new_genesis_env.set_genesis(genesis.to_dict())
+        new_genesis_env.deploy_all()
+        client = clients_consensus[0]
+        pip = client.pip
+        result = pip.submitParam(pip.node.node_id, str(time.time()), 'slashing', 'zeroProduceCumulativeTime',
+                                 '50', pip.node.staking_address,
+                                 transaction_cfg=pip.cfg.transaction_cfg)
+        assert_code(result, 0)
+
+    @pytest.mark.P0
+    @allure.title('Submit parammeter  proposal function verification')
+    def test_PP_SU_023_4(self, new_genesis_env, clients_consensus):
+        client = clients_consensus[0]
+        pip = client.pip
+        result = pip.submitParam(pip.node.node_id, str(time.time()), 'slashing', 'zeroProduceCumulativeTime',
+                                 '51', pip.node.staking_address,
+                                 transaction_cfg=pip.cfg.transaction_cfg)
+        assert_code(result, 3)
+
+    @pytest.mark.P0
+    @allure.title('Submit parammeter  proposal function verification')
+    def test_PP_SU_023_5(self, new_genesis_env, clients_consensus):
+        client = clients_consensus[0]
+        pip = client.pip
+        result = pip.submitParam(pip.node.node_id, str(time.time()), 'slashing', 'zeroProduceCumulativeTime',
+                                 '0', pip.node.staking_address,
+                                 transaction_cfg=pip.cfg.transaction_cfg)
+        assert_code(result, 3)
+
+    @pytest.mark.P0
+    @allure.title('Submit parammeter  proposal function verification')
     def test_PP_SU_026(self, no_vp_proposal, client_consensus):
         pip = no_vp_proposal
         result = pip.submitParam(pip.node.node_id, str(time.time()), 'staking', 'rewardPerMaxChangeRange', '',
