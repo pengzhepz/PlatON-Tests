@@ -595,7 +595,14 @@ class TestSlashing:
 
     def test_debug(self, clients_noconsensus):
         clients = clients_noconsensus
-        for client in clients:
-            address, private_key = client.economic.account.generate_account(client.node.web3, 2000000 * 10 ** 18)
-            print(f'address == {address}')
-            client.staking.create_staking(0, address, address)
+        client = clients[0]
+
+        address, private_key = client.economic.account.generate_account(client.node.web3, 102000 * 10 ** 18)
+        result = client.staking.create_staking(0, address, address)
+        print(result)
+
+        client.economic.wait_settlement(client.node)
+        print(client.node.eth.getBalance(address))
+
+        result = client.pip.submitText(client.node.node_id, str(time.time()), client.pip.node.staking_address, client.pip.cfg.transaction_cfg)
+        print(f'result = {result}')
