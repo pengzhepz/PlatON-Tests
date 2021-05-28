@@ -503,7 +503,7 @@ def no_consensus_node_pledge_award_assertion(client, benifit_address, from_addre
             # wait settlement block
             client.economic.wait_settlement(client.node)
             # Count the number of blocks out of pledge node
-            blocknumber = client.economic.get_block_count_number(client.node, 5)
+            blocknumber = client.economic.get_block_count_number(client.node, roundnum=10)
             log.info("blocknumber: {}".format(blocknumber))
             balance1 = client.node.eth.getBalance(benifit_address)
             log.info("benifit address：{} amount：{}".format(benifit_address, balance1))
@@ -1076,7 +1076,7 @@ def test_AL_NBI_014(client_new_node):
             # view benifit_address1 amount
             benifit_balance1 = query_ccount_amount(client_new_node, benifit_address1)
             assert benifit_balance + benifit_balance1 == int(Decimal(str(
-                block_reward)) * blocknumber) + staking_reward, "ErrMsg:benifit_balance + benifit_balance1: {}".format(
+                block_reward)) * blocknumber) + staking_reward and benifit_balance1 > 0, "ErrMsg:benifit_balance + benifit_balance1: {}".format(
                 benifit_balance + benifit_balance1)
         else:
             client_new_node.economic.wait_consensus(client_new_node.node)
@@ -1185,38 +1185,42 @@ def test_AL_NBI_017(clients_new_node):
     :param clients_new_node:
     :return:
     """
-    clients_new_node[0].economic.env.deploy_all()
+    client = clients_new_node[0]
+    client1 = clients_new_node[1]
+    client.economic.env.deploy_all()
     # create pledge node
-    address, benifit_address = create_pledge_node(clients_new_node[0], 1.6)
+    address, benifit_address = create_pledge_node(client, 1.6)
     # wait settlement block
-    clients_new_node[0].economic.wait_settlement(clients_new_node[0].node)
-    log.info("Current settlement cycle verifier list：{}".format(clients_new_node[0].ppos.getVerifierList()))
+    client.economic.wait_settlement(client.node)
+    log.info("Current settlement cycle verifier list：{}".format(client.ppos.getVerifierList()))
     # view block_reward
-    block_reward, staking_reward = clients_new_node[0].economic.get_current_year_reward(
-        clients_new_node[0].node)
+    block_reward, staking_reward = client.economic.get_current_year_reward(client.node)
     log.info("block_reward: {} staking_reward: {}".format(block_reward, staking_reward))
     # view account amount
-    benifit_balance = query_ccount_amount(clients_new_node[0], benifit_address)
+    benifit_balance = query_ccount_amount(client, benifit_address)
     for i in range(4):
-        result = check_node_in_list(clients_new_node[0].node.node_id, clients_new_node[0].ppos.getValidatorList)
+        result = check_node_in_list(client.node.node_id, client.ppos.getValidatorList)
         log.info("Current node in consensus list status：{}".format(result))
         if result:
             # stop node
-            clients_new_node[0].node.stop()
-            log.info("Current settlement cycle verifier list：{}".format(clients_new_node[1].ppos.getVerifierList()))
+            client.node.stop()
+            log.info("Current settlement cycle verifier list：{}".format(client1.ppos.getVerifierList()))
             # wait settlement block
-            clients_new_node[1].economic.wait_settlement(clients_new_node[1].node)
+            client1.economic.wait_settlement(client1.node)
             # view account amount again
-            benifit_balance1 = query_ccount_amount(clients_new_node[1], benifit_address)
+            benifit_balance1 = query_ccount_amount(client1, benifit_address)
+            # start node
+            client.node.start()
+            time.sleep(5)
             # count the number of blocks
-            blocknumber = clients_new_node[1].economic.get_block_count_number(clients_new_node[1].node, 5)
+            blocknumber = client1.economic.get_block_count_number(client.node, roundnum=15)
             log.info("blocknumber: {}".format(blocknumber))
             assert benifit_balance1 == benifit_balance + int(
                 Decimal(str(block_reward)) * blocknumber), "ErrMsg:benifit_balance1：{}".format(benifit_balance1)
             break
         else:
             # wait consensus block
-            clients_new_node[0].economic.wait_consensus(clients_new_node[0].node)
+            client.economic.wait_consensus(client.node)
 
 
 @pytest.mark.P1
@@ -1267,15 +1271,16 @@ def test_AL_NBI_018(new_genesis_env, client_new_node):
     # wait consensus block
     client.economic.wait_consensus(client.node)
     # count the number of blocks
-    blocknumber = client.economic.get_block_count_number(client.node, 10)
+    blocknumber = client.economic.get_block_count_number(client.node, roundnum=15)
     log.info("blocknumber: {}".format(blocknumber))
     # Check account balance again
     balance1 = node.eth.getBalance(address1)
     log.info("Account Balance： {}".format(balance1))
     # Pledged income account to get the bonus amount
     total_reward = int(Decimal(str(block_reward)) * blocknumber) + staking_reward
-    log.info("total:{}".format(balance + total_reward))
-    assert balance + total_reward - balance1 < node.web3.toWei(1, 'ether'), "ErrMsg:benifit_balance: {}".format(
+    # log.info("total:{}".format(balance + total_reward))
+    log.info("total:{}".format(total_reward))
+    assert 0 < balance + total_reward - balance1 < node.web3.toWei(1, 'ether'), "ErrMsg:benifit_balance: {}".format(
         balance1)
 
     # # create pledge node
@@ -1905,7 +1910,7 @@ def create_staking(client):
                                 rlp.encode(economic.create_staking_limit), rlp.encode(0), rlp.encode(program_version),
                                 rlp.encode(bytes.fromhex(program_version_sign)), rlp.encode(bytes.fromhex(bls_pubkey)),
                                 rlp.encode(bytes.fromhex(bls_proof))])).hex()
-    transaction_dict = {'from': address, 'from_private': private_key, 'to': node.web3.stakingAddress,
+    transaction_dict = {'from': address, 'from_private': private_key, 'to': node.ppos.stakingAddress,
                         'to_private': None, 'data': data, 'amount': 10, 'nonce': None}
     return transaction_dict
 

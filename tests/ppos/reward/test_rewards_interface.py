@@ -90,7 +90,7 @@ class TestCreateStaking:
         assert_code(result, 0)
         self.assert_rewardsper_staking(client_new_node, 0)
 
-    def test_IV_038_IV_039_IV_044_IV_040_IV_041(self, client_new_node):
+    def test_IV_038_IV_039_IV_044_IV_040_IV_041_IV_042(self, client_new_node):
         staking = client_new_node.staking
         address, _ = staking.economic.account.generate_account(staking.node.web3,
                                                                staking.economic.create_staking_limit * 3)
@@ -309,7 +309,7 @@ class TestEditCandidate:
         assert_code(client.staking.get_rewardper(client.node, isnext=True), nextvalue)
         candidates = get_pledge_list(client.ppos.getCandidateList)
         verifiers = get_pledge_list(client.ppos.getVerifierList)
-        validators = get_pledge_list(client.ppos.getVerifierList)
+        validators = get_pledge_list(client.ppos.getValidatorList)
         assert client.node.node_id not in candidates
         assert client.node.node_id in verifiers
         assert client.node.node_id in validators
@@ -461,7 +461,7 @@ class TestgetDelegateReward:
         try:
             client.ppos.getDelegateReward(address, node_ids=client.node.node_id)
         except ValueError as e:
-            str(e) == 'non-hexadecimal number found in fromhex() arg at position 1'
+            assert str(e) == 'non-hexadecimal number found in fromhex() arg at position 1'
 
     @pytest.mark.P2
     def test_IN_GR_010_IN_GR_012(self, client_new_node):
@@ -830,7 +830,7 @@ class TestwithdrawDelegateReward():
         balance_before0 = client0.node.eth.getBalance(address0)
         log.info('Address {} before withdraw delegate balance : {}'.format(address0, balance_before0))
         balance_before1 = client1.node.eth.getBalance(address1)
-        log.info('Address {} before withdraw delegate balance : {}'.format(address0, balance_before1))
+        log.info('Address {} before withdraw delegate balance : {}'.format(address1, balance_before1))
         result = client0.delegate.withdrew_delegate(staking_num0, address0, amount=client1.economic.delegate_limit * 2)
         assert_code(result, 0)
         result = client0.delegate.withdrew_delegate(staking_num0, address1)
@@ -840,8 +840,8 @@ class TestwithdrawDelegateReward():
         data0 = rlp.encode([rlp.encode(int(1005)), rlp.encode(staking_num0), rlp.encode(bytes.fromhex(
             client0.node.node_id)), rlp.encode(client1.economic.delegate_limit * 2)])
         log.info('data {}'.format(data0))
-        data1 = rlp.encode([rlp.encode(int(1005)), rlp.encode(staking_num1), rlp.encode(bytes.fromhex(
-            client1.node.node_id)), rlp.encode(client1.economic.delegate_limit)])
+        data1 = rlp.encode([rlp.encode(int(1005)), rlp.encode(staking_num0), rlp.encode(bytes.fromhex(
+            client0.node.node_id)), rlp.encode(client0.economic.delegate_limit)])
         gas0 = (21000 + 6000 + 8000 + 100 + get_the_dynamic_parameter_gas_fee(data0)) * client0.node.eth.gasPrice
         gas1 = (21000 + 6000 + 8000 + 100 + get_the_dynamic_parameter_gas_fee(data1)) * client0.node.eth.gasPrice
         print(gas0)
@@ -894,7 +894,7 @@ class TestwithdrawDelegateReward():
         assert balance_before1 - gas1 + rewards1 == balance_after1
 
     @pytest.mark.P2
-    def test_IN_DR_005_IN_DR_015(self, clients_new_node, reset_environment):
+    def test_IN_DR_005_IN_DR_015(self, clients_new_node):
         client0 = clients_new_node[0]
         client1 = clients_new_node[1]
         client0.node.ppos.need_quota_gas = False
@@ -924,8 +924,8 @@ class TestwithdrawDelegateReward():
 
         data0 = rlp.encode([rlp.encode(int(1005)), rlp.encode(staking_num0), rlp.encode(bytes.fromhex(
             client0.node.node_id)), rlp.encode(client1.economic.delegate_limit)])
-        data1 = rlp.encode([rlp.encode(int(1005)), rlp.encode(staking_num1), rlp.encode(bytes.fromhex(
-            client1.node.node_id)), rlp.encode(client1.economic.delegate_limit)])
+        data1 = rlp.encode([rlp.encode(int(1005)), rlp.encode(staking_num0), rlp.encode(bytes.fromhex(
+            client0.node.node_id)), rlp.encode(client1.economic.delegate_limit)])
         gas0 = (21000 + 6000 + 8000 + 100 + get_the_dynamic_parameter_gas_fee(data0)) * client0.node.eth.gasPrice
         gas1 = (21000 + 6000 + 8000 + 100 + get_the_dynamic_parameter_gas_fee(data1)) * client0.node.eth.gasPrice
         balance_after0 = client0.node.eth.getBalance(address0)
@@ -1547,10 +1547,10 @@ class TestGas:
              rlp.encode(client.economic.delegate_limit)])
         gas = (21000 + 6000 + 8000 + get_the_dynamic_parameter_gas_fee(data) + 200) * client.node.eth.gasPrice
         print(gas)
-        # transaction_data = {"to": client.node.ppos.stakingAddress, "data": data, "from": address}
-        # estimated_gas = client.node.eth.estimateGas(transaction_data)
-        # print(estimated_gas)
-        # assert gas == estimated_gas * client.node.eth.gasPrice
+        transaction_data = {"to": client.node.ppos.stakingAddress, "data": data, "from": address}
+        estimated_gas = client.node.eth.estimateGas(transaction_data)
+        print(estimated_gas)
+        assert gas == (estimated_gas + 200) * (client.node.eth.gasPrice)
         assert balance_address - gas + client.economic.delegate_limit == balance_address_1
 
     @pytest.mark.P2
@@ -1598,32 +1598,35 @@ class TestGas:
 
         data = rlp.encode(
             [rlp.encode(int(1005)), rlp.encode(stakingnum), rlp.encode(bytes.fromhex(client.node.node_id)),
-             rlp.encode(10 ** 18 * 900)])
-        gas = 21000 + 6000 + 8000 + get_the_dynamic_parameter_gas_fee(data) + 99
-        print(gas)
+             rlp.encode(client.economic.delegate_limit)])
+        gas = 21000 + 6000 + 8000 + get_the_dynamic_parameter_gas_fee(data) + 199
         transaction_data = {"to": client.node.ppos.stakingAddress, "data": data, "from": address}
         estimated_gas = client.node.eth.estimateGas(transaction_data)
         print(estimated_gas)
         try:
-            client.delegate.withdrew_delegate(stakingnum, address, amount=client.economic.delegate_limit,
-                                              transaction_cfg={'gas': gas})
+            result = client.delegate.withdrew_delegate(stakingnum, address, amount=client.economic.delegate_limit,
+                                                       transaction_cfg={'gas': gas})
         except IndexError as e:
             assert str(e) == "list index out of range"
 
         gas = 21000 + get_the_dynamic_parameter_gas_fee(data)
         try:
-            client.delegate.withdrew_delegate(stakingnum, address, amount=client.economic.delegate_limit,
+            result = client.delegate.withdrew_delegate(stakingnum, address, amount=client.economic.delegate_limit,
                                               transaction_cfg={'gas': gas})
         except IndexError as e:
             assert str(e) == "list index out of range"
 
         gas = 21000 + get_the_dynamic_parameter_gas_fee(data) - 1
-        print(gas)
         try:
-            client.delegate.withdrew_delegate(stakingnum, address, amount=client.economic.delegate_limit,
+            result = client.delegate.withdrew_delegate(stakingnum, address, amount=client.economic.delegate_limit,
                                               transaction_cfg={'gas': gas})
-        except IndexError as e:
-            assert str(e) == "list index out of range"
+        except ValueError as e:
+            assert e.args[0].get('message') == "intrinsic gas too low"
+
+        gas = 21000 + 6000 + 8000 + get_the_dynamic_parameter_gas_fee(data) + 200
+        result = client.delegate.withdrew_delegate(stakingnum, address, amount=client.economic.delegate_limit,
+                                              transaction_cfg={'gas': gas})
+        assert_code(result, 0)
 
     @pytest.mark.P2
     def test_IN_GA_009_IN_GA_010(self, client_new_node, reset_environment):
