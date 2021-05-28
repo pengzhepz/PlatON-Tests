@@ -73,6 +73,7 @@ class TestPlatonVersion:
         new_genesis_env.set_genesis(genesis.to_dict())
         try:
             new_genesis_env.deploy_all()
+            # todo
         except Exception as e:
             log.info('Deploy failed error measage {}'.format(e.args[0]))
             index = e.args[0].find('ZeroProduceCumulativeTime')

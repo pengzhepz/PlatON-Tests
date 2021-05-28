@@ -1598,14 +1598,15 @@ class TestGas:
 
         data = rlp.encode(
             [rlp.encode(int(1005)), rlp.encode(stakingnum), rlp.encode(bytes.fromhex(client.node.node_id)),
-             rlp.encode(client.economic.delegate_limit)])
-        gas = 21000 + 6000 + 8000 + get_the_dynamic_parameter_gas_fee(data) + 199
+             rlp.encode(10 ** 18 * client.economic.delegate_limit)])
+        gas = 21000 + 6000 + 8000 + get_the_dynamic_parameter_gas_fee(data) + 99
+        print(gas)
         transaction_data = {"to": client.node.ppos.stakingAddress, "data": data, "from": address}
         estimated_gas = client.node.eth.estimateGas(transaction_data)
         print(estimated_gas)
         try:
-            result = client.delegate.withdrew_delegate(stakingnum, address, amount=client.economic.delegate_limit,
-                                                       transaction_cfg={'gas': gas})
+            client.delegate.withdrew_delegate(stakingnum, address,
+                                              transaction_cfg={'gas': gas})
         except IndexError as e:
             assert str(e) == "list index out of range"
 

@@ -182,13 +182,13 @@ def large_version_proposal_voted_pips(all_clients):
 
 def replace_version_declare(pip, platon_bin, versiontag):
     upload_platon(pip.node, platon_bin)
-    log.info('Replace the platon of the node {} version{}'.format(pip.node.node_id, versiontag))
+    log.info('Replace the platon of the node {} version{}'.format(pip.node.node_mark, versiontag))
     pip.node.restart()
     log.info('Restart the node {}'.format(pip.node.node_id))
     assert pip.node.program_version == versiontag
     log.info('assert the version of the node is {}'.format(versiontag))
     log.info("staking: {}".format(pip.node.staking_address))
-    log.info("account:{}".format(pip.economic.account.accounts))
+    log.info("account: {}".format(pip.economic.account.accounts))
     result = pip.declareVersion(pip.node.node_id, pip.node.staking_address,
                                 transaction_cfg=pip.cfg.transaction_cfg)
     log.info('declareversion {} result: {}'.format(pip.node.program_version, result))
@@ -909,13 +909,11 @@ class TestPreactiveProposalVE:
     @allure.title('There is a preactive proposal, verifier declare version')
     def test_DE_VE_062(self, preactive_proposal_pips):
         pip = preactive_proposal_pips[0]
-        result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN0, pip.cfg.version0)
-        assert_code(result, 302028)
 
         result = wrong_verisonsign_declare(pip, preactive_proposal_pips[1])
         assert_code(result, 302024)
 
-        result = wrong_verison_declare(pip, pip.cfg.version5)
+        result = wrong_verison_declare(pip, pip.cfg.version8)
         assert_code(result, 302024)
 
     @pytest.mark.P2
