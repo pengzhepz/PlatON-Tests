@@ -30,15 +30,15 @@ class PipConfig:
     vote_option_nays = 2
     vote_option_Abstentions = 3
     version1 = 1537
-    version2 = 3841
-    version3 = 3849
-    version4 = 4096
-    version5 = 4097
-    version6 = 4105
-    version7 = 4352
+    version2 = 4096
+    version3 = 4105
+    version4 = 4352
+    version5 = 4353
+    version6 = 4361
+    version7 = 4608
     version8 = 591617
     version9 = 526081
-    version0 = 3840
+    version0 = 4096
     transaction_cfg = {"gasPrice": 3000000000000000, "gas": 1000000}
     # Lock account account address
     FOUNDATION_LOCKUP_ADDRESS = "atx1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpd3er4y"

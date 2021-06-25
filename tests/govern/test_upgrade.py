@@ -353,6 +353,7 @@ class TestUpgradeVP:
         new_genesis_env.deploy_all()
         pip = clients_consensus[0].pip
         pip_test = client_noconsensus.pip
+        # staking a node
         address, _ = pip_test.economic.account.generate_account(pip_test.node.web3, 10**18 * 10000000)
         result = client_noconsensus.staking.create_staking(0, address, address, amount=10 ** 18 * 2000000,
                                                            transaction_cfg=pip_test.cfg.transaction_cfg)
@@ -360,18 +361,15 @@ class TestUpgradeVP:
         programversion = client_noconsensus.staking.get_version()
         assert_code(programversion, pip.cfg.version0)
         pip_test.economic.wait_settlement(pip_test.node)
-
         verifier_list = get_pledge_list(clients_consensus[0].ppos.getVerifierList)
         log.info('Get verifier list : {}'.format(verifier_list))
         assert pip_test.node.node_id in verifier_list
-
+        # submit version proposal and wait to active, staking node panic
         submitvpandvote(clients_consensus, 5)
         programversion = clients_consensus[0].staking.get_version()
         assert_code(programversion, pip.cfg.version0)
         proposalinfo = pip.get_effect_proposal_info_of_vote()
         log.info('Get version proposal information : {}'.format(proposalinfo))
-        wait_block_number(pip.node, proposalinfo.get('EndVotingBlock') - 1)
-        validator_list = get_pledge_list(clients_consensus[0].ppos.getValidatorList)
         wait_block_number(pip.node, proposalinfo.get('EndVotingBlock'))
         assert_code(pip.get_status_of_proposal(proposalinfo.get('ProposalID')), 4)
         validator_list = get_pledge_list(clients_consensus[0].ppos.getValidatorList)
@@ -381,17 +379,14 @@ class TestUpgradeVP:
         log.info('Validator list : {}'.format(validator_list))
         assert pip_test.node.node_id not in validator_list
         assert_code(pip.get_status_of_proposal(proposalinfo.get('ProposalID')), 5)
-        block_reward, staking_reward = pip_test.economic.get_current_year_reward(pip_test.node, verifier_num=5)
-        pip.economic.wait_settlement(client_noconsensus.node)
-
-        count = get_block_count_number(client_noconsensus.node, 320)
+        pip.economic.wait_settlement(pip.node)
         validator_list = get_pledge_list(clients_consensus[0].ppos.getValidatorList)
         log.info('Validator list : {}'.format(validator_list))
         assert pip_test.node.node_id not in validator_list
         verifier_list = get_pledge_list(clients_consensus[0].ppos.getVerifierList)
         log.info('Get verifier list : {}'.format(verifier_list))
         assert pip_test.node.node_id not in verifier_list
-
+        # check staking reward
         block_reward, staking_reward = pip.economic.get_current_year_reward(pip.node, 5)
         log.info(f'block_reward == {block_reward}, staking_reward == {staking_reward}')
         balance_before = pip.node.eth.getBalance(address, 2 * pip.economic.settlement_size - 1)
@@ -400,6 +395,7 @@ class TestUpgradeVP:
         balance_after = pip.node.eth.getBalance(address, 2 * pip.economic.settlement_size)
         log.info('Block number {} address balace {}'.format(2 * pip.economic.settlement_size, balance_after))
         log.info('Staking reward : {}'.format(staking_reward))
+        # count = get_block_count_number(client_noconsensus.node, 320)
         assert balance_after - balance_before == staking_reward
 
     @pytest.mark.P0

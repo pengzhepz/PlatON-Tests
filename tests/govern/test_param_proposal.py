@@ -66,7 +66,7 @@ def vote(pip, pip_id, vote_option=PipConfig.vote_option_yeas):
 def votes(pip_id, pips, vote_options):
     assert len(pips) == len(vote_options)
     for pip, vote_option in zip(pips, vote_options):
-        assert vote(pip, pip_id, vote_option) == 0
+        assert_code(vote(pip, pip_id, vote_option), 0)
     return True
 
 

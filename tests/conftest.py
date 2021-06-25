@@ -14,9 +14,9 @@ def global_running_env(global_test_env):
     genesis = global_test_env.genesis_config
     backup_cfg = copy(cfg)
     id_cfg = id(cfg)
-    # if not global_test_env.running:
-    #     log.info("The environment is not running, redeploying the environment")
-    #     global_test_env.deploy_all()
+    if not global_test_env.running:
+        log.info("The environment is not running, redeploying the environment")
+        global_test_env.deploy_all()
     yield global_test_env
     if id_cfg != id(global_test_env.cfg) or id(genesis) != id(global_test_env.genesis_config):
         log.info("Environment configuration changes, restore configuration files and redeploy")
