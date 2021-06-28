@@ -14,9 +14,9 @@ def connect_web3(url, chain_id=100):
     :return:
     """
     if "ws" in url:
-        w3 = Web3(WebsocketProvider(url), chain_id=chain_id)
+        w3 = Web3(WebsocketProvider(url), chain_id=chain_id, hrp_type='atp')
     else:
-        w3 = Web3(HTTPProvider(url), chain_id=chain_id)
+        w3 = Web3(HTTPProvider(url), chain_id=chain_id, hrp_type='atp')
     w3.middleware_stack.inject(geth_poa_middleware, layer=0)
 
     return w3

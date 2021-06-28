@@ -1,10 +1,10 @@
 import time
-from typing import List
 import pytest
+from typing import List
 from common.log import log
 from tests.lib import check_node_in_list, upload_platon, wait_block_number, assert_code
 from tests.lib.genesis import to_genesis
-from tests.ppos.test_general_punishment import verify_low_block_rate_penalty, get_out_block_penalty_parameters
+from tests.ppos.slashing.test_general_punishment import verify_low_block_rate_penalty, get_out_block_penalty_parameters
 from tests.lib.client import Client, get_client_by_nodeid
 from tests.lib.config import PipConfig
 
@@ -22,32 +22,36 @@ def version_proposal(pip, to_version, voting_rounds):
     result = pip.submitVersion(pip.node.node_id, str(time.time()), to_version, voting_rounds,
                                pip.node.staking_address,
                                transaction_cfg=pip.cfg.transaction_cfg)
-    log.info('submit version proposal result : {}'.format(result))
-    return get_proposal_result(pip, pip.cfg.version_proposal, result)
+    code = result.get('code')
+    log.info('submit version proposal result : {}'.format(code))
+    return get_proposal_result(pip, pip.cfg.version_proposal, code)
 
 
 def param_proposal(pip, module, name, value):
     result = pip.submitParam(pip.node.node_id, str(time.time()), module, name, value, pip.node.staking_address,
                              transaction_cfg=pip.cfg.transaction_cfg)
-    log.info('submit param proposal result : {}'.format(result))
-    return get_proposal_result(pip, pip.cfg.param_proposal, result)
+    code = result.get('code')
+    log.info('submit param proposal result : {}'.format(code))
+    return get_proposal_result(pip, pip.cfg.param_proposal, code)
 
 
 def text_proposal(pip):
     result = pip.submitText(pip.node.node_id, str(time.time()), pip.node.staking_address,
                             transaction_cfg=pip.cfg.transaction_cfg)
-    log.info('submit text proposal result:'.format(result))
-    return get_proposal_result(pip, pip.cfg.text_proposal, result)
+    code = result.get('code')
+    log.info('submit text proposal result:'.format(code))
+    return get_proposal_result(pip, pip.cfg.text_proposal, code)
 
 
 def cancel_proposal(pip, pip_id, voting_rounds):
     result = pip.submitCancel(pip.node.node_id, str(time.time()), voting_rounds, pip_id,
                               pip.node.staking_address, transaction_cfg=pip.cfg.transaction_cfg)
-    log.info('submit cancel proposal result : {}'.format(result))
-    return get_proposal_result(pip, pip.cfg.cancel_proposal, result)
+    code = result.get('code')
+    log.info('submit cancel proposal result : {}'.format(code))
+    return get_proposal_result(pip, pip.cfg.cancel_proposal, code)
 
 
-def get_proposal_result(pip, proposal_type, code):
+def get_proposal_result(pip: object, proposal_type: object, code: object) -> object:
     if code == 0:
         pip_info = pip.get_effect_proposal_info_of_vote(proposal_type)
         log.info(f"proposal id is {pip_info['ProposalID']}")
@@ -210,7 +214,7 @@ class TestSlashing:
         pips = get_pips(verifiers)
         pip = pips[0]
         pip_id = version_proposal(pip, pip.cfg.version5, 5)
-        pip_id = cancel_proposal(pip, pip_id, 2)
+        pip_id = cancel_proposal(pip, pip_id, 3)
         vote(pip, pip_id)
         # step2：停止节点，等待节点被零出块处罚
         make_0mb_slash(verifiers[0], verifiers[1])
@@ -358,19 +362,19 @@ class TestSlashing:
         # step1：提交版本升级提案
         pips = get_pips(verifiers)
         pip = pips[0]
-        pip_id = version_proposal(pip, pip.cfg.version5, 5)
         # setp2：使用其他节点，对提案进行投票，使提案通过
+        upload_platon(pips[0].node, pips[0].cfg.PLATON_NEW_BIN)
         upload_platon(pips[1].node, pips[1].cfg.PLATON_NEW_BIN)
         upload_platon(pips[2].node, pips[2].cfg.PLATON_NEW_BIN)
         upload_platon(pips[3].node, pips[3].cfg.PLATON_NEW_BIN)
+        pip_id = version_proposal(pip, pip.cfg.version5, 5)
         vote(pips[1], pip_id)
         vote(pips[2], pip_id)
         vote(pips[3], pip_id)
         # setp3: 在投票期内，构造节点零出块，并等待提案通过
         start_block, end_block = make_0mb_slash(verifiers[0], verifiers[1])
         wait_proposal_active(pip, pip_id)
-        # step4：更新零出块节点二进制，进行版本声明
-        upload_platon(pip.node, pip.cfg.PLATON_NEW_BIN)
+        # step4：进行版本声明
         assert_code(version_declare(pip), 302023)
         # step5: 等待零出块冻结结束，进行版本声明
         wait_block_number(pip.node, end_block)
@@ -395,7 +399,7 @@ class TestSlashing:
         # step1：
         pips = get_pips(verifiers)
         pip = pips[0]
-        pip_id = version_proposal(pip, pip.cfg.version5, 10)
+        pip_id = version_proposal(pip, pip.cfg.version5, 20)
         upload_platon(pip.node, pip.cfg.PLATON_NEW_BIN)
         vote(pip, pip_id)
         # step2：停止节点，等待节点被零出块处罚
@@ -589,13 +593,3 @@ class TestSlashing:
         time.sleep(3)
         assert pip.pip.web3.isConnected() is False
 
-    def test_debug(self, all_clients):
-        pips = get_pips(all_clients)
-        pip = pips[0]
-        # step1: 链升级后，节点未进行升级
-        pip_id = version_proposal(pip, pip.cfg.version4, 20)
-        for pip in pips:
-            upload_platon(pip.node, pip.cfg.PLATON_NEW_BIN)
-            print(vote(pip, pip_id, pip.cfg.vote_option_yeas))
-        wait_proposal_active(pips[1], pip_id)
-        log.info(f'current active version: {pips[1].pip.getActiveVersion()}')

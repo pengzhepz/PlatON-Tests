@@ -36,9 +36,6 @@ class Account:
         return accounts
 
     def get_rand_account(self):
-        # todo 实现随机
-        # for account in self.accounts.values():
-        #     return account
         return random.choice(list(self.accounts.values()))
 
     def sendTransaction(self, connect, data, from_address, to_address, gasPrice, gas, value, check_address=True):

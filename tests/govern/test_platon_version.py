@@ -31,7 +31,7 @@ class TestPlatonVersion:
         client = client_noconsensus
         address, _ = client.economic.account.generate_account(client.node.web3, 10 ** 18 * 10000000)
         result = client.staking.create_staking(0, address, address)
-        assert_code(result, 301005)
+        assert_code(result, 301004)
 
     @pytest.mark.P2
     def test_VE_DE_004_VE_DE_011(self, new_genesis_env, client_noconsensus):
@@ -73,6 +73,7 @@ class TestPlatonVersion:
         new_genesis_env.set_genesis(genesis.to_dict())
         try:
             new_genesis_env.deploy_all()
+            # todo
         except Exception as e:
             log.info('Deploy failed error measage {}'.format(e.args[0]))
             index = e.args[0].find('ZeroProduceCumulativeTime')
@@ -256,19 +257,12 @@ class TestPlatonVersion:
         wait_block_number(clients_consensus[0].node, proposalinfo.get('ActiveBlock'))
         consensus_node = new_genesis_env.get_rand_node()
         test_node = new_genesis_env.get_a_normal_node()
-        test_node.clean()
-        test_node.deploy_me(new_genesis_env.cfg.genesis_tmp)
-        test_node.admin.addPeer(consensus_node.enode)
-        time.sleep(5)
-        assert test_node.web3.net.peerCount > 0, 'Join the chain failed'
-        assert test_node.block_number > 0, "Non-consensus node sync block failed, block height: {}".format(test_node.block_number)
-        time.sleep(5)
         client = get_client_by_nodeid(test_node.node_id, all_clients)
-        address, _ = client.economic.account.generate_account(client.node.web3, 10**18 * 10000000)
-        result = client.staking.create_staking(0, address, address)
-        assert_code(result, 301004)
         upload_platon(test_node, client.pip.cfg.PLATON_NEW_BIN)
         test_node.restart()
+        test_node.admin.addPeer(consensus_node.enode)
+        time.sleep(5)
+        address, _ = client.economic.account.generate_account(client.node.web3, 10 ** 18 * 10000000)
         result = client.staking.create_staking(0, address, address)
         assert_code(result, 0)
 

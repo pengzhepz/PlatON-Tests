@@ -109,7 +109,6 @@ class Genesis:
     gasUsed: str
     parentHash: str
 
-
     def to_dict(self):
         from copy import copy
         data = copy(self.__dict__)

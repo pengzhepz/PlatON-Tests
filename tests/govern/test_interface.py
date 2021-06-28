@@ -634,11 +634,12 @@ class TestGasUse:
     @allure.title('Verify gas --submittext and vote')
     def test_TP_GA_001(self, client_verifier):
         pip = client_verifier.pip
+        pip.pip.need_quota_gas = False
         pip_id = str(time.time())
         data = rlp.encode([rlp.encode(int(2000)), rlp.encode(bytes.fromhex(pip.node.node_id)), rlp.encode(pip_id)])
         balance_before = self.get_balance(pip)
         result = pip.submitText(pip.node.node_id, pip_id, pip.node.staking_address,
-                                transaction_cfg=pip.cfg.transaction_cfg)
+                                transaction_cfg={'gasPrice': 3000000000000000})
         log.info('Submit text proposal result : {}'.format(result))
         assert_code(result, 0)
         proposalinfo = pip.get_effect_proposal_info_of_vote(pip.cfg.text_proposal)
@@ -655,7 +656,7 @@ class TestGasUse:
                            rlp.encode(pip.cfg.vote_option_yeas), rlp.encode(int(pip.node.program_version)),
                            rlp.encode(bytes.fromhex(version_sign))])
         result = pip.vote(pip.node.node_id, proposalinfo.get('ProposalID'), pip.cfg.vote_option_yeas,
-                          pip.node.staking_address, transaction_cfg=pip.cfg.transaction_cfg)
+                          pip.node.staking_address, transaction_cfg={'gasPrice': 3000000000000000})
         log.info('Vote reuslt : {}'.format(result))
         assert_code(result, 0)
         balance_after_vote = pip.node.eth.getBalance(pip.node.staking_address)
@@ -668,10 +669,11 @@ class TestGasUse:
     @allure.title('Verify gas --submitversion')
     def test_VP_GA_001(self, no_vp_proposal):
         pip = no_vp_proposal
+        pip.pip.need_quota_gas = False
         pip_id = str(time.time())
         balance_before = self.get_balance(pip)
         result = pip.submitVersion(pip.node.node_id, pip_id, pip.cfg.version5, 1, pip.node.staking_address,
-                                   transaction_cfg=pip.cfg.transaction_cfg)
+                                   transaction_cfg={'gasPrice': 3000000000000000})
         log.info('Submit version proposal result : {}'.format(result))
         assert_code(result, 0)
         balance_after = self.get_balance(pip)
@@ -685,10 +687,11 @@ class TestGasUse:
     @allure.title('Verify gas --submitparam_and_cancel')
     def test_PP_GA_001_CP_GA_001(self, no_vp_proposal):
         pip = no_vp_proposal
+        pip.pip.need_quota_gas = False
         pip_id = str(time.time())
         balance_before = self.get_balance(pip)
         result = pip.submitParam(pip.node.node_id, pip_id, 'slashing', 'slashBlocksReward', '123',
-                                 pip.node.staking_address, transaction_cfg=pip.cfg.transaction_cfg)
+                                 pip.node.staking_address, transaction_cfg={'gasPrice': 3000000000000000})
         log.info('Submit param proposal result : {}'.format(result))
         assert_code(result, 0)
         proposalinfor_param = pip.get_effect_proposal_info_of_vote(pip.cfg.param_proposal)
@@ -703,7 +706,7 @@ class TestGasUse:
 
         pip_id = str(time.time())
         result = pip.submitCancel(pip.node.node_id, pip_id, 1, proposalinfor_param.get('ProposalID'),
-                                  pip.node.staking_address, transaction_cfg=pip.cfg.transaction_cfg)
+                                  pip.node.staking_address, transaction_cfg={'gasPrice': 3000000000000000})
         log.info('Submit cancel proposal result : {}'.format(result))
         assert_code(result, 0)
         assert_code(balance_before - balance_after, (gas + 530000) * pip.cfg.transaction_cfg.get('gasPrice'))
@@ -720,9 +723,10 @@ class TestGasUse:
     @allure.title('Verify gas --declare version')
     def test_declareversion(self, client_verifier):
         pip = client_verifier.pip
+        pip.pip.need_quota_gas = False
         balance_before = self.get_balance(pip)
         result = pip.declareVersion(pip.node.node_id, pip.node.staking_address,
-                                    transaction_cfg=pip.cfg.transaction_cfg)
+                                    transaction_cfg={'gasPrice': 3000000000000000})
         log.info('Declare version result : {}'.format(result))
         assert_code(result, 0)
         version_sign = pip.node.program_version_sign[2:]

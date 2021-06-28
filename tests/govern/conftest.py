@@ -28,22 +28,22 @@ def version_proposal_vote(pip, vote_option=None):
         raise Exception('there is no voting version proposal')
     if proposalinfo.get('NewVersion') == pip.cfg.version5:
         upload_platon(pip.node, pip.cfg.PLATON_NEW_BIN)
-        log.info('Replace the node {} version to {}'.format(pip.node.node_id, pip.cfg.version5))
+        log.info('Replace the node {} version to {}'.format(pip.node.node_mark, pip.cfg.version5))
     elif proposalinfo.get('NewVersion') == pip.cfg.version8:
         upload_platon(pip.node, pip.cfg.PLATON_NEW_BIN8)
-        log.info('Replace the node {} version to {}'.format(pip.node.node_id, pip.cfg.version8))
+        log.info('Replace the node {} version to {}'.format(pip.node.node_mark, pip.cfg.version8))
     elif proposalinfo.get('NewVersion') == pip.cfg.version9:
         upload_platon(pip.node, pip.cfg.PLATON_NEW_BIN9)
-        log.info('Replace the node {} version to {}'.format(pip.node.node_id, pip.cfg.version9))
+        log.info('Replace the node {} version to {}'.format(pip.node.node_mark, pip.cfg.version9))
     else:
         raise Exception('The new version of the proposal is{}'.format(proposalinfo.get('NewVersion')))
     pip.node.restart()
-    log.info('Restart the node {}'.format(pip.node.node_id))
+    log.info('Restart the node {}'.format(pip.node.node_mark))
     if not vote_option:
         vote_option = pip.cfg.vote_option_yeas
     result = pip.vote(pip.node.node_id, proposalinfo.get('ProposalID'), vote_option,
                       pip.node.staking_address, transaction_cfg=pip.cfg.transaction_cfg)
-    log.info('The node {} vote result {}'.format(pip.node.node_id, result))
+    log.info('The node {} vote result {}'.format(pip.node.node_mark, result))
     return result
 
 
@@ -301,7 +301,7 @@ def preactive_large_version_proposal_pips(all_clients):
     client_verifiers = get_clients_by_nodeid(verifier_list, all_clients)
     pips = [client.pip for client in client_verifiers]
     result = pips[0].submitVersion(pips[0].node.node_id, str(time.time()),
-                                   pips[0].cfg.version8, 3, pips[0].node.staking_address,
+                                   pips[0].cfg.version8, 5, pips[0].node.staking_address,
                                    transaction_cfg=pips[0].cfg.transaction_cfg)
     log.info('submit version proposal, result : {}'.format(result))
     proposalinfo = pips[0].get_effect_proposal_info_of_vote()
