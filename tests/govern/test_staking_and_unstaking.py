@@ -391,23 +391,23 @@ class TestUnstaking:
     @pytest.mark.P2
     @allure.title('Verify unstake function')
     def test_UNS_AM_009_011_013(self, new_genesis_env, clients_noconsensus):
-        genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
-        genesis.economicModel.staking.unStakeFreezeDuration = 2
-        genesis.economicModel.slashing.maxEvidenceAge = 1
-        genesis.economicModel.gov.versionProposalVoteDurationSeconds = 1000
-        genesis.economicModel.gov.textProposalVoteDurationSeconds = 200
-        new_genesis_env.set_genesis(genesis.to_dict())
-        new_genesis_env.deploy_all()
+        # genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
+        # genesis.economicModel.staking.unStakeFreezeDuration = 2
+        # genesis.economicModel.slashing.maxEvidenceAge = 1
+        # genesis.economicModel.gov.versionProposalVoteDurationSeconds = 1000
+        # genesis.economicModel.gov.textProposalVoteDurationSeconds = 200
+        # new_genesis_env.set_genesis(genesis.to_dict())
+        # new_genesis_env.deploy_all()
         pip_test = clients_noconsensus[0].pip
         address, _ = pip_test.economic.account.generate_account(pip_test.node.web3, 10**18 * 20000000)
         plan = [{'Epoch': 20, 'Amount': 10**18 * 2000000}]
         result = clients_noconsensus[0].restricting.createRestrictingPlan(address, plan, address,
                                                                           transaction_cfg=pip_test.cfg.transaction_cfg)
-        log.info('CreateRestrictingPlan result : {}'.format(result))
-        assert_code(result, 0)
+        # log.info('CreateRestrictingPlan result : {}'.format(result))
+        # assert_code(result, 0)
         result = clients_noconsensus[0].staking.create_staking(1, address, address,
                                                                transaction_cfg=pip_test.cfg.transaction_cfg)
-        log.info('Create staking result : {}'.format(result))
+        log.info(f'Create staking result : {result}, {clients_noconsensus[0].node.node_mark}')
         assert_code(result, 0)
         pip_test.economic.wait_settlement(pip_test.node)
         result = pip_test.submitVersion(pip_test.node.node_id, str(time.time()), pip_test.cfg.version5,

@@ -284,7 +284,6 @@ def preactive_proposal_pips(all_clients):
     for pip in pips:
         result = version_proposal_vote(pip)
         assert_code(result, 0)
-        print('block_number ====', pip.node.block_number)
     wait_block_number(pips[0].node, proposalinfo.get('EndVotingBlock'))
     assert pips[0].get_status_of_proposal(proposalinfo.get('ProposalID')) == 4
     return pips

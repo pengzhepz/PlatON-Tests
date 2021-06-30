@@ -933,16 +933,22 @@ class TestPreactiveProposalVE:
     @allure.title('There is a preactive proposal, verifier declare version')
     def test_DE_VE_064(self, preactive_proposal_pips):
         pip = preactive_proposal_pips[0]
-        result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN3, pip.cfg.version3)
-        assert_code(result, 302028)
 
         result = wrong_verisonsign_declare(pip, preactive_proposal_pips[1])
         assert_code(result, 302024)
 
-        result = wrong_verison_declare(pip, pip.cfg.version5)
+        result = wrong_verison_declare(pip, pip.chain_version)
         assert_code(result, 302024)
 
-        result = wrong_verison_declare(pip, pip.chain_version)
+    @pytest.mark.P2
+    @allure.title('There is a preactive proposal, verifier declare version')
+    def test_DE_VE_064_2(self, preactive_proposal_pips):
+        pip = preactive_proposal_pips[0]
+
+        result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN3, pip.cfg.version3)
+        assert_code(result, 302028)
+
+        result = wrong_verison_declare(pip, pip.cfg.version5)
         assert_code(result, 302024)
 
     @pytest.mark.P2
@@ -1528,7 +1534,7 @@ class TestDV:
 class TestVotedCADV:
     def get_candidate_no_verifier(self, client_list):
         verifier_list = get_pledge_list(client_list[0].ppos.getVerifierList)
-        log.info('verifier list : {}'.format(verifier_list))
+        log.info(f'verifier list : {len(verifier_list)}, {verifier_list}')
         candidate_list = get_pledge_list(client_list[0].ppos.getCandidateList)
         log.info('candidate list : {}'.format(candidate_list))
         for nodeid in candidate_list:
@@ -1545,7 +1551,7 @@ class TestVotedCADV:
         new_genesis_env.set_genesis(genesis.to_dict())
         new_genesis_env.deploy_all()
         submitvpandvote(clients_consensus, votingrounds=40)
-        createstaking(clients_noconsensus)
+        createstaking(clients_noconsensus, platon_bin=clients_noconsensus[0].pip.cfg.PLATON_NEW_BIN)
         clients_consensus[0].economic.wait_settlement(clients_consensus[0].node)
         client = self.get_candidate_no_verifier(all_clients)
         pip = client.pip
@@ -1614,7 +1620,7 @@ class TestVotedCADV:
             new_genesis_env.set_genesis(genesis.to_dict())
             new_genesis_env.deploy_all()
             submitvpandvote(clients_consensus, votingrounds=40, version=clients_noconsensus[0].pip.cfg.version8)
-            createstaking(clients_noconsensus)
+            createstaking(clients_noconsensus, clients_noconsensus[0].pip.cfg.PLATON_NEW_BIN8)
             clients_consensus[0].economic.wait_settlement(clients_consensus[0].node)
             client = self.get_candidate_no_verifier(all_clients)
             pip = client.pip

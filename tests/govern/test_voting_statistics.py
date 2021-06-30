@@ -26,11 +26,24 @@ def submitvpandvote(clients, votingrounds=4, version=None):
         log.info('Node {} vote result {}'.format(pip.node.node_id, result))
         assert_code(result, 0)
 
-
-def createstaking(client, reward_per=0):
+def createstaking_bak(client, reward_per=0):
     address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 3)
     result = client.staking.create_staking(0, address, address, amount=client.economic.create_staking_limit * 2, reward_per=reward_per)
-    # log.info('Node {} staking result : {}'.format(client.node.node_id, result))
+    assert_code(result, 0)
+
+def createstaking(obj, platon_bin=None, reward_per=0):
+    if isinstance(obj, Client):
+        objs = []
+        objs.append(obj)
+        obj = objs
+    for client in obj:
+        if platon_bin:
+            log.info('Need replace the platon of the node')
+            upload_platon(client.node, platon_bin)
+            client.node.restart()
+    address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 3)
+    result = client.staking.create_staking(0, address, address, amount=client.economic.create_staking_limit * 2, reward_per=reward_per)
+    log.info('Node {} staking result : {}'.format(client.node.node_id, result))
     assert_code(result, 0)
 
 
