@@ -8,7 +8,7 @@ from tests.lib.utils import wait_block_number, assert_code, get_governable_param
 from tests.lib.client import get_client_by_nodeid
 import time
 import math
-from tests.govern.test_voting_statistics import submitcppandvote, submitcvpandvote, submitppandvote
+from tests.pip.test_voting_statistics import submitcppandvote, submitcvpandvote, submitppandvote
 
 
 @pytest.mark.P0
@@ -1927,14 +1927,14 @@ class TestGas:
     @allure.title('Submit version proposal function verification---gasprice')
     def test_VP_GP_001_VP_GP_002(self, no_vp_proposal):
         pip = no_vp_proposal
-        transaction_cfg = {"gasPrice": 2100000000000000 - 1}
+        transaction_cfg = {"gasPrice": 21000000000000 - 1}
         try:
             pip.submitVersion(pip.node.node_id, str(time.time()), pip.cfg.version5, 1,
                               pip.node.staking_address, transaction_cfg=transaction_cfg)
         except ValueError as e:
             assert e.args[0].get('message') == "the tx data is invalid: Invalid parameter:gas price is lower than minimum"
 
-        transaction_cfg = {"gasPrice": 2100000000000000}
+        transaction_cfg = {"gasPrice": 21000000000000}
         result = pip.submitVersion(pip.node.node_id, str(time.time()), pip.cfg.version5, 1,
                                    pip.node.staking_address, transaction_cfg=transaction_cfg)
         log.info('Submit version proposal result : {}'.format(result))
@@ -1944,14 +1944,14 @@ class TestGas:
     @allure.title('Submit param proposal function verification---gasprice')
     def test_PP_GP_001_PP_GP_002(self, no_vp_proposal):
         pip = no_vp_proposal
-        transaction_cfg = {"gasPrice": 2000000000000000 - 1}
+        transaction_cfg = {"gasPrice": 20000000000000 - 1}
         try:
             pip.submitParam(pip.node.node_id, str(time.time()), 'slashing', 'slashBlocksReward', '123',
                             pip.node.staking_address, transaction_cfg=transaction_cfg)
         except ValueError as e:
             assert e.args[0].get('message') == "the tx data is invalid: Invalid parameter:gas price is lower than minimum"
 
-        transaction_cfg = {"gasPrice": 2000000000000000}
+        transaction_cfg = {"gasPrice": 20000000000000}
         result = pip.submitParam(pip.node.node_id, str(time.time()), 'slashing', 'slashBlocksReward', '123',
                                  pip.node.staking_address, transaction_cfg=transaction_cfg)
         log.info('Submit param proposal result : {}'.format(result))
@@ -1961,14 +1961,14 @@ class TestGas:
     @allure.title('Submit text proposal function verification---gasprice')
     def test_TP_GP_001_TP_GP_002(self, client_verifier):
         pip = client_verifier.pip
-        transaction_cfg = {"gasPrice": 1500000000000000 - 1}
+        transaction_cfg = {"gasPrice": 15000000000000 - 1}
         try:
             pip.submitText(pip.node.node_id, str(time.time()), pip.node.staking_address,
                            transaction_cfg=transaction_cfg)
         except ValueError as e:
             assert e.args[0].get('message') == "the tx data is invalid: Invalid parameter:gas price is lower than minimum"
 
-        transaction_cfg = {"gasPrice": 1500000000000000}
+        transaction_cfg = {"gasPrice": 15000000000000}
         result = pip.submitText(pip.node.node_id, str(time.time()), pip.node.staking_address,
                                 transaction_cfg=transaction_cfg)
         log.info('Submit text proposal result : {}'.format(result))
@@ -1978,7 +1978,7 @@ class TestGas:
     @allure.title('Submit cancel proposal function verification---gas')
     def test_CP_GP_001_CP_GP_002(self, no_vp_proposal):
         pip = no_vp_proposal
-        transaction_cfg = {"gasPrice": 3000000000000000 - 1, "gas": 100000}
+        transaction_cfg = {"gasPrice": 30000000000000 - 1, "gas": 100000}
         try:
             result = pip.submitVersion(pip.node.node_id, str(time.time()), pip.cfg.version5, 3,
                                        pip.node.staking_address, transaction_cfg=pip.cfg.transaction_cfg)
@@ -1989,7 +1989,7 @@ class TestGas:
                              pip.node.staking_address, transaction_cfg=transaction_cfg)
         except ValueError as e:
             assert e.args[0].get('message') == "the tx data is invalid: Invalid parameter:gas price is lower than minimum"
-        transaction_cfg = {"gasPrice": 3000000000000000}
+        transaction_cfg = {"gasPrice": 30000000000000}
         result = pip.submitCancel(pip.node.node_id, str(time.time()), 1, proposalinfo.get('ProposalID'),
                                   pip.node.staking_address, transaction_cfg=transaction_cfg)
         log.info('Submit cancel proposal result : {}'.format(result))

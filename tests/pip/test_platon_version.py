@@ -4,7 +4,7 @@ from tests.lib.utils import assert_code, wait_block_number, upload_platon, get_p
 from tests.lib.client import get_client_by_nodeid
 import pytest
 import time, os
-from tests.govern.test_voting_statistics import submitvpandvote
+from tests.pip.test_voting_statistics import submitvpandvote
 from common.log import log
 from hexbytes import HexBytes
 from common.connect import connect_web3
@@ -31,7 +31,8 @@ class TestPlatonVersion:
         client = client_noconsensus
         address, _ = client.economic.account.generate_account(client.node.web3, 10 ** 18 * 10000000)
         result = client.staking.create_staking(0, address, address)
-        assert_code(result, 301004)
+        # 预期结果在0.16.0版本，从301004改为301005
+        assert_code(result, 301005)
 
     @pytest.mark.P2
     def test_VE_DE_004_VE_DE_011(self, new_genesis_env, client_noconsensus):

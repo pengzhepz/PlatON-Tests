@@ -5,10 +5,10 @@ import pytest
 import allure
 import time
 import math
-from tests.govern.conftest import version_proposal_vote, proposal_vote
+from tests.pip.conftest import version_proposal_vote, proposal_vote
 from tests.lib import Genesis, PipConfig
 from dacite import from_dict
-from tests.govern.test_voting_statistics import submitcvpandvote, submitcppandvote, submittpandvote, \
+from tests.pip.test_voting_statistics import submitcvpandvote, submitcppandvote, submittpandvote, \
     submitvpandvote, submitppandvote
 from common.key import mock_duplicate_sign
 
@@ -43,21 +43,35 @@ def new_node_no_proposal(no_vp_proposal, clients_noconsensus, all_clients):
     return clients_noconsensus[0].pip
 
 
-def replace_platon_and_staking(pip, platon_bin):
+def replace_platon_and_staking(pip, platon_bin, sender=None):
     all_nodes = pip.economic.env.get_all_nodes()
     all_clients = []
     for node in all_nodes:
         all_clients.append(Client(pip.economic.env, node, StakingConfig("externalId", "nodeName", "website",
                                                                         "details")))
-    client = get_client_by_nodeid(pip.node.node_id, all_clients)
     upload_platon(pip.node, platon_bin)
     log.info('Replace the platon of the node {}'.format(pip.node.node_id))
     pip.node.restart()
     log.info('Restart the node {}'.format(pip.node.node_id))
-    address, _ = pip.economic.account.generate_account(pip.node.web3,
-                                                       10 * pip.economic.genesis.economicModel.staking.stakeThreshold)
-    result = client.staking.create_staking(0, address, address, transaction_cfg=pip.cfg.transaction_cfg)
-    log.info('Node {} staking result {}'.format(pip.node.node_id, result))
+
+    """
+    0.16.0版本，节点与链版本不匹配会panic，因此在restart节点后将交易往其他节点发
+    """
+    # 获取节点信息
+    node_id = pip.node.node_id
+    program_version = pip.node.program_version
+    program_version_sign = pip.node.program_version_sign
+    bls_pubkey = pip.node.blspubkey
+    bls_proof = pip.node.schnorr_NIZK_prove
+    # 创建质押账户，将质押交易发往sender节点
+    if not sender:
+        sender = get_client_by_nodeid(node_id, all_clients)
+    address, _ = sender.economic.account.generate_account(sender.node.web3,
+                                                          10 * sender.economic.genesis.economicModel.staking.stakeThreshold)
+    result = sender.staking.create_staking(0, address, address, node_id=node_id, program_version=program_version,
+                                           program_version_sign=program_version_sign, bls_pubkey=bls_pubkey,
+                                           bls_proof=bls_proof, transaction_cfg=pip.cfg.transaction_cfg)
+    log.info('Node {} staking result {}'.format(node_id, result))
     return result
 
 
@@ -149,9 +163,10 @@ class TestPreactiveProposalStaking:
     @allure.title('There is preactive proposal, verify stake function')
     def test_ST_PR_002(self, new_genesis_env, new_node_no_proposal, all_clients):
         pip = new_node_no_proposal
+        sender = all_clients[0]
         self.preactive_proposal(all_clients)
-        result = replace_platon_and_staking(pip, pip.cfg.PLATON_NEW_BIN1)
-        assert_code(result, 301005)
+        result = replace_platon_and_staking(pip, pip.cfg.PLATON_NEW_BIN1, sender)
+        assert_code(result, 301004)
 
     @pytest.mark.P1
     @allure.title('There is preactive proposal, verify stake function')
@@ -399,8 +414,8 @@ class TestUnstaking:
         # new_genesis_env.set_genesis(genesis.to_dict())
         # new_genesis_env.deploy_all()
         pip_test = clients_noconsensus[0].pip
-        address, _ = pip_test.economic.account.generate_account(pip_test.node.web3, 10**18 * 20000000)
-        plan = [{'Epoch': 20, 'Amount': 10**18 * 2000000}]
+        address, _ = pip_test.economic.account.generate_account(pip_test.node.web3, 10 ** 18 * 20000000)
+        plan = [{'Epoch': 20, 'Amount': 10 ** 18 * 2000000}]
         result = clients_noconsensus[0].restricting.createRestrictingPlan(address, plan, address,
                                                                           transaction_cfg=pip_test.cfg.transaction_cfg)
         # log.info('CreateRestrictingPlan result : {}'.format(result))
@@ -468,13 +483,13 @@ class TestUnstaking:
         new_genesis_env.deploy_all()
         for client in clients_noconsensus:
             pip = client.pip
-            address, _ = pip.economic.account.generate_account(pip.node.web3, 10**18 * 20000000)
-            plan = [{'Epoch': 20, 'Amount': 10**18 * 2000000}]
+            address, _ = pip.economic.account.generate_account(pip.node.web3, 10 ** 18 * 20000000)
+            plan = [{'Epoch': 20, 'Amount': 10 ** 18 * 2000000}]
             result = client.restricting.createRestrictingPlan(address, plan, address,
                                                               transaction_cfg=pip.cfg.transaction_cfg)
             log.info('CreateRestrictingPlan result : {}'.format(result))
             assert_code(result, 0)
-            result = client.staking.create_staking(1, address, address, amount=10**18 * 1800000,
+            result = client.staking.create_staking(1, address, address, amount=10 ** 18 * 1800000,
                                                    transaction_cfg=pip.cfg.transaction_cfg)
             log.info('Create staking result : {}'.format(result))
             assert_code(result, 0)
@@ -1043,6 +1058,3 @@ class TestSlashing:
 #     log.info('Get nodeid {} candidate infor {}'.format(pip_stop.node.node_id, result))
 #     assert_code(result, 301204)
 #     assert result.get('Ret') == 'Query candidate info failed:Candidate info is not found'
-
-
-

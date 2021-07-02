@@ -9,7 +9,7 @@ from tests.lib.utils import wait_block_number, get_the_dynamic_parameter_gas_fee
 import rlp
 from typing import List
 import time, math, pytest
-from tests.govern.test_voting_statistics import createstaking
+from tests.pip.test_voting_statistics import createstaking
 from copy import copy
 from conf import settings as conf
 
