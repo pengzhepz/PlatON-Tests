@@ -43,6 +43,13 @@ def test_staking_gas(client_new_node):
     assert_code(result, 0)
     gasPrice = node.eth.gasPrice
     log.info(gasPrice)
+    result = client_new_node.ppos.createStaking(0, benifit_address1, node.node_id, external_id,
+                                                node_name, website,
+                                                details, economic.create_staking_limit,
+                                                node.program_version, node.program_version_sign, node.blspubkey,
+                                                node.schnorr_NIZK_prove,
+                                                pri_key, reward_per = 600)
+    assert_code(result, 0)
     time.sleep(2)
     balance2 = node.eth.getBalance(benifit_address1)
     log.info(balance2)
@@ -152,14 +159,16 @@ def test_edit_candidate_gas(client_new_node):
     assert_code(result, 0)
     balance2 = node.eth.getBalance(benifit_address)
     log.info(balance2)
-    rlp_benifit_address = rlp.encode(bech32_address_bytes(benifit_address)) if benifit_address else b''
-    rlp_external_id = rlp.encode(external_id) if external_id else b''
-    rlp_node_name = rlp.encode(node_name) if node_name else b''
-    rlp_website = rlp.encode(website) if website else b''
-    rlp_details = rlp.encode(details) if details else b''
+    rlp_benifit_address = rlp.encode(bech32_address_bytes(benifit_address)) #if benifit_address else b''
+    rlp_external_id = rlp.encode(external_id) #if external_id else b''
+    rlp_node_name = rlp.encode(node_name) #if node_name else b''
+    rlp_website = rlp.encode(website) #if website else b''
+    rlp_details = rlp.encode(details) #if details else b''
     rlp_reward_per = rlp.encode(reward_per) if reward_per else b''
     data = HexBytes(rlp.encode([rlp.encode(int(1001)), rlp_benifit_address, rlp.encode(bytes.fromhex(node.node_id)), rlp_reward_per, rlp_external_id,
                                 rlp_node_name, rlp_website, rlp_details]))
+    estimated_gas = node.eth.estimateGas({"from": benifit_address, "to": node.ppos.stakingAddress, "data": data})
+    print(estimated_gas)
     gas = get_the_dynamic_parameter_gas_fee(data) + 21000 + 6000 + 12000
     log.info(gas)
 
