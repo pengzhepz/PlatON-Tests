@@ -9,7 +9,7 @@
             "period": 10000,
             "validatorMode": "ppos"
         },
-        "genesisVersion": 65536,
+        "genesisVersion": 65792,
         "addressHRP": "lat"
     },
     "economicModel": {

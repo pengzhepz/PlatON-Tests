@@ -3,14 +3,14 @@ from tests.lib.utils import assert_code, wait_block_number, get_blockhash, get_t
 from dacite import from_dict
 from tests.lib import Genesis
 from common.key import mock_duplicate_sign
-from tests.govern.test_voting_statistics import submitppandvote, submitcvpandvote, submitvpandvote, submittpandvote, submitcppandvote
+from tests.pip.test_voting_statistics import submitppandvote, submitcvpandvote, submitvpandvote, submittpandvote, submitcppandvote
 
 import time
 import math
 import rlp
 import pytest
 import allure
-from tests.govern.conftest import version_proposal_vote
+from tests.pip.conftest import version_proposal_vote
 
 cancelby = "0x0000000000000000000000000000000000000000000000000000000000000000"
 

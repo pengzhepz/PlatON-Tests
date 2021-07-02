@@ -2,13 +2,13 @@ from common.log import log
 from tests.lib.utils import assert_code, wait_block_number, upload_platon, get_pledge_list, get_block_count_number
 from tests.lib import Genesis
 from dacite import from_dict
-from tests.govern.test_voting_statistics import submittpandvote, submitcppandvote, \
+from tests.pip.test_voting_statistics import submittpandvote, submitcppandvote, \
     submitppandvote, submitcvpandvote, submitvpandvote
 import time
-from tests.govern.conftest import verifier_node_version
+from tests.pip.conftest import verifier_node_version
 import pytest
 import allure
-from tests.govern.test_declare_version import replace_version_declare
+from tests.pip.test_declare_version import replace_version_declare
 
 
 def verify_proposal_status(clients, proposaltype, status):

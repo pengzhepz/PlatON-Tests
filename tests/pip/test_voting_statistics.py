@@ -7,7 +7,7 @@ from tests.lib.utils import assert_code, wait_block_number, upload_platon
 from tests.lib.client import Client
 from tests.lib import Genesis
 from dacite import from_dict
-from tests.govern.conftest import proposal_vote, version_proposal_vote
+from tests.pip.conftest import proposal_vote, version_proposal_vote
 
 
 def submitvpandvote(clients, votingrounds=4, version=None):

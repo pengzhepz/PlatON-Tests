@@ -4,7 +4,7 @@ from tests.lib.utils import assert_code, wait_block_number, upload_platon, get_p
 from tests.lib.client import get_client_by_nodeid
 import pytest
 import time, os
-from tests.govern.test_voting_statistics import submitvpandvote
+from tests.pip.test_voting_statistics import submitvpandvote
 from common.log import log
 from hexbytes import HexBytes
 from common.connect import connect_web3

@@ -29,15 +29,15 @@ class PipConfig:
     vote_option_nays = 2
     vote_option_Abstentions = 3
     version1 = 67073
-    version2 = 65536
-    version3 = 65545
-    version4 = 65792
-    version5 = 65793
-    version6 = 65801
-    version7 = 66048
+    version2 = 65792
+    version3 = 65801
+    version4 = 66048
+    version5 = 66049
+    version6 = 66057
+    version7 = 66304
     version8 = 591617
     version9 = 526081
-    version0 = 65536
+    version0 = 65792
     transaction_cfg = {"gasPrice": 3000000000000000, "gas": 1000000}
 
 

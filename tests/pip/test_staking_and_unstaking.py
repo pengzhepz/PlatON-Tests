@@ -5,10 +5,10 @@ import pytest
 import allure
 import time
 import math
-from tests.govern.conftest import version_proposal_vote, proposal_vote
+from tests.pip.conftest import version_proposal_vote, proposal_vote
 from tests.lib import Genesis, PipConfig
 from dacite import from_dict
-from tests.govern.test_voting_statistics import submitcvpandvote, submitcppandvote, submittpandvote, \
+from tests.pip.test_voting_statistics import submitcvpandvote, submitcppandvote, submittpandvote, \
     submitvpandvote, submitppandvote
 from common.key import mock_duplicate_sign
 

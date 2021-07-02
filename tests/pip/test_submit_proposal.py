@@ -8,7 +8,7 @@ from tests.lib.utils import wait_block_number, assert_code, get_governable_param
 from tests.lib.client import get_client_by_nodeid
 import time
 import math
-from tests.govern.test_voting_statistics import submitcppandvote, submitcvpandvote, submitppandvote
+from tests.pip.test_voting_statistics import submitcppandvote, submitcvpandvote, submitppandvote
 
 
 @pytest.mark.P0

@@ -3,11 +3,11 @@ from tests.lib.utils import upload_platon, assert_code, wait_block_number, get_p
 import pytest
 import allure
 import time, struct
-from tests.govern.test_voting_statistics import submitvpandvote, createstaking, version_proposal_vote
+from tests.pip.test_voting_statistics import submitvpandvote, createstaking, version_proposal_vote
 from tests.lib import Genesis
 from tests.lib.client import get_client_by_nodeid, get_clients_by_nodeid
 from dacite import from_dict
-from tests.govern.conftest import verifier_node_version
+from tests.pip.conftest import verifier_node_version
 
 
 @pytest.fixture()
