@@ -89,11 +89,13 @@ def test_CMD_004(account_env):
     node, env = account_env
     return_list = run_ssh_cmd(node.ssh, "{} account list --keystore {}".format(node.remote_bin_file, node.remote_keystore_dir))
     old_counts = len(return_list) - 1
+    print(f'return_list={return_list}')
 
     run_ssh_cmd(node.ssh, "{} account new --keystore {}".format(node.remote_bin_file, node.remote_keystore_dir), "88888888", "88888888")
     time.sleep(0.2)
     return_list2 = run_ssh_cmd(node.ssh, "{} account list --keystore {}".format(node.remote_bin_file, node.remote_keystore_dir))
     new_counts = len(return_list2) - 1
+    print(f'return_list2={return_list2}')
     assert old_counts + 1 == new_counts
 
 
@@ -142,6 +144,60 @@ def test_CMD_004_2(account_env):
 
     run_ssh_cmd(node.ssh, "{} account new --keystore {} --password {}".format(node.remote_bin_file, node.remote_keystore_dir, env.remote_pwd_file))
     time.sleep(0.2)
+    return_list2 = run_ssh_cmd(node.ssh, "{} account list --keystore {}".format(node.remote_bin_file, node.remote_keystore_dir))
+    new_counts = len(return_list2) - 1
+    assert old_counts + 1 == new_counts
+
+
+@allure.title("Specify the keystore and hrp and create a new account by entering the password.")
+@pytest.mark.P1
+@pytest.mark.SYNC
+def test_CMD_132(account_env):
+    """
+   @describe: 新建账号，指定hrp,生成指定hrp地址
+   @step:
+   - 1. 查询地址列表长度
+   - 2. 新建账号，指定hrp
+   - 3. 查询地址列表长度
+   @expect:
+   - 1. 生成指定hrp地址
+   - 2. 地址列表长度 +1
+   """
+    node, env = account_env
+    print(node.node_mark)
+    xiugaide_hrp = 'aaa'
+    return_list = run_ssh_cmd(node.ssh, "{} account list --keystore {}".format(node.remote_bin_file, node.remote_keystore_dir))
+    old_counts = len(return_list) - 1
+
+    run_ssh_cmd(node.ssh, "{} account new --addressHRP {} --keystore {}".format(node.remote_bin_file, xiugaide_hrp, node.remote_keystore_dir), "88888888", "88888888")
+    time.sleep(2)
+    return_list2 = run_ssh_cmd(node.ssh, "{} account list --keystore {}".format(node.remote_bin_file, node.remote_keystore_dir))
+    new_counts = len(return_list2) - 1
+    assert old_counts + 1 == new_counts
+
+
+
+@allure.title("Specify the keystore without specifying hrp and create a new account by entering the password .")
+@pytest.mark.P1
+@pytest.mark.SYNC
+def test_CMD_133(account_env):
+    """
+   @describe: 新建账号， 不指定hrp，生成默认hrp地址
+   @step:
+   - 1. 查询地址列表长度
+   - 2. 新建账号，不指定hrp
+   - 3. 查询地址列表长度
+   @expect:
+   - 1. 生成默认hrp地址
+   - 2. 地址列表长度 +1
+   """
+    node, env = account_env
+    print(node.node_mark)
+    return_list = run_ssh_cmd(node.ssh, "{} account list --keystore {}".format(node.remote_bin_file, node.remote_keystore_dir))
+    old_counts = len(return_list) - 1
+
+    run_ssh_cmd(node.ssh, "{} account new --keystore {}".format(node.remote_bin_file, node.remote_keystore_dir), "88888888", "88888888")
+    time.sleep(2)
     return_list2 = run_ssh_cmd(node.ssh, "{} account list --keystore {}".format(node.remote_bin_file, node.remote_keystore_dir))
     new_counts = len(return_list2) - 1
     assert old_counts + 1 == new_counts

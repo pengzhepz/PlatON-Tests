@@ -1638,7 +1638,7 @@ class TestNet:
         new_cfg = copy(global_test_env.cfg)
         new_cfg.init_chain = False
         if net == 'main':
-            new_cfg.append_cmd = "--alaya"
+            new_cfg.append_cmd = "--platon"
         elif net == 'alayatestnet':
             new_cfg.append_cmd = "--alayatestnet"
         elif net == 'rallynet':

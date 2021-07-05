@@ -317,3 +317,52 @@ def test_AS_022(client_new_node):
     result = client_new_node.staking.increase_staking(0, address1)
     log.info(result)
     assert_code(result, 301006)
+
+
+
+
+@allure.title("Add to the list of candidates who have been penalized and are still in the freeze period")
+@pytest.mark.P0
+def test_AS_023(clients_new_node, client_consensus):
+    """
+    020:Add to the list of candidates who have been penalized and are still in the freeze period
+    021:A candidate whose holdings have been penalized has passed the freeze period
+    :param client_new_node_obj:
+    :return:
+    """
+    client = clients_new_node[0]
+    node = client.node
+    other_node = client_consensus.node
+    economic = client.economic
+    address, pri_key = economic.account.generate_account(node.web3, 10 ** 18 * 10000000)
+
+    value = economic.create_staking_limit
+    result = client.staking.create_staking(0, address, address, amount=value)
+    assert_code(result, 0)
+    economic.wait_consensus(other_node, 4)
+    validator_list = get_pledge_list(other_node.ppos.getValidatorList)
+    assert node.node_id in validator_list
+    candidate_info = other_node.ppos.getCandidateInfo(node.node_id)
+    log.info(candidate_info)
+    result = client.staking.increase_staking(0, address, amount=value)
+    assert_code(result, 0)
+    candidate_info = other_node.ppos.getCandidateInfo(node.node_id)
+    log.info(f'增持之后的candidate_info={candidate_info}')
+    log.info("Close one node")
+    node.stop()
+    for i in range(4):
+        economic.wait_consensus(other_node, i)
+        candidate_info = other_node.ppos.getCandidateInfo(node.node_id)
+        log.info(candidate_info)
+    #     if candidate_info["Ret"]["Released"] < value:
+    #         break
+    # log.info("Restart the node")
+    # node.start()
+    # time.sleep(10)
+    # result = client.staking.increase_staking(0, address)
+    # log.info(result)
+    # assert_code(result, 301103)
+    # log.info("Next settlement period")
+    # economic.wait_settlement(node, 2)
+    # result = client.staking.increase_staking(0, address)
+    # assert_code(result, 301102)
