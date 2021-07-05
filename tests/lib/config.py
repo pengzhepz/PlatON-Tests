@@ -21,7 +21,6 @@ class PipConfig:
     PLATON_NEW_BIN6 = os.path.abspath(os.path.join(BASE_DIR, "deploy/bin/newpackage/version6/platon"))
     PLATON_NEW_BIN7 = os.path.abspath(os.path.join(BASE_DIR, "deploy/bin/newpackage/version7/platon"))
     PLATON_NEW_BIN0 = os.path.abspath(os.path.join(BASE_DIR, "deploy/bin/platon"))
-    PLATON_NEW_BIN120 = os.path.abspath(os.path.join(BASE_DIR, "deploy/bin/newpackage/diffcodeversion/platon"))
     text_proposal = 1
     cancel_proposal = 4
     version_proposal = 2
@@ -30,19 +29,16 @@ class PipConfig:
     vote_option_nays = 2
     vote_option_Abstentions = 3
     version1 = 1537
-    version2 = 3841
-    version3 = 3849
-    version4 = 4096
-    version5 = 4097
-    version6 = 4105
-    version7 = 4352
+    version2 = 4096
+    version3 = 4105
+    version4 = 4352
+    version5 = 4353
+    version6 = 4361
+    version7 = 4608
     version8 = 591617
     version9 = 526081
-    version0 = 3840
+    version0 = 4096
     transaction_cfg = {"gasPrice": 3000000000000000, "gas": 1000000}
-    # Lock account account address
-    FOUNDATION_LOCKUP_ADDRESS = "atx1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpd3er4y"
-
 
 
 class EconomicConfig:
@@ -55,9 +51,9 @@ class EconomicConfig:
     # PlatON Foundation Address
     FOUNDATION_ADDRESS = "atp1m6n2wj6cmnnqnmhhaytyf6x75607t7rh6y9kyu"
     # Lock account account address
-    FOUNDATION_LOCKUP_ADDRESS = "atx1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpd3er4y"
+    FOUNDATION_LOCKUP_ADDRESS = "atp1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqp8h9fxw"
     # Pledged contract address
-    STAKING_ADDRESS = "atx1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzrzv4mm"
+    STAKING_ADDRESS = "atp1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzfyslg3"
     # PlatON incentive pool account
     INCENTIVEPOOL_ADDRESS = "atp1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr5jy24r"
     # Remaining total account
