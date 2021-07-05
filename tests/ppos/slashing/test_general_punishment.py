@@ -10,6 +10,7 @@ from tests.conftest import get_clients_noconsensus, clients_consensus, get_conse
 from tests.lib import Genesis, check_node_in_list, assert_code, von_amount, \
     get_governable_parameter_value, get_getDelegateReward_gas_fee, get_pledge_list, upload_platon, wait_block_number
 from tests.lib.client import get_client_by_nodeid
+from tests.ppos.reward.test_entrusted_income import upgrade_proposal
 
 
 def get_out_block_penalty_parameters(client, node, amount_type):
@@ -1522,11 +1523,9 @@ def test_CS_CL_034_debug(clients_new_node, client_consensus, all_clients):
 
     for i in range(len(clients_new_node)-1):
         if clients_new_node[i].node.node_id == '493c66bd7d6051e42a68bffa5f70005555886f28a0d9f10afaca4abc45723a26d6b833126fb65f11e3be51613405df664e7cda12baad538dd08b0a5774aa22cf':
-            print(i, '走if了')
             client, client1 = clients_new_node[i], clients_new_node[i+1]
             break
     else:
-        print('走else了')
         client, client1 = clients_new_node[3], clients_new_node[0]
     print(client.node.node_id)
     client2 = client_consensus
@@ -1581,50 +1580,7 @@ def test_CS_CL_034_debug(clients_new_node, client_consensus, all_clients):
     print(f'转账结果result={result}')
 
     #升级
-    # log.info([client.node.node_id for client in all_clients])
-    opt_client = client_consensus
-    # opt_client = client_consensus
-    log.info(f'opt client: {opt_client.node.node_mark, opt_client.node.node_id}')
-
-    # 获取共识节点
-    # print(opt_client.ppos.getCandidateList())
-    candidates = opt_client.ppos.getCandidateList()['Ret']
-    log.info(f'candidates: {candidates}')
-    consensus_clients = []
-    for candidate in candidates:
-        consensus_client = get_client_by_nodeid(candidate['NodeId'], all_clients)
-        log.info(f'consensus_client: {consensus_client}')
-        if consensus_client:
-            consensus_clients.append(consensus_client)
-
-    # 进行升级
-    for client in all_clients:
-        log.info(f'upload client: {client.node.node_mark}')
-        pip = client.pip
-        upload_platon(pip.node, pip.cfg.PLATON_NEW_BIN)
-
-    # 发送升级提案
-    opt_pip = opt_client.pip
-    result = opt_pip.submitVersion(opt_pip.node.node_id, str(time.time()), 4096, 2,
-                                   opt_pip.node.staking_address, transaction_cfg=opt_pip.cfg.transaction_cfg)
-    assert_code(result, 0)
-    pip_info = opt_pip.get_effect_proposal_info_of_vote()
-    log.info(f'pip_info: {pip_info}')
-
-    for client in consensus_clients:
-        log.info(f'vote client: {client.node.node_mark}')
-        pip = client.pip
-        result = pip.vote(pip.node.node_id, pip_info['ProposalID'], 1, pip.node.staking_address)
-        log.info(f'vote result: {result}')
-
-        # log.info(f'vote result: {result}')
-        # assert result == 0
-
-    # 等待升级提案生效
-    end_block = pip_info['EndVotingBlock']
-    end_block = opt_pip.economic.get_consensus_switchpoint(end_block)
-    wait_block_number(opt_pip.node, end_block)
-    print(opt_pip.pip.getActiveVersion())
+    upgrade_proposal(all_clients, client_consensus, 4096, client.pip.cfg.PLATON_NEW_BIN)
 
 
     verifierlist = get_pledge_list(client2.ppos.getVerifierList)
@@ -2598,8 +2554,3 @@ def test_VP_GPFV_003_01(new_genesis_env, clients_noconsensus):
         restricting_info = client1.node.ppos.getRestrictingInfo(pledge_address)
         log.info("处罚后第 {} 轮 锁仓计划: {}".format(i, restricting_info))
 
-
-def test_dds(client_noconsensus):
-    print(client_noconsensus.ppos.stakingAddress)
-    print(client_noconsensus.ppos.restrictingAddress)
-    print(client_noconsensus.ppos.delegateRewardAddress)

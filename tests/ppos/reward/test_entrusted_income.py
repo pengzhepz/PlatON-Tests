@@ -4075,7 +4075,7 @@ def test_EI_BC_90(clients_new_node, clients_consensus, all_clients, client_conse
 
 
     economic.wait_settlement(node, 1)
-    upgrade_proposal(all_clients, client_consensus, 4096)
+    upgrade_proposal(all_clients, client_consensus, 4096, client.pip.cfg.PLATON_NEW_BIN)
 
     for delegate_address in delegate_address_list:
         result = node.ppos.getDelegateReward(delegate_address)['Ret']
@@ -4098,7 +4098,7 @@ def test_EI_BC_90(clients_new_node, clients_consensus, all_clients, client_conse
 
     delegate_reward_total = 0
     for client_node in all_clients:
-        candidate_info = client.ppos.getCandidateInfo(client.node.node_id)['Ret']
+        candidate_info = client_node.ppos.getCandidateInfo(client_node.node.node_id)['Ret']
         print(f'candidate_info={candidate_info}')
         if client.node.node_id == client_node.node.node_id or client2.node.node_id == client_node.node.node_id:
             delegate_reward = candidate_info['DelegateRewardTotal']
@@ -4117,7 +4117,568 @@ def test_EI_BC_90(clients_new_node, clients_consensus, all_clients, client_conse
             print(f'升级后后用户当前可领取分红reward={reward},delegate_address={delegate_address}')
             assert reward == 0
     else:
-        assert 0 < balance_delegaterewardaddress_befor + delegate_reward_total - builtin_balance_amount - delegate_reward_total_befor < 6
+        assert 0 < delegate_reward_total - delegate_reward_total_befor == balance_delegaterewardaddress_after- balance_delegaterewardaddress_befor + builtin_balance_amount
+
+
+
+@pytest.mark.P1
+@pytest.mark.issue1583
+def test_EI_BC_91(clients_new_node, clients_consensus, all_clients, client_consensus):
+    """
+    @describe: 0.13.2节点质押被A/B委托（B是自由金额委托），等待三个结算周期 A委托失败，B撤销委托， 升级到0.16.0，可领取委托分红奖励正确
+    @step:
+    - 1. 未生效期A账号委托A节点
+    - 2. 未生效期B账号委托A节点
+    - 3. 生效期A委托A节点，失败
+    - 4. 查看A\B的可领取委托收益
+    - 5. 升级到0.16.0
+    @expect:
+    - 1. A\B委托可领取分红分别都正确
+    """
+    client, client1, client2, client3 = clients_new_node[0], clients_new_node[1], clients_new_node[2], clients_new_node[
+        3]
+    economic = client.economic
+    node = client.node
+    node2 = client2.node
+    builtin_balance_amount = 1225490196078431372544
+
+    staking_address_another, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 11)
+    result = client3.staking.create_staking(0, staking_address_another, staking_address_another,
+                                            amount=economic.create_staking_limit * 10, reward_per=0)
+    assert_code(result, 0)
+
+    for staking_client in clients_new_node[:3]:
+        staking_address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 3)
+        result = staking_client.staking.create_staking(0, staking_address, staking_address,
+                                                       amount=economic.create_staking_limit * 2, reward_per=1000)
+        assert_code(result, 0)
+
+    prikey1 = '1db04a0cd453d554f9de99d711ac4569d3a4ff408e1aaf0c03878daccea9601e'
+    prikey2 = 'b521bc4a0dd5b7da9e60f232d0c0e1a92963c144999d3c0ce30a95f0345c4b5c'
+    prikey3 = '1511c10b05396aa51c0ec2030dd311adac60ee4599961dbdcdd94697eedcdd33'
+    delegate_address_list = []
+    prinkey_list = [prikey1, prikey2, prikey3]
+    for prikey in prinkey_list:
+        delegate_address1, _ = economic.account.generate_account(node.web3, economic.delegate_limit * 3)
+        delegate_address_list.append(delegate_address1)
+        delegate_address2 = client.node.personal.importRawKey(prikey, '88888888')
+        result = economic.account.sendTransaction(node.web3, '', economic.account.account_with_money['address'],
+                                                  delegate_address2, node.eth.gasPrice, 21000,
+                                                  economic.delegate_limit * 3)
+        account = {
+            "address": delegate_address2,
+            "nonce": 0,
+            "balance": economic.delegate_limit * 3,
+            "prikey": prikey,
+        }
+        economic.account.accounts[delegate_address2] = account
+        delegate_address_list.append(delegate_address2)
+
+    for i in range(6):
+        if i in [0]:
+            result = client.delegate.delegate(0, delegate_address_list[i], node.node_id,
+                                              amount=economic.delegate_limit * 2)
+            assert_code(result, 0)
+        elif i in [2, 4, 5]:
+            result = client2.delegate.delegate(0, delegate_address_list[i], node2.node_id,
+                                               amount=economic.delegate_limit * 2)
+            assert_code(result, 0)
+
+    result = client.delegate.delegate(0, delegate_address_list[1], node.node_id)
+    assert_code(result, 0)
+
+    amount1 = economic.delegate_limit
+    plan = [{'Epoch': 1, 'Amount': amount1},
+            {'Epoch': 2, 'Amount': amount1}]
+    result = client1.restricting.createRestrictingPlan(delegate_address_list[3], plan,
+                                                       economic.account.account_with_money['address'])
+    assert_code(result, 0)
+    result = client2.delegate.delegate(1, delegate_address_list[3], node2.node_id)
+    assert_code(result, 0)
+    result = client2.delegate.delegate(0, delegate_address_list[3], node2.node_id)
+    assert_code(result, 0)
+
+    assert delegate_address_list[1] == 'atp1g004udw6gy2z2vc4t5d7a77qdrlx3nk07ce9fv'
+    assert delegate_address_list[3] == 'atp1zc3k2zd7j72d3h045h43hgzgy8wsvan2lnpegt'
+    assert delegate_address_list[5] == 'atp13t9ml06m5q5p6yl277xagwhl734zhl2dteywzw'
+
+    economic.wait_settlement(node)
+    for clinet_consensus in clients_consensus:
+        result = clinet_consensus.staking.increase_staking(0, 'atp1ur2hg0u9wt5qenmkcxlp7ysvaw6yupt4vll2fq',
+                                                           amount=economic.create_staking_limit * 10)
+        assert_code(result, 0)
+
+    economic.wait_settlement(node)
+    log.info('Query commission reward ')
+
+    fail_result = client.delegate.delegate(0, delegate_address_list[0], amount=economic.delegate_limit)
+    assert_code(fail_result, 301111)
+    fail_result1 = client2.delegate.delegate(0, delegate_address_list[2], amount=economic.delegate_limit * 2)
+    assert_code(fail_result1, 301111)
+    fail_result2 = client2.delegate.delegate(0, delegate_address_list[4], amount=economic.delegate_limit * 2)
+    assert_code(fail_result2, 301111)
+
+    withdraw_delegate_reward_result = client.delegate.withdraw_delegate_reward(delegate_address_list[0])
+    assert_code(withdraw_delegate_reward_result, 0)
+    withdraw_delegate_reward_result1 = client2.delegate.withdraw_delegate_reward(delegate_address_list[2])
+    assert_code(withdraw_delegate_reward_result1, 0)
+    withdraw_delegate_reward_result2 = client2.delegate.withdraw_delegate_reward(delegate_address_list[4])
+    assert_code(withdraw_delegate_reward_result2, 0)
+
+    stakingnum = client2.staking.get_stakingblocknum(client2.node)
+    result = client2.delegate.withdrew_delegate(stakingnum, delegate_address_list[3], amount=economic.delegate_limit)
+    assert_code(result, 0)
+    result = client2.delegate.withdrew_delegate(stakingnum, delegate_address_list[5], amount=economic.delegate_limit * 2)
+    assert_code(result, 0)
+
+    balance_list_befor = []
+    for i in range(len(delegate_address_list)):
+        balance_list_befor.insert(i, node.eth.getBalance(delegate_address_list[i]))
+
+    for delegate_address in delegate_address_list[:5]:
+        result = node.ppos.getDelegateReward(delegate_address)['Ret']
+        print(f'委托分红result={result}')
+        reward = result[0]['reward']
+        print(f'Bug重现后用户当前可领取分红reward={reward},delegate_address={delegate_address}')
+        assert reward == 0
+
+    balance_delegaterewardaddress_befor = client.node.eth.getBalance(client.ppos.delegateRewardAddress)
+    print(f'委托收益池金额={balance_delegaterewardaddress_befor}')
+    assert balance_delegaterewardaddress_befor > builtin_balance_amount, "收益池金额小于包内置金额"
+
+    delegate_reward_total_befor = 0
+    for client_node in all_clients:
+        candidate_info = client_node.ppos.getCandidateInfo(client_node.node.node_id)['Ret']
+        print(f'升级前的候选人信息candidate_info={candidate_info}')
+        if client.node.node_id == client_node.node.node_id or client2.node.node_id == client_node.node.node_id:
+            delegate_reward_client = candidate_info['DelegateRewardTotal']
+            delegate_reward_total_befor += delegate_reward_client
+    print(delegate_reward_total_befor)
+
+    economic.wait_settlement(node, 1)
+    upgrade_proposal(all_clients, client_consensus, 4096, client.pip.cfg.PLATON_NEW_BIN)
+
+    for delegate_address in delegate_address_list[:5]:
+        result = node.ppos.getDelegateReward(delegate_address)['Ret']
+        reward = result[0]['reward']
+        print(f'升级后后用户当前可领取分红reward={reward},delegate_address={delegate_address}')
+        assert reward == 0
+
+    balance_list_after = []
+    for i in range(len(delegate_address_list)):
+        balance_list_after.insert(i, node.eth.getBalance(delegate_address_list[i]))
+        print(node.eth.getBalance(delegate_address_list[i], i))
+    assert balance_list_befor[0] == balance_list_after[0] and balance_list_befor[2] == balance_list_after[2] and \
+           balance_list_befor[4] == balance_list_after[4]
+    assert balance_list_after[1] - balance_list_befor[1] == 690730837789661319070
+    assert balance_list_after[3] - balance_list_befor[3] == balance_list_after[5] - balance_list_befor[
+        5] == 267379679144385026737
+
+    economic.wait_settlement(node)
+
+    balance_delegaterewardaddress_after = client.node.eth.getBalance(client.ppos.delegateRewardAddress)
+    print(f'升级后委托收益池金额={balance_delegaterewardaddress_after}')
+
+    delegate_reward_total = 0
+    for client_node in all_clients:
+        candidate_info = client_node.ppos.getCandidateInfo(client_node.node.node_id)['Ret']
+        print(f'candidate_info={candidate_info}')
+        if client.node.node_id == client_node.node.node_id or client2.node.node_id == client_node.node.node_id:
+            delegate_reward = candidate_info['DelegateRewardTotal']
+            delegate_reward_total += delegate_reward
+    print(f'delegate_reward_total={delegate_reward_total}')
+    end_block = economic.get_switchpoint_by_settlement(client.node)
+    lastround_end_block = end_block - 160
+    balance_delegaterewardaddress_after = client.node.eth.getBalance(client.ppos.delegateRewardAddress,
+                                                                     lastround_end_block)
+    print(f'升级后查询收益轮委托收益池金额={balance_delegaterewardaddress_after}')
+    if delegate_reward_total == delegate_reward_total_befor:
+        assert 0 < balance_delegaterewardaddress_befor - builtin_balance_amount - balance_delegaterewardaddress_after < 6
+        for delegate_address in delegate_address_list:
+            result = node.ppos.getDelegateReward(delegate_address)['Ret']
+            reward = result[0]['reward']
+            print(f'升级后后用户当前可领取分红reward={reward},delegate_address={delegate_address}')
+            assert reward == 0
+    else:
+        assert 0 < delegate_reward_total - delegate_reward_total_befor == balance_delegaterewardaddress_after - balance_delegaterewardaddress_befor + builtin_balance_amount
+
+
+
+@pytest.mark.P1
+@pytest.mark.issue1583
+def test_EI_BC_92(clients_new_node, clients_consensus, all_clients, client_consensus):
+    """
+    todo:复现场景修改中
+    @describe: 0.13.2节点质押被A/B委托（B是自由金额委托），等待三个结算周期 A委托失败 升级到0.16.0，可领取委托分红奖励正确
+    @step:
+    - 1. 未生效期A账号委托A节点
+    - 2. 未生效期B账号委托A节点
+    - 3. 生效期A委托A节点，失败
+    - 4. 查看A\B的可领取委托收益
+    - 5. 升级到0.16.0
+    @expect:
+    - 1. A\B委托可领取分红分别都正确
+    """
+    client, client1, client2, client3 = clients_new_node[0], clients_new_node[1], clients_new_node[2], clients_new_node[
+        3]
+    economic = client.economic
+    node = client.node
+    node2 = client2.node
+    builtin_balance_amount = 1225490196078431372544
+
+    staking_address_another, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 11)
+    result = client3.staking.create_staking(0, staking_address_another, staking_address_another,
+                                            amount=economic.create_staking_limit * 10, reward_per=0)
+    assert_code(result, 0)
+
+    for staking_client in clients_new_node[:3]:
+        staking_address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 3)
+        result = staking_client.staking.create_staking(0, staking_address, staking_address,
+                                                       amount=economic.create_staking_limit * 2, reward_per=1000)
+        assert_code(result, 0)
+
+    prikey1 = '1db04a0cd453d554f9de99d711ac4569d3a4ff408e1aaf0c03878daccea9601e'
+    prikey2 = 'b521bc4a0dd5b7da9e60f232d0c0e1a92963c144999d3c0ce30a95f0345c4b5c'
+    prikey3 = '1511c10b05396aa51c0ec2030dd311adac60ee4599961dbdcdd94697eedcdd33'
+    delegate_address_list = []
+    prinkey_list = [prikey1, prikey2, prikey3]
+    for prikey in prinkey_list:
+        delegate_address1, _ = economic.account.generate_account(node.web3, economic.delegate_limit * 3)
+        delegate_address_list.append(delegate_address1)
+        delegate_address2 = client.node.personal.importRawKey(prikey, '88888888')
+        result = economic.account.sendTransaction(node.web3, '', economic.account.account_with_money['address'],
+                                                  delegate_address2, node.eth.gasPrice, 21000,
+                                                  economic.delegate_limit * 3)
+        account = {
+            "address": delegate_address2,
+            "nonce": 0,
+            "balance": economic.delegate_limit * 3,
+            "prikey": prikey,
+        }
+        economic.account.accounts[delegate_address2] = account
+        delegate_address_list.append(delegate_address2)
+
+    for i in range(6):
+        if i in [0]:
+            result = client.delegate.delegate(0, delegate_address_list[i], node.node_id,
+                                              amount=economic.delegate_limit * 2)
+            assert_code(result, 0)
+        elif i in [2, 4, 5]:
+            result = client2.delegate.delegate(0, delegate_address_list[i], node2.node_id,
+                                               amount=economic.delegate_limit * 2)
+            assert_code(result, 0)
+
+    result = client.delegate.delegate(0, delegate_address_list[1], node.node_id)
+    assert_code(result, 0)
+
+    amount1 = economic.delegate_limit
+    plan = [{'Epoch': 1, 'Amount': amount1},
+            {'Epoch': 2, 'Amount': amount1}]
+    result = client1.restricting.createRestrictingPlan(delegate_address_list[3], plan,
+                                                       economic.account.account_with_money['address'])
+    assert_code(result, 0)
+    result = client2.delegate.delegate(1, delegate_address_list[3], node2.node_id)
+    assert_code(result, 0)
+    result = client2.delegate.delegate(0, delegate_address_list[3], node2.node_id)
+    assert_code(result, 0)
+
+    assert delegate_address_list[1] == 'atp1g004udw6gy2z2vc4t5d7a77qdrlx3nk07ce9fv'
+    assert delegate_address_list[3] == 'atp1zc3k2zd7j72d3h045h43hgzgy8wsvan2lnpegt'
+    assert delegate_address_list[5] == 'atp13t9ml06m5q5p6yl277xagwhl734zhl2dteywzw'
+
+    economic.wait_settlement(node)
+    for clinet_consensus in clients_consensus:
+        result = clinet_consensus.staking.increase_staking(0, 'atp1ur2hg0u9wt5qenmkcxlp7ysvaw6yupt4vll2fq',
+                                                           amount=economic.create_staking_limit * 10)
+        assert_code(result, 0)
+
+    economic.wait_settlement(node)
+    log.info('Query commission reward ')
+
+    receive_reward = 0
+    for i in range(len(delegate_address_list)):
+        result = node.ppos.getDelegateReward(delegate_address_list[i])['Ret']
+        reward = result[0]['reward']
+        if i % 2 == 0:
+            receive_reward += reward
+    print(f'receive_reward={receive_reward}')
+
+    fail_result = client.delegate.delegate(0, delegate_address_list[0], amount=economic.delegate_limit)
+    assert_code(fail_result, 301111)
+    fail_result1 = client2.delegate.delegate(0, delegate_address_list[2], amount=economic.delegate_limit * 2)
+    assert_code(fail_result1, 301111)
+    fail_result2 = client2.delegate.delegate(0, delegate_address_list[4], amount=economic.delegate_limit * 2)
+    assert_code(fail_result2, 301111)
+
+    withdraw_delegate_reward_result = client.delegate.withdraw_delegate_reward(delegate_address_list[0])
+    assert_code(withdraw_delegate_reward_result, 0)
+    withdraw_delegate_reward_result1 = client2.delegate.withdraw_delegate_reward(delegate_address_list[2])
+    assert_code(withdraw_delegate_reward_result1, 0)
+    withdraw_delegate_reward_result2 = client2.delegate.withdraw_delegate_reward(delegate_address_list[4])
+    assert_code(withdraw_delegate_reward_result2, 0)
+
+    balance_list_befor = []
+    for i in range(len(delegate_address_list)):
+        balance_list_befor.insert(i, node.eth.getBalance(delegate_address_list[i]))
+
+    for delegate_address in delegate_address_list:
+        result = node.ppos.getDelegateReward(delegate_address)['Ret']
+        reward = result[0]['reward']
+        print(f'Bug重现后用户当前可领取分红reward={reward},delegate_address={delegate_address}')
+        assert reward == 0
+
+    balance_delegaterewardaddress_befor = client.node.eth.getBalance(client.ppos.delegateRewardAddress)
+    print(f'委托收益池金额={balance_delegaterewardaddress_befor}')
+    assert balance_delegaterewardaddress_befor > builtin_balance_amount, "收益池金额小于包内置金额"
+
+    delegate_reward_total_befor = 0
+    for client_node in all_clients:
+        candidate_info = client_node.ppos.getCandidateInfo(client_node.node.node_id)['Ret']
+        print(f'升级前的候选人信息candidate_info={candidate_info}')
+        if client.node.node_id == client_node.node.node_id or client2.node.node_id == client_node.node.node_id:
+            delegate_reward_client = candidate_info['DelegateRewardTotal']
+            delegate_reward_total_befor += delegate_reward_client
+    print(delegate_reward_total_befor)
+
+    economic.wait_settlement(node, 1)
+    upgrade_proposal(all_clients, client_consensus, 3584, client.pip.cfg.PLATON_NEW_BIN2)
+    upgrade_proposal(all_clients, client_consensus, 3840, client.pip.cfg.PLATON_NEW_BIN1)
+    upgrade_proposal(all_clients, client_consensus, 4096, client.pip.cfg.PLATON_NEW_BIN)
+
+    for delegate_address in delegate_address_list:
+        result = node.ppos.getDelegateReward(delegate_address)['Ret']
+        reward = result[0]['reward']
+        print(f'升级后后用户当前可领取分红reward={reward},delegate_address={delegate_address}')
+        assert reward == 0
+
+    balance_list_after = []
+    for i in range(len(delegate_address_list)):
+        balance_list_after.insert(i, node.eth.getBalance(delegate_address_list[i]))
+        print(node.eth.getBalance(delegate_address_list[i], i))
+    print(balance_list_befor)
+    print(balance_list_after)
+    assert balance_list_befor[0] == balance_list_after[0] and balance_list_befor[2] == balance_list_after[2] and \
+           balance_list_befor[4] == balance_list_after[4]
+    assert balance_list_after[1] - balance_list_befor[1] == 690730837789661319070
+    assert balance_list_after[3] - balance_list_befor[3] == balance_list_after[5] - balance_list_befor[5] == 267379679144385026737
+
+    economic.wait_settlement(node)
+
+    balance_delegaterewardaddress_after = client.node.eth.getBalance(client.ppos.delegateRewardAddress)
+    print(f'升级后委托收益池金额={balance_delegaterewardaddress_after}')
+
+    time.sleep(3)
+    delegate_reward_total = 0
+    for client_node in all_clients:
+        candidate_info = client_node.ppos.getCandidateInfo(client_node.node.node_id)['Ret']
+        print(f'candidate_info={candidate_info}')
+        if client.node.node_id == client_node.node.node_id or client2.node.node_id == client_node.node.node_id:
+            delegate_reward = candidate_info['DelegateRewardTotal']
+            delegate_reward_total += delegate_reward
+    print(f'delegate_reward_total={delegate_reward_total}')
+    end_block = economic.get_switchpoint_by_settlement(client.node)
+    lastround_end_block = end_block - 160
+    balance_delegaterewardaddress_after = client.node.eth.getBalance(client.ppos.delegateRewardAddress,
+                                                                     lastround_end_block)
+    print(f'升级后查询收益轮委托收益池金额={balance_delegaterewardaddress_after}')
+    if delegate_reward_total == delegate_reward_total_befor:
+        # assert 0 < balance_delegaterewardaddress_befor - builtin_balance_amount - balance_delegaterewardaddress_after < 6
+        for delegate_address in delegate_address_list:
+            result = node.ppos.getDelegateReward(delegate_address)['Ret']
+            reward = result[0]['reward']
+            print(f'升级后后用户当前可领取分红reward={reward},delegate_address={delegate_address}')
+            assert reward == 0
+    else:
+        assert 0 < delegate_reward_total - delegate_reward_total_befor == balance_delegaterewardaddress_after - balance_delegaterewardaddress_befor + builtin_balance_amount
+        print(f'delegate_reward_total={delegate_reward_total}')
+        print(f'delegate_reward_total_befor={delegate_reward_total_befor}')
+        print(f'balance_delegaterewardaddress_after={balance_delegaterewardaddress_after}')
+        print(f'balance_delegaterewardaddress_befor={balance_delegaterewardaddress_befor}')
+
+
+
+@pytest.mark.P1
+@pytest.mark.issue1583
+def test_EI_BC_93(clients_new_node, clients_consensus, all_clients, client_consensus):
+    """
+    @describe: 0.13.2节点质押被A/B委托（B是自由金额委托），等待三个结算周期 A委托失败，B撤销委托， 升级0.13.2-0.14.0-0.15.0-0.15.1-0.16.0，可领取委托分红奖励正确
+    @step:
+    - 1. 未生效期A账号委托A节点
+    - 2. 未生效期B账号委托A节点
+    - 3. 生效期A委托A节点，失败
+    - 4. 查看A\B的可领取委托收益
+    - 5. 升级到0.16.0
+    @expect:
+    - 1. A\B委托可领取分红分别都正确
+    """
+    client, client1, client2, client3 = clients_new_node[0], clients_new_node[1], clients_new_node[2], clients_new_node[
+        3]
+    economic = client.economic
+    node = client.node
+    node2 = client2.node
+    builtin_balance_amount = 1225490196078431372544
+
+    staking_address_another, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 11)
+    result = client3.staking.create_staking(0, staking_address_another, staking_address_another,
+                                            amount=economic.create_staking_limit * 10, reward_per=0)
+    assert_code(result, 0)
+
+    for staking_client in clients_new_node[:3]:
+        staking_address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 3)
+        result = staking_client.staking.create_staking(0, staking_address, staking_address,
+                                                       amount=economic.create_staking_limit * 2, reward_per=1000)
+        assert_code(result, 0)
+
+    prikey1 = '1db04a0cd453d554f9de99d711ac4569d3a4ff408e1aaf0c03878daccea9601e'
+    prikey2 = 'b521bc4a0dd5b7da9e60f232d0c0e1a92963c144999d3c0ce30a95f0345c4b5c'
+    prikey3 = '1511c10b05396aa51c0ec2030dd311adac60ee4599961dbdcdd94697eedcdd33'
+    delegate_address_list = []
+    prinkey_list = [prikey1, prikey2, prikey3]
+    for prikey in prinkey_list:
+        delegate_address1, _ = economic.account.generate_account(node.web3, economic.delegate_limit * 3)
+        delegate_address_list.append(delegate_address1)
+        delegate_address2 = client.node.personal.importRawKey(prikey, '88888888')
+        result = economic.account.sendTransaction(node.web3, '', economic.account.account_with_money['address'],
+                                                  delegate_address2, node.eth.gasPrice, 21000,
+                                                  economic.delegate_limit * 3)
+        account = {
+            "address": delegate_address2,
+            "nonce": 0,
+            "balance": economic.delegate_limit * 3,
+            "prikey": prikey,
+        }
+        economic.account.accounts[delegate_address2] = account
+        delegate_address_list.append(delegate_address2)
+
+    for i in range(6):
+        if i in [0]:
+            result = client.delegate.delegate(0, delegate_address_list[i], node.node_id,
+                                              amount=economic.delegate_limit * 2)
+            assert_code(result, 0)
+        elif i in [2, 4, 5]:
+            result = client2.delegate.delegate(0, delegate_address_list[i], node2.node_id,
+                                               amount=economic.delegate_limit * 2)
+            assert_code(result, 0)
+
+    result = client.delegate.delegate(0, delegate_address_list[1], node.node_id)
+    assert_code(result, 0)
+
+    amount1 = economic.delegate_limit
+    plan = [{'Epoch': 1, 'Amount': amount1},
+            {'Epoch': 2, 'Amount': amount1}]
+    result = client1.restricting.createRestrictingPlan(delegate_address_list[3], plan,
+                                                       economic.account.account_with_money['address'])
+    assert_code(result, 0)
+    result = client2.delegate.delegate(1, delegate_address_list[3], node2.node_id)
+    assert_code(result, 0)
+    result = client2.delegate.delegate(0, delegate_address_list[3], node2.node_id)
+    assert_code(result, 0)
+
+    assert delegate_address_list[1] == 'atp1g004udw6gy2z2vc4t5d7a77qdrlx3nk07ce9fv'
+    assert delegate_address_list[3] == 'atp1zc3k2zd7j72d3h045h43hgzgy8wsvan2lnpegt'
+    assert delegate_address_list[5] == 'atp13t9ml06m5q5p6yl277xagwhl734zhl2dteywzw'
+
+    economic.wait_settlement(node)
+    for clinet_consensus in clients_consensus:
+        result = clinet_consensus.staking.increase_staking(0, 'atp1ur2hg0u9wt5qenmkcxlp7ysvaw6yupt4vll2fq',
+                                                           amount=economic.create_staking_limit * 10)
+        assert_code(result, 0)
+
+    economic.wait_settlement(node)
+    log.info('Query commission reward ')
+
+    fail_result = client.delegate.delegate(0, delegate_address_list[0], amount=economic.delegate_limit)
+    assert_code(fail_result, 301111)
+    fail_result1 = client2.delegate.delegate(0, delegate_address_list[2], amount=economic.delegate_limit * 2)
+    assert_code(fail_result1, 301111)
+    fail_result2 = client2.delegate.delegate(0, delegate_address_list[4], amount=economic.delegate_limit * 2)
+    assert_code(fail_result2, 301111)
+
+    withdraw_delegate_reward_result = client.delegate.withdraw_delegate_reward(delegate_address_list[0])
+    assert_code(withdraw_delegate_reward_result, 0)
+    withdraw_delegate_reward_result1 = client2.delegate.withdraw_delegate_reward(delegate_address_list[2])
+    assert_code(withdraw_delegate_reward_result1, 0)
+    withdraw_delegate_reward_result2 = client2.delegate.withdraw_delegate_reward(delegate_address_list[4])
+    assert_code(withdraw_delegate_reward_result2, 0)
+
+    stakingnum = client2.staking.get_stakingblocknum(client2.node)
+    result = client2.delegate.withdrew_delegate(stakingnum, delegate_address_list[3], amount=economic.delegate_limit)
+    assert_code(result, 0)
+    result = client2.delegate.withdrew_delegate(stakingnum, delegate_address_list[5], amount=economic.delegate_limit * 2)
+    assert_code(result, 0)
+
+    balance_list_befor = []
+    for i in range(len(delegate_address_list)):
+        balance_list_befor.insert(i, node.eth.getBalance(delegate_address_list[i]))
+
+    for delegate_address in delegate_address_list[:5]:
+        result = node.ppos.getDelegateReward(delegate_address)['Ret']
+        print(f'委托分红result={result}')
+        reward = result[0]['reward']
+        print(f'Bug重现后用户当前可领取分红reward={reward},delegate_address={delegate_address}')
+        assert reward == 0
+
+    balance_delegaterewardaddress_befor = client.node.eth.getBalance(client.ppos.delegateRewardAddress)
+    print(f'委托收益池金额={balance_delegaterewardaddress_befor}')
+    assert balance_delegaterewardaddress_befor > builtin_balance_amount, "收益池金额小于包内置金额"
+
+    delegate_reward_total_befor = 0
+    for client_node in all_clients:
+        candidate_info = client_node.ppos.getCandidateInfo(client_node.node.node_id)['Ret']
+        print(f'升级前的候选人信息candidate_info={candidate_info}')
+        if client.node.node_id == client_node.node.node_id or client2.node.node_id == client_node.node.node_id:
+            delegate_reward_client = candidate_info['DelegateRewardTotal']
+            delegate_reward_total_befor += delegate_reward_client
+    print(delegate_reward_total_befor)
+
+    economic.wait_settlement(node, 1)
+    upgrade_proposal(all_clients, client_consensus, 3584, client.pip.cfg.PLATON_NEW_BIN2)
+    upgrade_proposal(all_clients, client_consensus, 3840, client.pip.cfg.PLATON_NEW_BIN1)
+    upgrade_proposal(all_clients, client_consensus, 4096, client.pip.cfg.PLATON_NEW_BIN)
+
+    for delegate_address in delegate_address_list[:5]:
+        result = node.ppos.getDelegateReward(delegate_address)['Ret']
+        reward = result[0]['reward']
+        print(f'升级后后用户当前可领取分红reward={reward},delegate_address={delegate_address}')
+        assert reward == 0
+
+    balance_list_after = []
+    for i in range(len(delegate_address_list)):
+        balance_list_after.insert(i, node.eth.getBalance(delegate_address_list[i]))
+        print(node.eth.getBalance(delegate_address_list[i], i))
+    assert balance_list_befor[0] == balance_list_after[0] and balance_list_befor[2] == balance_list_after[2] and \
+           balance_list_befor[4] == balance_list_after[4]
+    assert balance_list_after[1] - balance_list_befor[1] == 690730837789661319070
+    assert balance_list_after[3] - balance_list_befor[3] == balance_list_after[5] - balance_list_befor[
+        5] == 267379679144385026737
+
+    economic.wait_settlement(node)
+
+    balance_delegaterewardaddress_after = client.node.eth.getBalance(client.ppos.delegateRewardAddress)
+    print(f'升级后委托收益池金额={balance_delegaterewardaddress_after}')
+
+    delegate_reward_total = 0
+    for client_node in all_clients:
+        candidate_info = client_node.ppos.getCandidateInfo(client_node.node.node_id)['Ret']
+        print(f'candidate_info={candidate_info}')
+        if client.node.node_id == client_node.node.node_id or client2.node.node_id == client_node.node.node_id:
+            delegate_reward = candidate_info['DelegateRewardTotal']
+            delegate_reward_total += delegate_reward
+    print(f'delegate_reward_total={delegate_reward_total}')
+    end_block = economic.get_switchpoint_by_settlement(client.node)
+    lastround_end_block = end_block - 160
+    balance_delegaterewardaddress_after = client.node.eth.getBalance(client.ppos.delegateRewardAddress,
+                                                                     lastround_end_block)
+    print(f'升级后查询收益轮委托收益池金额={balance_delegaterewardaddress_after}')
+    if delegate_reward_total == delegate_reward_total_befor:
+        assert 0 < balance_delegaterewardaddress_befor - builtin_balance_amount - balance_delegaterewardaddress_after < 6
+        for delegate_address in delegate_address_list:
+            result = node.ppos.getDelegateReward(delegate_address)['Ret']
+            reward = result[0]['reward']
+            print(f'升级后后用户当前可领取分红reward={reward},delegate_address={delegate_address}')
+            assert reward == 0
+    else:
+        assert 0 < delegate_reward_total - delegate_reward_total_befor == balance_delegaterewardaddress_after - balance_delegaterewardaddress_befor + builtin_balance_amount
 
 
 
@@ -4466,7 +5027,8 @@ def test_upgrade_proposal(all_clients, client_consensus):
 
 
 
-def upgrade_proposal(all_clients, client_consensus, new_version):
+
+def upgrade_proposal(all_clients, client_consensus, new_version, platon_bin):
     # log.info([client.node.node_id for client in all_clients])
     opt_client = client_consensus
     # opt_client = client_consensus
@@ -4488,7 +5050,7 @@ def upgrade_proposal(all_clients, client_consensus, new_version):
     for client in all_clients:
         log.info(f'upload client: {client.node.node_mark}')
         pip = client.pip
-        upload_platon(pip.node, pip.cfg.PLATON_NEW_BIN)
+        upload_platon(pip.node, platon_bin)
 
     # 发送升级提案
     opt_pip = opt_client.pip
@@ -4996,7 +5558,7 @@ def test_wangjie(clients_new_node, clients_consensus, all_clients, client_consen
 
     try:
         # upgrade_proposal(all_clients, client_consensus, 3840)
-        upgrade_proposal(all_clients, client_consensus, 4096)
+        upgrade_proposal(all_clients, client_consensus, 4096, clinet.pip.cfg.PLATON_NEW_BIN)
     except:
         print('升级失败')
         print(clinet.pip.pip.getActiveVersion())
