@@ -14,7 +14,7 @@ def test_mainnet_fast(global_test_env):
     test_node.clean()
     new_cfg = copy(global_test_env.cfg)
     new_cfg.init_chain = False
-    new_cfg.append_cmd = "--alaya"
+    new_cfg.append_cmd = "--platon"
     new_cfg.syncmode = "fast"
     test_node.cfg = new_cfg
     log.info("start deploy {}".format(test_node.node_mark))

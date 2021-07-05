@@ -696,10 +696,12 @@ def test_CS_CL_033(clients_new_node):
     assert client.node.node_id in verifierlist
 
 
+
 @pytest.mark.P1
 @pytest.mark.compatibility
-def test_CS_CL_034(clients_new_node):
+def test_CS_CL_034_debug(clients_new_node, client_consensus):
     """
+    零出块Bug场景复现
     After the abnormal node state is restored, the weight is updated
     :param client_new_node:
     :param client_consensus_obj:
@@ -709,6 +711,11 @@ def test_CS_CL_034(clients_new_node):
 
     client = clients_new_node[0]
     client1 = clients_new_node[1]
+    client2 = client_consensus
+    print(client.node.node_id)
+    print(client1.node.node_id)
+    print(client2.node.url)
+    print(client2.ppos.getCandidateInfo(client2.node.node_id))
     address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
     address1, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
     result = client.staking.create_staking(0, address, address, amount=client.economic.create_staking_limit * 80)
@@ -716,6 +723,19 @@ def test_CS_CL_034(clients_new_node):
     result = client1.staking.create_staking(0, address1, address1, amount=client.economic.create_staking_limit * 80)
     assert_code(result, 0)
 
+    delegate_address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
+    result = client.delegate.delegate(0, delegate_address, amount=client.economic.create_staking_limit * 80)
+    assert_code(result, 0)
+
+    # Next settlement period
+    client.economic.wait_settlement(client.node)
+    stakingnum = client.staking.get_stakingblocknum(client.node)
+    print(f'stakingnum={stakingnum}')
+    verifierlist = get_pledge_list(client.ppos.getVerifierList)
+    print(f'verifierlist={verifierlist}')
+    validator_list = get_pledge_list(client.ppos.getValidatorList)
+    print(f'validator_list={validator_list}')
+    # assert verifierlist[0] == client.node.node_id and verifierlist[1] == client1.node.node_id
     # Next settlement period
     client.economic.wait_settlement(client.node)
     verifierlist = get_pledge_list(client.ppos.getVerifierList)
@@ -728,11 +748,22 @@ def test_CS_CL_034(clients_new_node):
     # Next settlement period
     client1.economic.wait_settlement(node)
     verifierlist = get_pledge_list(client1.ppos.getVerifierList)
+
+    print(f'停掉节点等一个结算周期后verifierlist={verifierlist}')
+    validator_list = get_pledge_list(client1.ppos.getValidatorList)
+    print(f'停掉节点等一个结算周期后validator_list={validator_list}')
+    result = client2.delegate.withdrew_delegate(stakingnum, delegate_address, client.node.node_id, amount=client.economic.create_staking_limit * 80)
+    print(f'撤销委托结果result={result}')
+    # assert client.node.node_id not in verifierlist and client1.node.node_id in verifierlist
     assert client.node.node_id not in verifierlist and client1.node.node_id in verifierlist
-    # assert client1.node.node_id in verifierlist
 
     # Next settlement period
     client1.economic.wait_settlement(node)
     log.info("The next  periods")
     verifierlist = get_pledge_list(client1.ppos.getVerifierList)
+
+    print(f'停掉节点等两个结算周期后verifierlist={verifierlist}')
+    validator_list = get_pledge_list(client1.ppos.getValidatorList)
+    print(f'停掉节点等两个结算周期后validator_list={validator_list}')
+    print(client2.ppos.getCandidateInfo(client.node.node_id))
     assert verifierlist[1] == client.node.node_id and verifierlist[0] == client1.node.node_id
