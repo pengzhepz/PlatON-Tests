@@ -108,6 +108,7 @@ def make_0mb_slash(slash_client, check_client):
     assert check_node_in_list(slash_node.node_id, check_client.ppos.getVerifierList) is False
     assert check_node_in_list(slash_node.node_id, check_client.ppos.getValidatorList) is False
     slash_client.node.start()
+    time.sleep(3)
     return start_num, end_num
 
 
