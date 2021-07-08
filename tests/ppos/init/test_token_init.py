@@ -258,7 +258,7 @@ def test_IT_SD_008_001(client_consensus):
     assert second_balance2 - first_balance2 == node.web3.toWei(1000, 'ether')
     assert second_balance4 - first_balance4 == node.web3.toWei(1000, 'ether')
     assert second_balance5 - first_balance5 == node.web3.toWei(1000, 'ether')
-    assert second_balance6 - first_balance6 == 1000000010500000000000
+    assert second_balance6 - first_balance6 == node.web3.toWei(1000, 'ether') + (21000 * node.eth.gasPrice * 5)
 
 #
 # @pytest.mark.P1
