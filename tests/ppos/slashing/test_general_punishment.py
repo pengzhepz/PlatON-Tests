@@ -735,7 +735,6 @@ def test_restricting_zero_out_block_Y(client_new_node_obj_list_reset):
     assert verifierlist[1] == first_client.node.node_id and verifierlist[0] == second_client.node.node_id
     candidate_info = second_client.ppos.getCandidateInfo(first_client.node.node_id)
     log.info("stopped pledge node information： {}".format(candidate_info))
-    43
 
 
 
@@ -853,7 +852,7 @@ def test_restricting_more_zero_out_block_Y(new_genesis_env, clients_noconsensus)
 
 
 
-
+@pytest.mark.P1
 def test_mixed_more_zero_out_block_Y(client_new_node_obj_list_reset):
     """
     非内置节点（有替换节点，混合金额质押）零出块处罚一次、大于质押金额且恢复节点后重新加入候选人列表，验证人列表，共识验证人列表，总权重变更
@@ -1471,6 +1470,379 @@ def test_mixed_zero_out_block_N(new_genesis_env, clients_noconsensus):
 
 
 
+def test_upgrade_zero_out_block_N(clients_new_node, client_consensus, all_clients):
+    """
+    0.13.2非内置节点（无替换节点，自由金额质押）零出块处罚多次，且恢复节点候选人列表，验证人列表，共识验证人列表权重未更新，升级0.16.0后，候选人列表，验证人列表，共识验证人列表权重更新
+    todo:质押节点id ，质押的块高，要回滚的权重Shares信息给到陈琳之后让他打包了这个用例分开跑
+    """
+
+    for i in range(len(clients_new_node)-1):
+        if clients_new_node[i].node.node_id == '493c66bd7d6051e42a68bffa5f70005555886f28a0d9f10afaca4abc45723a26d6b833126fb65f11e3be51613405df664e7cda12baad538dd08b0a5774aa22cf':
+            # client, client1 = clients_new_node[i], clients_new_node[i+1]
+            client, client1 = clients_new_node[i], client_consensus
+            break
+    else:
+        # client, client1 = clients_new_node[3], clients_new_node[0]
+        client, client1 = clients_new_node[3], client_consensus
+    # print(client.node.node_id)
+    target_node_id = client.node.node_id
+    # print(client.node.url)
+    address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
+    address1, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
+    result = client.staking.create_staking(0, address, address, amount=client.economic.create_staking_limit * 80)
+    # assert_code(result, 0)
+    # result = client1.staking.create_staking(0, address1, address1, amount=client.economic.create_staking_limit * 80)
+    result = client1.staking.increase_staking(0, address1, amount=client.economic.create_staking_limit * 78)
+    # assert_code(result, 0)
+    stakingnum = client.staking.get_stakingblocknum(client.node)
+    print(f'stakingnum={stakingnum}')
+    assert stakingnum == 25
+    delegate_address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
+    result = client.delegate.delegate(0, delegate_address, amount=client.economic.create_staking_limit * 80)
+    assert_code(result, 0)
+
+    sub_share = 798328877005347593582890
+
+    # Next settlement period
+    client.economic.wait_settlement(client.node)
+    verifierlist = get_pledge_list(client.ppos.getVerifierList)
+    print(f'verifierlist={verifierlist}')
+    assert verifierlist[0] == client.node.node_id and verifierlist[1] == client1.node.node_id
+    log.info("Close one node")
+    client.node.stop()
+    node = client1.node
+    log.info("The next  periods")
+
+    # Next settlement period
+    client1.economic.wait_settlement(node)
+    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
+    print(f'停掉节点等一个结算周期后verifierlist={verifierlist}')
+    result = client1.delegate.withdrew_delegate(stakingnum, delegate_address, client.node.node_id, amount=client.economic.create_staking_limit * 80)
+    assert_code(result, 0)
+    assert target_node_id not in verifierlist and client1.node.node_id in verifierlist
+    client.node.start()
+    # Next settlement period
+    client1.economic.wait_settlement(node)
+    log.info("The next  periods")
+    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
+    print(f'停掉节点等两个结算周期后verifierlist={verifierlist}')
+    print(client1.ppos.getCandidateInfo(target_node_id))
+    candidate_share_befor = client1.ppos.getCandidateInfo(target_node_id)['Ret']['Shares']
+    candidate_released_befor = client1.ppos.getCandidateInfo(target_node_id)['Ret']['Released']
+    assert verifierlist[0] == target_node_id and verifierlist[1] == client1.node.node_id
+    candidate_list = client.ppos.getCandidateList()
+    print(f'candidate_list={candidate_list}')
+    #让委托收益池有钱
+    result =  client.economic.account.sendTransaction(client1.node.web3, "", client1.economic.account.raw_accounts[0]['address'], client1.ppos.delegateRewardAddress, client1.node.eth.gasPrice, 21000, client1.economic.create_staking_limit * 200)
+    print(f'转账结果result={result}')
+
+    #升级
+    upgrade_proposal(all_clients, client_consensus, 4096, client.pip.cfg.PLATON_NEW_BIN)
+
+
+    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
+    print(f'升级后verifierlist={verifierlist}')
+    print(client1.ppos.getCandidateInfo(target_node_id))
+    candidate_list = client.ppos.getCandidateList()
+    print(f'candidate_list={candidate_list}')
+
+    client1.economic.wait_settlement(client1.node)
+    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
+    print(f'升级等待一个结算周期后verifierlist={verifierlist}')
+    assert verifierlist[0] == client1.node.node_id and verifierlist[1] == target_node_id
+    print(client1.ppos.getCandidateInfo(target_node_id))
+    candidate_share_after = client1.ppos.getCandidateInfo(target_node_id)['Ret']['Shares']
+    assert candidate_share_befor - candidate_share_after == sub_share
+    candidate_released_after = client1.ppos.getCandidateInfo(target_node_id)['Ret']['Released']
+    assert candidate_share_befor == candidate_share_after
+    candidate_list = client.ppos.getCandidateList()
+    print(f'candidate_list={candidate_list}')
+
+    candidate_info = client1.ppos.getCandidateInfo(target_node_id)['Ret']
+    if candidate_info['ProgramVersion'] == 4096:
+        assert target_node_id == verifierlist[1] and client1.node.node_id == verifierlist[0]
+    else:
+        assert client.node.node_id not in verifierlist
+
+
+
+def test_continuous_upgrade_zero_out_block_N(clients_new_node, client_consensus, all_clients):
+    """
+    todo: 已经验证过了。新包需再次验证
+    0.13.2非内置节点（无替换节点，自由金额质押）零出块处罚一次，小于质押金额且恢复节点未被剔除候选人列表，验证人列表，共识验证人列表，升级0.13.2-0.14.0-0.15.0-0.16.0，被剔除候选人列表，验证人列表，共识验证人列表
+    """
+    for i in range(len(clients_new_node)-1):
+        if clients_new_node[i].node.node_id == '493c66bd7d6051e42a68bffa5f70005555886f28a0d9f10afaca4abc45723a26d6b833126fb65f11e3be51613405df664e7cda12baad538dd08b0a5774aa22cf':
+            client, client1 = clients_new_node[i], clients_new_node[i+1]
+            break
+    else:
+        client, client1 = clients_new_node[3], clients_new_node[0]
+    print(client.node.node_id)
+    client2 = client_consensus
+    target_node_id = client.node.node_id
+    # print(target_node_id)
+    # print(client1.node.node_id)
+    # print(client.node.url)
+    address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
+    address1, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
+    result = client.staking.create_staking(0, address, address, amount=client.economic.create_staking_limit * 80)
+    assert_code(result, 0)
+    result = client1.staking.create_staking(0, address1, address1, amount=client.economic.create_staking_limit * 80)
+    assert_code(result, 0)
+    stakingnum = client.staking.get_stakingblocknum(client.node)
+    print(f'stakingnum={stakingnum}')
+    assert stakingnum == 25
+    delegate_address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
+    result = client.delegate.delegate(0, delegate_address, amount=client.economic.create_staking_limit * 80)
+    assert_code(result, 0)
+    sub_share = 798328877005347593582890
+
+    # Next settlement period
+    client.economic.wait_settlement(client.node)
+    # stakingnum = client.staking.get_stakingblocknum(client.node)
+    # print(f'stakingnum={stakingnum}')
+    verifierlist = get_pledge_list(client.ppos.getVerifierList)
+    print(f'verifierlist={verifierlist}')
+    # assert verifierlist[0] == client.node.node_id and verifierlist[1] == client1.node.node_id
+    log.info("Close one node")
+    client.node.stop()
+    node = client1.node
+    log.info("The next  periods")
+
+    # Next settlement period
+    client1.economic.wait_settlement(node)
+    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
+    print(f'停掉节点等一个结算周期后verifierlist={verifierlist}')
+    result = client2.delegate.withdrew_delegate(stakingnum, delegate_address, client.node.node_id, amount=client.economic.create_staking_limit * 80)
+    assert_code(result, 0)
+    # assert client.node.node_id not in verifierlist and client1.node.node_id in verifierlist
+    # assert client1.node.node_id in verifierlist
+    client.node.start()
+    # Next settlement period
+    client1.economic.wait_settlement(node)
+    log.info("The next  periods")
+    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
+    print(f'停掉节点等两个结算周期后verifierlist={verifierlist}')
+    print(client2.ppos.getCandidateInfo(client.node.node_id))
+    candidate_share_befor = client1.ppos.getCandidateInfo(target_node_id)['Ret']['Shares']
+    candidate_released_befor = client1.ppos.getCandidateInfo(target_node_id)['Ret']['Released']
+    assert verifierlist[0] == target_node_id and verifierlist[1] == client1.node.node_id
+    candidate_list = client.ppos.getCandidateList()
+    print(f'candidate_list={candidate_list}')
+    #让委托收益池有钱
+    result =  client.economic.account.sendTransaction(client2.node.web3, "", client2.economic.account.raw_accounts[0]['address'], client2.ppos.delegateRewardAddress, client2.node.eth.gasPrice, 21000, client2.economic.create_staking_limit * 200)
+    print(f'转账结果result={result}')
+
+    # 升级
+    upgrade_proposal(all_clients, client_consensus, 3584, client.pip.cfg.PLATON_NEW_BIN2)
+    time.sleep(5)
+    upgrade_proposal(all_clients, client_consensus, 3840, client.pip.cfg.PLATON_NEW_BIN1)
+    time.sleep(5)
+    upgrade_proposal(all_clients, client_consensus, 4096, client.pip.cfg.PLATON_NEW_BIN)
+
+    verifierlist = get_pledge_list(client2.ppos.getVerifierList)
+    print(f'升级后verifierlist={verifierlist}')
+    print(client2.ppos.getCandidateInfo(target_node_id))
+
+    client2.economic.wait_settlement(client2.node)
+    verifierlist = get_pledge_list(client2.ppos.getVerifierList)
+    print(f'升级等待一个结算周期后verifierlist={verifierlist}')
+    print(client2.ppos.getCandidateInfo(target_node_id))
+    assert verifierlist[0] == client1.node.node_id and verifierlist[1] == target_node_id
+    print(client1.ppos.getCandidateInfo(target_node_id))
+    candidate_share_after = client1.ppos.getCandidateInfo(target_node_id)['Ret']['Shares']
+    assert candidate_share_befor - candidate_share_after == sub_share
+    candidate_released_after = client1.ppos.getCandidateInfo(target_node_id)['Ret']['Released']
+    assert candidate_share_befor == candidate_share_after
+    candidate_list = client.ppos.getCandidateList()
+    print(f'candidate_list={candidate_list}')
+
+    candidate_info = client1.ppos.getCandidateInfo(target_node_id)['Ret']
+    if candidate_info['ProgramVersion'] == 4096:
+        assert target_node_id == verifierlist[1] and client1.node.node_id == verifierlist[0]
+    else:
+        assert client.node.node_id not in verifierlist
+
+
+
+def test_restricting_upgrade_zero_out_block_N(clients_new_node, client_consensus, all_clients):
+    """
+    todo: 0.13.2非内置节点（无替换节点，锁仓金额质押）零出块处罚多次，且恢复节点候选人列表，验证人列表，共识验证人列表权重未更新，升级0.16.0后，候选人列表，验证人列表，共识验证人列表权重更新
+    """
+    for i in range(len(clients_new_node)-1):
+        if clients_new_node[i].node.node_id == '493c66bd7d6051e42a68bffa5f70005555886f28a0d9f10afaca4abc45723a26d6b833126fb65f11e3be51613405df664e7cda12baad538dd08b0a5774aa22cf':
+            client, client1 = clients_new_node[i], client_consensus
+            break
+    else:
+        client, client1 = clients_new_node[3], client_consensus
+    address, _ = client.economic.account.generate_account(client.node.web3, client.economic.delegate_limit)
+    amount1 = client.economic.create_staking_limit * 10
+    plan = [{'Epoch': 1, 'Amount': amount1},
+            {'Epoch': 2, 'Amount': amount1},
+            {'Epoch': 3, 'Amount': amount1},
+            {'Epoch': 4, 'Amount': amount1},
+            {'Epoch': 5, 'Amount': amount1},
+            {'Epoch': 6, 'Amount': amount1},
+            {'Epoch': 7, 'Amount': amount1},
+            {'Epoch': 8, 'Amount': amount1},
+            {'Epoch': 9, 'Amount': amount1},
+            {'Epoch': 10, 'Amount': amount1}]
+    result = client.restricting.createRestrictingPlan(address, plan, client.economic.account.account_with_money['address'])
+    assert_code(result, 0)
+    # address1, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
+    result = client.staking.create_staking(1, address, address, amount=client.economic.create_staking_limit * 80)
+    assert_code(result, 0)
+    result = client1.staking.increase_staking(0, 'atp1ur2hg0u9wt5qenmkcxlp7ysvaw6yupt4vll2fq', amount=client.economic.create_staking_limit * 80)
+    assert_code(result, 0)
+    stakingnum = client.staking.get_stakingblocknum(client.node)
+    print(f'stakingnum={stakingnum}')
+    assert stakingnum == 25
+    delegate_address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
+    result = client.delegate.delegate(0, delegate_address, amount=client.economic.create_staking_limit * 80)
+    assert_code(result, 0)
+
+    # Next settlement period
+    client.economic.wait_settlement(client.node)
+    verifierlist = get_pledge_list(client.ppos.getVerifierList)
+    print(f'verifierlist={verifierlist}')
+    assert verifierlist[0] == client.node.node_id and verifierlist[1] == client1.node.node_id
+    log.info("Close one node")
+    client.node.stop()
+    node = client1.node
+    log.info("The next  periods")
+
+    # Next settlement period
+    client1.economic.wait_settlement(node)
+    restricting_info = client.ppos.getRestrictingInfo(address)['Ret']
+    print(f'restricting_info={restricting_info}')
+    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
+    print(f'停掉节点等一个结算周期后verifierlist={verifierlist}')
+    result = client1.delegate.withdrew_delegate(stakingnum, delegate_address, client.node.node_id, amount=client.economic.create_staking_limit * 80)
+    assert_code(result, 0)
+    assert client.node.node_id not in verifierlist and client1.node.node_id in verifierlist
+    client.node.start()
+    # Next settlement period
+    client1.economic.wait_settlement(node)
+    log.info("The next  periods")
+    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
+    print(f'停掉节点等两个结算周期后verifierlist={verifierlist}')
+    print(client1.ppos.getCandidateInfo(client.node.node_id))
+    assert verifierlist[1] == client.node.node_id and verifierlist[0] == client1.node.node_id
+
+    #让委托收益池有钱
+    result =  client.economic.account.sendTransaction(client1.node.web3, "", client1.economic.account.raw_accounts[0]['address'], client1.ppos.delegateRewardAddress, client1.node.eth.gasPrice, 21000, client1.economic.create_staking_limit * 200)
+    print(f'转账结果result={result}')
+
+    #升级
+    upgrade_proposal(all_clients, client_consensus, 4096, client.pip.cfg.PLATON_NEW_BIN)
+
+
+    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
+    print(f'升级后verifierlist={verifierlist}')
+    print(client1.ppos.getCandidateInfo(client.node.node_id))
+    client1.economic.wait_settlement(node)
+    restricting_info = client.ppos.getRestrictingInfo(address)['Ret']
+    print(f'restricting_info={restricting_info}')
+
+    client1.economic.wait_settlement(client1.node)
+    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
+    print(f'升级等待一个结算周期后verifierlist={verifierlist}')
+    print(client1.ppos.getCandidateInfo(client.node.node_id))
+    client1.economic.wait_settlement(node)
+    restricting_info = client.ppos.getRestrictingInfo(address)['Ret']
+    print(f'restricting_info={restricting_info}')
+
+
+
+def test_restricting_continuous_upgrade_zero_out_block_N(clients_new_node, client_consensus, all_clients):
+    """
+    todo: 0.13.2非内置节点（无替换节点，锁仓金额质押）零出块处罚一次，小于质押金额且恢复节点未被剔除候选人列表，验证人列表，共识验证人列表，升级0.13.2-0.14.0-0.15.0-0.16.0，候选人列表，验证人列表，共识验证人列表权重更新
+    """
+    for i in range(len(clients_new_node)-1):
+        if clients_new_node[i].node.node_id == '493c66bd7d6051e42a68bffa5f70005555886f28a0d9f10afaca4abc45723a26d6b833126fb65f11e3be51613405df664e7cda12baad538dd08b0a5774aa22cf':
+            client, client1 = clients_new_node[i], client_consensus
+            break
+    else:
+        client, client1 = clients_new_node[3], client_consensus
+    address, _ = client.economic.account.generate_account(client.node.web3, client.economic.delegate_limit)
+    amount1 = client.economic.create_staking_limit * 10
+    plan = [{'Epoch': 1, 'Amount': amount1},
+            {'Epoch': 2, 'Amount': amount1},
+            {'Epoch': 3, 'Amount': amount1},
+            {'Epoch': 4, 'Amount': amount1},
+            {'Epoch': 5, 'Amount': amount1},
+            {'Epoch': 6, 'Amount': amount1},
+            {'Epoch': 7, 'Amount': amount1},
+            {'Epoch': 8, 'Amount': amount1},
+            {'Epoch': 9, 'Amount': amount1},
+            {'Epoch': 10, 'Amount': amount1}]
+    result = client.restricting.createRestrictingPlan(address, plan, client.economic.account.account_with_money['address'])
+    assert_code(result, 0)
+    # address1, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
+    result = client.staking.create_staking(1, address, address, amount=client.economic.create_staking_limit * 80)
+    assert_code(result, 0)
+    result = client1.staking.increase_staking(0, 'atp1ur2hg0u9wt5qenmkcxlp7ysvaw6yupt4vll2fq', amount=client.economic.create_staking_limit * 80)
+    assert_code(result, 0)
+    stakingnum = client.staking.get_stakingblocknum(client.node)
+    print(f'stakingnum={stakingnum}')
+    assert stakingnum == 25
+    delegate_address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
+    result = client.delegate.delegate(0, delegate_address, amount=client.economic.create_staking_limit * 80)
+    assert_code(result, 0)
+
+    # Next settlement period
+    client.economic.wait_settlement(client.node)
+    verifierlist = get_pledge_list(client.ppos.getVerifierList)
+    print(f'verifierlist={verifierlist}')
+    assert verifierlist[0] == client.node.node_id and verifierlist[1] == client1.node.node_id
+    log.info("Close one node")
+    client.node.stop()
+    node = client1.node
+    log.info("The next  periods")
+
+    # Next settlement period
+    client1.economic.wait_settlement(node)
+    restricting_info = client1.ppos.getRestrictingInfo(address)['Ret']
+    print(f'restricting_info={restricting_info}')
+    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
+    print(f'停掉节点等一个结算周期后verifierlist={verifierlist}')
+    result = client1.delegate.withdrew_delegate(stakingnum, delegate_address, client.node.node_id, amount=client.economic.create_staking_limit * 80)
+    assert_code(result, 0)
+    assert client.node.node_id not in verifierlist and client1.node.node_id in verifierlist
+    client.node.start()
+    # Next settlement period
+    client1.economic.wait_settlement(node)
+    log.info("The next  periods")
+    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
+    print(f'停掉节点等两个结算周期后verifierlist={verifierlist}')
+    print(client1.ppos.getCandidateInfo(client.node.node_id))
+    assert verifierlist[1] == client.node.node_id and verifierlist[0] == client1.node.node_id
+
+    #让委托收益池有钱
+    result =  client.economic.account.sendTransaction(client1.node.web3, "", client1.economic.account.raw_accounts[0]['address'], client1.ppos.delegateRewardAddress, client1.node.eth.gasPrice, 21000, client1.economic.create_staking_limit * 200)
+    print(f'转账结果result={result}')
+
+    #升级
+    upgrade_proposal(all_clients, client_consensus, 4096, client.pip.cfg.PLATON_NEW_BIN)
+
+
+    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
+    print(f'升级后verifierlist={verifierlist}')
+    print(client1.ppos.getCandidateInfo(client.node.node_id))
+    client1.economic.wait_settlement(node)
+    restricting_info = client.ppos.getRestrictingInfo(address)['Ret']
+    print(f'restricting_info={restricting_info}')
+
+    client1.economic.wait_settlement(client1.node)
+    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
+    print(f'升级等待一个结算周期后verifierlist={verifierlist}')
+    print(client1.ppos.getCandidateInfo(client.node.node_id))
+    client1.economic.wait_settlement(node)
+    restricting_info = client.ppos.getRestrictingInfo(address)['Ret']
+    print(f'restricting_info={restricting_info}')
+
+
+
 @pytest.mark.P0
 @pytest.mark.compatibility
 def test_VP_GPFV_003(client_new_node_obj_list_reset):
@@ -1509,88 +1881,6 @@ def test_VP_GPFV_003(client_new_node_obj_list_reset):
     assert result is False, "error: Node not kicked out VerifierList"
     result = check_node_in_list(first_client.node.node_id, second_client.ppos.getValidatorList)
     assert result is False, "error: Node not kicked out ValidatorList"
-
-
-
-def test_CS_CL_034_debug(clients_new_node, client_consensus, all_clients):
-    """
-    todo:质押节点id ，质押的块高，要回滚的权重Shares信息给到陈琳之后让他打包了这个用例分开跑
-    After the abnormal node state is restored, the weight is updated
-    :param client_new_node:
-    :param client_consensus_obj:
-    :return:
-    """
-
-    for i in range(len(clients_new_node)-1):
-        if clients_new_node[i].node.node_id == '493c66bd7d6051e42a68bffa5f70005555886f28a0d9f10afaca4abc45723a26d6b833126fb65f11e3be51613405df664e7cda12baad538dd08b0a5774aa22cf':
-            client, client1 = clients_new_node[i], clients_new_node[i+1]
-            break
-    else:
-        client, client1 = clients_new_node[3], clients_new_node[0]
-    print(client.node.node_id)
-    client2 = client_consensus
-    target_node_id = client.node.node_id
-    print(target_node_id)
-    print(client1.node.node_id)
-    print(client.node.url)
-    address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
-    address1, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
-    result = client.staking.create_staking(0, address, address, amount=client.economic.create_staking_limit * 80)
-    assert_code(result, 0)
-    result = client1.staking.create_staking(0, address1, address1, amount=client.economic.create_staking_limit * 80)
-    assert_code(result, 0)
-    stakingnum = client.staking.get_stakingblocknum(client.node)
-    print(f'stakingnum={stakingnum}')
-    assert stakingnum == 25
-    delegate_address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
-    result = client.delegate.delegate(0, delegate_address, amount=client.economic.create_staking_limit * 80)
-    assert_code(result, 0)
-
-    # Next settlement period
-    client.economic.wait_settlement(client.node)
-    # stakingnum = client.staking.get_stakingblocknum(client.node)
-    # print(f'stakingnum={stakingnum}')
-    verifierlist = get_pledge_list(client.ppos.getVerifierList)
-    print(f'verifierlist={verifierlist}')
-    # assert verifierlist[0] == client.node.node_id and verifierlist[1] == client1.node.node_id
-    log.info("Close one node")
-    client.node.stop()
-    node = client1.node
-    log.info("The next  periods")
-
-    # Next settlement period
-    client1.economic.wait_settlement(node)
-    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
-    print(f'停掉节点等一个结算周期后verifierlist={verifierlist}')
-    result = client2.delegate.withdrew_delegate(stakingnum, delegate_address, client.node.node_id, amount=client.economic.create_staking_limit * 80)
-    assert_code(result, 0)
-    # assert client.node.node_id not in verifierlist and client1.node.node_id in verifierlist
-    # assert client1.node.node_id in verifierlist
-    client.node.start()
-    # Next settlement period
-    client1.economic.wait_settlement(node)
-    log.info("The next  periods")
-    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
-    print(f'停掉节点等两个结算周期后verifierlist={verifierlist}')
-    print(client2.ppos.getCandidateInfo(client.node.node_id))
-    # assert verifierlist[1] == client.node.node_id and verifierlist[0] == client1.node.node_id
-    # client.node.start()
-    #让委托收益池有钱
-    result =  client.economic.account.sendTransaction(client2.node.web3, "", client2.economic.account.raw_accounts[0]['address'], client2.ppos.delegateRewardAddress, client2.node.eth.gasPrice, 21000, client2.economic.create_staking_limit * 200)
-    print(f'转账结果result={result}')
-
-    #升级
-    upgrade_proposal(all_clients, client_consensus, 4096, client.pip.cfg.PLATON_NEW_BIN)
-
-
-    verifierlist = get_pledge_list(client2.ppos.getVerifierList)
-    print(f'升级后verifierlist={verifierlist}')
-    print(client2.ppos.getCandidateInfo(target_node_id))
-
-    client2.economic.wait_settlement(client2.node)
-    verifierlist = get_pledge_list(client2.ppos.getVerifierList)
-    print(f'升级等待一个结算周期后verifierlist={verifierlist}')
-    print(client2.ppos.getCandidateInfo(target_node_id))
 
 
 

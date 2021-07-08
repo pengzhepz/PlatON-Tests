@@ -400,7 +400,7 @@ class Node:
             cmd = cmd + " --db.nogc"
             cmd = cmd + " --nodekey " + self.remote_nodekey_file
             cmd = cmd + " --cbft.blskey " + self.remote_blskey_file
-            cmd = cmd + " --config " + self.remote_config_file
+            # cmd = cmd + " --config " + self.remote_config_file
             cmd = cmd + " --syncmode '{}'".format(self.cfg.syncmode)
             cmd = cmd + " --debug --verbosity {}".format(self.cfg.log_level)
             if self.pprofport:
