@@ -31,7 +31,7 @@ class TestConfig:
         self.init_chain = init_chain
         self.is_need_static = is_need_static
         self.log_level = 5
-        self.syncmode = "fast"
+        self.syncmode = "full"
         self.append_cmd = ""
 
         # maximum number of threads
