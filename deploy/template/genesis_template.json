@@ -9,7 +9,7 @@
             "period": 10000,
             "validatorMode": "ppos"
         },
-        "genesisVersion": 4096,
+        "genesisVersion": 3330,
         "addressHRP": "atp"
     },
     "economicModel": {
@@ -61,7 +61,7 @@
             "platonFundAccount": "atp1s0vntlngyuxtc04sj0tsp785svknk2qdlazpyt",
             "platonFundBalance": 2500000000000000000000000,
             "cdfAccount": "atp1ur2hg0u9wt5qenmkcxlp7ysvaw6yupt4vll2fq",
-            "cdfBalance": 5000000000000000000000000000
+            "cdfBalance": 500000000000000000000000
         }
     },
     "nonce": "0x0376e56dffd12ab53bb149bda4e0cbce2b6aabe4cccc0df0b5a39e12977a2fcd23",
