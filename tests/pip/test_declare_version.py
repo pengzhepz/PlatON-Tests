@@ -1528,7 +1528,7 @@ class TestDV:
         assert_code(result, 302028)
 
         result = clients_consensus[1].pip.submitVersion(clients_consensus[1].node.node_id, str(time.time()),
-                                                        pip_ve.cfg.version8, 4,
+                                                        pip_ve.cfg.version8, 6,
                                                         clients_consensus[1].node.staking_address,
                                                         transaction_cfg=pip_ve.cfg.transaction_cfg)
         log.info('Node {} submit version proposal result : {}'.format(clients_consensus[1].node.node_id, result))
@@ -1570,62 +1570,64 @@ class TestVotedCADV:
         new_genesis_env.deploy_all()
         submitvpandvote(clients_consensus, votingrounds=40)
         createstaking(clients_noconsensus[0])
-        clients_consensus[0].economic.wait_settlement(clients_consensus[0].node)
+        # clients_consensus[0].economic.wait_settlement(clients_consensus[0].node)
         client = self.get_candidate_no_verifier(all_clients)
         pip = client.pip
-        result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN1, pip.cfg.version1)
+        pip_sender = clients_consensus[1].pip
+
+        result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN1, pip.cfg.version1, pip_sender)
         assert_code(result, 302028)
 
-        result = wrong_verisonsign_declare(pip, clients_noconsensus[0].pip)
-        assert_code(result, 302024)
+        # result = wrong_verisonsign_declare(pip, clients_noconsensus[0].pip)
+        # assert_code(result, 302024)
+        #
+        # result = wrong_verison_declare(pip, pip.chain_version)
+        # assert_code(result, 302024)
+        #
+        # result = wrong_verison_declare(pip, pip.cfg.version5)
+        # assert_code(result, 302024)
 
-        result = wrong_verison_declare(pip, pip.chain_version)
-        assert_code(result, 302024)
+        # result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN2, pip.cfg.version2, pip_sender)
+        # assert_code(result, 302028)
 
-        result = wrong_verison_declare(pip, pip.cfg.version5)
-        assert_code(result, 302024)
+        # result = wrong_verisonsign_declare(pip, clients_noconsensus[0].pip)
+        # assert_code(result, 302024)
+        #
+        # result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN0, pip.cfg.version0)
+        # assert_code(result, 302028)
+        #
+        # result = wrong_verisonsign_declare(pip, clients_noconsensus[0].pip)
+        # assert_code(result, 302024)
 
-        result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN2, pip.cfg.version2)
-        assert_code(result, 302028)
+        # result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN3, pip.cfg.version3, pip_sender)
+        # assert_code(result, 302028)
 
-        result = wrong_verisonsign_declare(pip, clients_noconsensus[0].pip)
-        assert_code(result, 302024)
+        # result = wrong_verisonsign_declare(pip, clients_noconsensus[0].pip)
+        # assert_code(result, 302024)
 
-        result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN0, pip.cfg.version0)
-        assert_code(result, 302028)
-
-        result = wrong_verisonsign_declare(pip, clients_noconsensus[0].pip)
-        assert_code(result, 302024)
-
-        result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN3, pip.cfg.version3)
-        assert_code(result, 302028)
-
-        result = wrong_verisonsign_declare(pip, clients_noconsensus[0].pip)
-        assert_code(result, 302024)
-
-        result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN, pip.cfg.version5)
+        result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN, pip.cfg.version5, pip_sender)
         assert_code(result, 0)
 
-        result = wrong_verisonsign_declare(pip, clients_noconsensus[0].pip)
-        assert_code(result, 302024)
+        # result = wrong_verisonsign_declare(pip, clients_noconsensus[0].pip)
+        # assert_code(result, 302024)
 
-        result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN4, pip.cfg.version4)
+        result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN4, pip.cfg.version4, pip_sender)
         assert_code(result, 0)
 
-        result = wrong_verisonsign_declare(pip, clients_noconsensus[0].pip)
-        assert_code(result, 302024)
+        # result = wrong_verisonsign_declare(pip, clients_noconsensus[0].pip)
+        # assert_code(result, 302024)
 
-        result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN6, pip.cfg.version6)
+        result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN6, pip.cfg.version6, pip_sender)
         assert_code(result, 0)
 
-        result = wrong_verisonsign_declare(pip, clients_noconsensus[0].pip)
-        assert_code(result, 302024)
+        # result = wrong_verisonsign_declare(pip, clients_noconsensus[0].pip)
+        # assert_code(result, 302024)
 
-        result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN8, pip.cfg.version8)
+        result = replace_version_declare(pip, pip.cfg.PLATON_NEW_BIN8, pip.cfg.version8, pip_sender)
         assert_code(result, 302028)
 
-        result = wrong_verisonsign_declare(pip, clients_noconsensus[0].pip)
-        assert_code(result, 302024)
+        # result = wrong_verisonsign_declare(pip, clients_noconsensus[0].pip)
+        # assert_code(result, 302024)
 
     @pytest.mark.P2
     @allure.title('Voted candidate, Declare version')
