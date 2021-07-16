@@ -284,7 +284,7 @@ def test_ROE_012(client_new_node):
     msg = clinet.ppos.getCandidateInfo(node.node_id)
     staking_blocknum = msg["Ret"]["StakingBlockNum"]
     # After redemptive balance is less than the threshold that entrusts gold, redeem completely
-    undelegate_amount = node.web3.toWei(499, 'ether')
+    undelegate_amount = node.web3.toWei(49.9, 'ether')
     result = clinet.delegate.withdrew_delegate(staking_blocknum, address, amount=undelegate_amount)
     assert_code(result, 0)
     time.sleep(2)
@@ -326,7 +326,7 @@ def test_ROE_014(client_new_node):
 
     msg = client.ppos.getCandidateInfo(node.node_id)
     staking_blocknum = msg["Ret"]["StakingBlockNum"]
-    undelegate_amount = client_new_node.node.web3.toWei(1991, "ether")
+    undelegate_amount = client_new_node.node.web3.toWei(199.1, "ether")
     amount1 = node.eth.getBalance(address)
     log.info("The wallet balance:{}".format(amount1))
 
@@ -790,10 +790,8 @@ def test_ROE_059(client_new_node):
     :param client_new_node_obj:
     :return:
     """
-    address_staking, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                           10 ** 18 * 10000000)
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address_staking, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,  client_new_node.economic.create_staking_limit)
     result = client_new_node.staking.create_staking(0, address_staking, address_staking)
     assert_code(result, 0)
 
@@ -820,10 +818,8 @@ def test_ROE_060(client_new_node):
     :param client_new_node_obj:
     :return:
     """
-    address_staking, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                           10 ** 18 * 10000000)
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address_staking, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit)
     # The next cycle
     client_new_node.economic.wait_settlement(client_new_node.node)
 

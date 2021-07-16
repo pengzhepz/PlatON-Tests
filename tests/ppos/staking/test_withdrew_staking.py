@@ -341,8 +341,7 @@ def test_RV_006(staking_client):
 @allure.title("Gas shortage")
 @pytest.mark.P1
 def test_RV_007(client_new_node):
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, address, address)
     assert_code(result, 0)
     cfg = {"gas": 1}
@@ -358,8 +357,7 @@ def test_RV_007(client_new_node):
 @allure.title("not sufficient funds")
 @pytest.mark.P1
 def test_RV_008(client_new_node):
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, address, address)
     assert_code(result, 0)
     value = 10 ** 18 * 10000000
@@ -541,8 +539,7 @@ def test_RV_018(client_new_node):
     illegal_nodeID = "7ee3276fd6b9c7864eb896310b5393324b6db785a2528c00cc28ca8c" \
                      "3f86fc229a86f138b1f1c8e3a942204c03faeb40e3b22ab11b8983c35dc025de42865990"
 
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, address, address)
     assert_code(result, 0)
     msg = client_new_node.staking.withdrew_staking(address, node_id=illegal_nodeID)

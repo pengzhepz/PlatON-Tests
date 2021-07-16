@@ -151,7 +151,7 @@ def clients_new_node(global_test_env, staking_cfg) -> List[Client]:
     """
     Get new node Client object list
     """
-    # global_test_env.deploy_all()
+    global_test_env.deploy_all()
     return get_clients_noconsensus(global_test_env, staking_cfg)
 
 
@@ -292,6 +292,51 @@ def param_governance_verify_before_endblock(client, module, name, newvalue, effe
 
 
 
+def upgrade_proposal(all_clients, client_consensus, new_version, platon_bin):
+    # log.info([client.node.node_id for client in all_clients])
+    opt_client = client_consensus
+    # opt_client = client_consensus
+    log.info(f'opt client: {opt_client.node.node_mark, opt_client.node.node_id}')
 
+    # 获取共识节点
+    # print(opt_client.ppos.getCandidateList())
+    candidates = opt_client.ppos.getCandidateList()['Ret']
+    log.info(f'candidates: {candidates}')
+    consensus_clients = []
+    for candidate in candidates:
+        consensus_client = get_client_by_nodeid(candidate['NodeId'], all_clients)
+        log.info(f'consensus_client: {consensus_client}')
+        if consensus_client:
+            consensus_clients.append(consensus_client)
+
+    # 进行升级
+    for client in all_clients:
+        log.info(f'upload client: {client.node.node_mark}')
+        pip = client.pip
+        upload_platon(pip.node, platon_bin)
+
+    # 发送升级提案
+    opt_pip = opt_client.pip
+    result = opt_pip.submitVersion(opt_pip.node.node_id, str(time.time()), new_version, 2,
+                                   opt_pip.node.staking_address, transaction_cfg=opt_pip.cfg.transaction_cfg)
+    assert_code(result, 0)
+    pip_info = opt_pip.get_effect_proposal_info_of_vote()
+    log.info(f'pip_info: {pip_info}')
+
+    for client in consensus_clients:
+        log.info(f'vote client: {client.node.node_mark}')
+        pip = client.pip
+        result = pip.vote(pip.node.node_id, pip_info['ProposalID'], 1, pip.node.staking_address)
+        log.info(f'vote result: {result}')
+
+        # log.info(f'vote result: {result}')
+        # assert result == 0
+
+    # 等待升级提案生效
+    end_block = pip_info['EndVotingBlock']
+    end_block = opt_pip.economic.get_consensus_switchpoint(end_block)
+    wait_block_number(opt_pip.node, end_block)
+    log.info(opt_pip.pip.getActiveVersion())
+    log.info(opt_pip.pip.getTallyResult(pip_info['ProposalID']))
 
 

@@ -18,7 +18,7 @@ def staking_own_client(new_genesis_env, client_new_node):
     genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
     genesis.economicModel.slashing.slashBlocksReward = 1
     genesis.economicModel.slashing.slashFractionDuplicateSign = 6000
-    new_file = new_genesis_env.cfg.env_tmp + "/genesis_1.0.0.json"
+    new_file = new_genesis_env.cfg.env_tmp + "/genesis_0.16.0.json"
     genesis.to_file(new_file)
     new_genesis_env.deploy_all(new_file)
 
@@ -73,7 +73,7 @@ def staking_lock_client(new_genesis_env, client_new_node):
     genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
     genesis.economicModel.slashing.slashBlocksReward = 1
     genesis.economicModel.slashing.slashFractionDuplicateSign = 6000
-    new_file = new_genesis_env.cfg.env_tmp + "/genesis_1.0.0.json"
+    new_file = new_genesis_env.cfg.env_tmp + "/genesis_0.16.0.json"
     genesis.to_file(new_file)
     new_genesis_env.deploy_all(new_file)
 
@@ -141,7 +141,7 @@ def staking_mix_client(new_genesis_env, client_new_node):
     # log.info("staking_address {} amount {}".format(staking_address, node.eth.getBalance(staking_address)))
     # result = client.staking.create_staking(0, staking_address, staking_address, amount=staking_amount)
     # assert_code(result, 0)
-    amount1 = node.web3.toWei(10000, 'ether')
+    amount1 = node.web3.toWei(1000, 'ether')
     plan = [{'Epoch': 1, 'Amount': amount1},
             {'Epoch': 2, 'Amount': amount1},
             {'Epoch': 3, 'Amount': amount1},
@@ -160,14 +160,14 @@ def staking_mix_client(new_genesis_env, client_new_node):
     result = client.staking.increase_staking(1, staking_address)
     assert_code(result, 0)
     restricting_info = node.ppos.getRestrictingInfo(staking_address)['Ret']
-    assert restricting_info['balance'] == node.web3.toWei(100000, 'ether')
-    assert restricting_info["Pledge"] == node.web3.toWei(50010, 'ether')
+    assert restricting_info['balance'] == node.web3.toWei(10000, 'ether')
+    assert restricting_info["Pledge"] == node.web3.toWei(5001, 'ether')
     balance = node.eth.getBalance(staking_address)
     print(node.ppos.getCandidateInfo(node.node_id))
     candidate_info = node.ppos.getCandidateInfo(node.node_id)["Ret"]
     print('candidate_info', candidate_info)
-    assert candidate_info["ReleasedHes"] == node.web3.toWei(50010, 'ether')
-    assert candidate_info["RestrictingPlanHes"] == node.web3.toWei(50010, 'ether')
+    assert candidate_info["ReleasedHes"] == node.web3.toWei(5001, 'ether')
+    assert candidate_info["RestrictingPlanHes"] == node.web3.toWei(5001, 'ether')
 
     setattr(client, "staking_address", staking_address)
     setattr(client, "balance", balance)
@@ -218,8 +218,7 @@ def test_IV_003(client_consensus):
 @allure.title("The initial verifier accepts the delegate")
 @pytest.mark.P1
 def test_IV_004(client_consensus):
-    address, _ = client_consensus.economic.account.generate_account(client_consensus.node.web3,
-                                                                    10 ** 18 * 10000000)
+    address, _ = client_consensus.economic.account.generate_account(client_consensus.node.web3, client_consensus.economic.create_staking_limit * 2)
     result = client_consensus.delegate.delegate(0, address)
     log.info(result)
     assert_code(result, 301107)
@@ -253,8 +252,7 @@ def test_IV_006_007_008(client_consensus):
     assert msg["Code"] == 301204, "预期验证人已退出"
     result = client_consensus.staking.create_staking(0, StakingAddress, StakingAddress)
     assert_code(result, 0)
-    address, _ = client_consensus.economic.account.generate_account(client_consensus.node.web3,
-                                                                    10 ** 18 * 10000000)
+    address, _ = client_consensus.economic.account.generate_account(client_consensus.node.web3, client_consensus.economic.create_staking_limit * 2)
     result = client_consensus.delegate.delegate(0, address)
     log.info(result)
     assert_code(result, 0)
@@ -263,8 +261,7 @@ def test_IV_006_007_008(client_consensus):
 @allure.title("Modify the initial verifier information")
 @pytest.mark.P3
 def test_IV_009(client_consensus):
-    address1, _ = client_consensus.economic.account.generate_account(client_consensus.node.web3,
-                                                                     10 ** 18 * 10000000)
+    address1, _ = client_consensus.economic.account.generate_account(client_consensus.node.web3, client_consensus.economic.create_staking_limit * 2)
     StakingAddress = client_consensus.economic.cfg.DEVELOPER_FOUNDATAION_ADDRESS
     print(StakingAddress)
     result = client_consensus.staking.edit_candidate(StakingAddress, address1)
@@ -282,8 +279,7 @@ def test_IV_014_015_019_024(client_new_node):
     019：The amount pledged by free account reaches the threshold of pledge
     024：Use the correct version signature
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     log.info("Generate address:{}".format(address))
     result = client_new_node.staking.create_staking(0, address, address)
     log.info(result)
@@ -302,8 +298,7 @@ def test_IV_016(client_new_node):
     """
     illegal_nodeID = "7ee3276fd6b9c7864eb896310b5393324b6db785a2528c00cc28ca8c" \
                      "3f86fc229a86f138b1f1c8e3a942204c03faeb40e3b22ab11b8983c35dc025de42865990"
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, address, address, node_id=illegal_nodeID)
     log.info(result)
     assert_code(result, 301003)
@@ -317,8 +312,7 @@ def test_IV_017(client_new_node):
     :return:
     """
     INCENTPEPOOL_ADDRESS = EconomicConfig.INCENTIVEPOOL_ADDRESS
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, INCENTPEPOOL_ADDRESS, address)
     assert_code(result, 0)
 
@@ -332,8 +326,7 @@ def test_IV_018(client_new_node):
     :return:
     """
     FOUNDATION_ADDRESS = client_new_node.economic.cfg.FOUNDATION_ADDRESS
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, FOUNDATION_ADDRESS, address)
     assert_code(result, 0)
 
@@ -345,8 +338,7 @@ def test_IV_020_21(client_new_node):
     020:The amount pledged by free account is less than the threshold of pledge
     021:gas is insufficient
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     amount = client_new_node.economic.create_staking_limit
     result = client_new_node.staking.create_staking(0, address, address, amount=amount - 1)
     log.info(result)
@@ -369,8 +361,7 @@ def test_IV_025(client_new_node, client_consensus):
     :param client_consensus_obj:
     :return:
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     program_version_sign = client_consensus.node.program_version_sign
     result = client_new_node.staking.create_staking(0, address, address, program_version_sign=program_version_sign)
     log.info(result)
@@ -380,8 +371,7 @@ def test_IV_025(client_new_node, client_consensus):
 @allure.title("BlsPublicKey is too long")
 @pytest.mark.P2
 def test_IV_026_01(client_new_node):
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     blspubkey = client_new_node.node.blspubkey + "00000000"
     log.info(blspubkey)
     status = 0
@@ -396,8 +386,7 @@ def test_IV_026_01(client_new_node):
 @allure.title("BlsPublicKey is too short")
 @pytest.mark.P2
 def test_IV_026_02(client_new_node):
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     blspubkey = client_new_node.node.blspubkey[0:10]
     log.info(blspubkey)
     status = 0
@@ -412,8 +401,7 @@ def test_IV_026_02(client_new_node):
 @allure.title("Incorrect version signature used")
 @pytest.mark.P2
 def test_IV_026_03(client_new_node):
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     program_version = 0000
     result = client_new_node.staking.create_staking(0, address, address, program_version=program_version)
     assert_code(result, 301003)
@@ -431,8 +419,7 @@ def test_IV_027(client_new_node):
     bls_pubkey = client_new_node.node.blspubkey
     bls_proof = client_new_node.node.schnorr_NIZK_prove
     amount = client_new_node.economic.create_staking_limit
-    address, pri_key = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                         10 ** 18 * 10000000)
+    address, pri_key = client_new_node.economic.account.generate_account(client_new_node.node.web3, amount * 2)
 
     result = client_new_node.ppos.createStaking(0, address, client_new_node.node.node_id,
                                                 external_id, node_name, website, details, amount,
@@ -483,8 +470,7 @@ def test_IV_029(client_new_node):
     :param get_generate_account:
     :return:
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 2000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, address, address)
     assert_code(result, 0)
     result = client_new_node.staking.withdrew_staking(address)
@@ -502,8 +488,7 @@ def test_IV_030(client_new_node):
     :param get_generate_account:
     :return:
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, address, address)
     assert_code(result, 0)
     log.info("Into the next grandchild")
@@ -523,13 +508,11 @@ def test_IV_031(client_new_node):
     :param get_generate_account:
     :return:
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, address, address)
     assert_code(result, 0)
 
-    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                    10 ** 18 * 10000000)
+    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, address1, address1)
     log.info(result)
     assert_code(result, 301101)
@@ -762,8 +745,8 @@ def test_IV_038(client_new_node):
     # 使用锁仓金额质押
     staking_address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
     benifit_address, _ = economic.account.generate_account(node.web3, 0)
-    amount1 = node.web3.toWei(8330, 'ether')
-    amount2 = node.web3.toWei(8370, 'ether')
+    amount1 = node.web3.toWei(833, 'ether')
+    amount2 = node.web3.toWei(837, 'ether')
     plan = [{'Epoch': 1, 'Amount': amount1},
             {'Epoch': 2, 'Amount': amount1},
             {'Epoch': 3, 'Amount': amount1},
@@ -786,6 +769,7 @@ def test_IV_038(client_new_node):
     assert candidate_info['RestrictingPlan'] == economic.create_staking_limit
     assert candidate_info['Released'] == 0
     restricting_info = node.ppos.getRestrictingInfo(staking_address)['Ret']
+    print(f'restricting_info={restricting_info}')
     assert restricting_info['balance'] == economic.create_staking_limit
     assert restricting_info['Pledge'] == economic.create_staking_limit
     assert restricting_info['debt'] == amount1
@@ -806,7 +790,7 @@ def test_IV_039(client_new_node, gas_type):
     staking_address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit)
     benifit_address, _ = economic.account.generate_account(node.web3, 0)
     balance = node.eth.getBalance(staking_address)
-    amount1 = node.web3.toWei(10000, 'ether')
+    amount1 = node.web3.toWei(1000, 'ether')
     plan = [{'Epoch': 1, 'Amount': amount1},
             {'Epoch': 2, 'Amount': amount1},
             {'Epoch': 3, 'Amount': amount1},
@@ -819,15 +803,15 @@ def test_IV_039(client_new_node, gas_type):
     assert_code(result, 0)
     economic.wait_settlement(node)
     candidate_info = node.ppos.getCandidateInfo(node.node_id)['Ret']
-    assert candidate_info['RestrictingPlan'] == node.web3.toWei(50000, 'ether')
+    assert candidate_info['RestrictingPlan'] == node.web3.toWei(5000, 'ether')
 
-    assert candidate_info['Released'] == node.web3.toWei(50000, 'ether')
+    assert candidate_info['Released'] == node.web3.toWei(5000, 'ether')
     restricting_info = node.ppos.getRestrictingInfo(staking_address)['Ret']
-    assert restricting_info['balance'] == node.web3.toWei(50000, 'ether')
-    assert restricting_info['Pledge'] == node.web3.toWei(50000, 'ether')
+    assert restricting_info['balance'] == node.web3.toWei(5000, 'ether')
+    assert restricting_info['Pledge'] == node.web3.toWei(5000, 'ether')
     assert restricting_info['debt'] == amount1
     balance1 = node.eth.getBalance(staking_address)
-    assert balance - node.web3.toWei(50000, 'ether') - balance1 < node.web3.toWei(0.01, 'ether')
+    assert balance - node.web3.toWei(5000, 'ether') - balance1 < node.web3.toWei(0.01, 'ether')
 
 
 @pytest.mark.P2
@@ -1011,18 +995,18 @@ def test_IV_044(client_new_node, gas_type):
     assert_code(result, 0)
     candidate_info = node.ppos.getCandidateInfo(node.node_id)['Ret']
     #报错啦
-    assert candidate_info['ReleasedHes'] == node.web3.toWei(95000, 'ether') + economic.delegate_limit * 10
+    assert candidate_info['ReleasedHes'] == node.web3.toWei(5000, 'ether') + economic.delegate_limit * 10
     assert candidate_info['RestrictingPlanHes'] == node.web3.toWei(5000, 'ether') + economic.delegate_limit * 10
     economic.wait_settlement(node)
     candidate_info = node.ppos.getCandidateInfo(node.node_id)['Ret']
-    assert candidate_info['Released'] == node.web3.toWei(95000, 'ether') + economic.delegate_limit * 10
+    assert candidate_info['Released'] == node.web3.toWei(5000, 'ether') + economic.delegate_limit * 10
     assert candidate_info['RestrictingPlan'] == node.web3.toWei(5000, 'ether') + economic.delegate_limit * 10
     result = client.staking.increase_staking(0, staking_address, amount=economic.delegate_limit * 10)
     assert_code(result, 0)
     result = client.staking.increase_staking(1, staking_address, amount=economic.delegate_limit * 10)
     assert_code(result, 0)
     candidate_info = node.ppos.getCandidateInfo(node.node_id)['Ret']
-    assert candidate_info['Released'] == node.web3.toWei(95000, 'ether') + economic.delegate_limit * 10
+    assert candidate_info['Released'] == node.web3.toWei(5000, 'ether') + economic.delegate_limit * 10
     assert candidate_info['RestrictingPlan'] == node.web3.toWei(5000, 'ether') + economic.delegate_limit * 10
     assert candidate_info['ReleasedHes'] == economic.delegate_limit * 10
     assert candidate_info['RestrictingPlanHes'] == economic.delegate_limit * 10
@@ -1071,11 +1055,11 @@ def test_IV_045(client_new_node, gas_type):
     result = node.ppos.getRestrictingInfo(staking_address)
     print(result)
     candidate_info = node.ppos.getCandidateInfo(node.node_id)['Ret']
-    assert candidate_info['ReleasedHes'] == node.web3.toWei(95000, 'ether') + economic.delegate_limit * 100
+    assert candidate_info['ReleasedHes'] == node.web3.toWei(5000, 'ether') + economic.delegate_limit * 100
     assert candidate_info['RestrictingPlanHes'] == node.web3.toWei(5000, 'ether') + economic.delegate_limit * 100
     economic.wait_settlement(node)
     candidate_info = node.ppos.getCandidateInfo(node.node_id)['Ret']
-    assert candidate_info['Released'] == node.web3.toWei(95000, 'ether') + economic.delegate_limit * 100
+    assert candidate_info['Released'] == node.web3.toWei(5000, 'ether') + economic.delegate_limit * 100
     assert candidate_info['RestrictingPlan'] == node.web3.toWei(5000, 'ether') + economic.delegate_limit * 100
 
     result = client.staking.withdrew_staking(staking_address)
@@ -1085,10 +1069,10 @@ def test_IV_045(client_new_node, gas_type):
     # restricting_info = node.ppos.getRestrictingInfo(staking_address)['Ret']
     economic.wait_settlement(node, 3)
     balance2 = node.eth.getBalance(staking_address)
-    log.info("退回质押后账号余额 {}".format(balance1))
+    log.info("退回质押后账号余额 {}".format(balance2))
     restricting_info1 = node.ppos.getRestrictingInfo(staking_address)
     assert restricting_info1['Code'] == 304005
-    assert balance1 + node.web3.toWei(104000, 'ether') == balance2
+    assert balance1 + node.web3.toWei(13100, 'ether') == balance2
     # assert restricting_info1['balance'] == node.web3.toWei(2000, 'ether')
     # assert restricting_info1['debt'] == 0
     # assert restricting_info['Pledge'] == 0
@@ -1110,7 +1094,7 @@ def test_IV_046(client_new_node, gas_type):
     benifit_address, _ = economic.account.generate_account(node.web3, 0)
     balance = node.eth.getBalance(staking_address)
     log.info("staking_address {}".format(balance))
-    amount1 = node.web3.toWei(10000, 'ether')
+    amount1 = node.web3.toWei(1000, 'ether')
     plan = [{'Epoch': 1, 'Amount': amount1},
             {'Epoch': 2, 'Amount': amount1},
             {'Epoch': 3, 'Amount': amount1},
@@ -1120,7 +1104,7 @@ def test_IV_046(client_new_node, gas_type):
                                                       economic.account.account_with_money['address'])
     assert_code(result, 0)
     restricting_info = node.ppos.getRestrictingInfo(staking_address)['Ret']
-    assert restricting_info['balance'] == node.web3.toWei(50000, 'ether')
+    assert restricting_info['balance'] == node.web3.toWei(5000, 'ether')
     result = client_new_node.staking.create_staking(2, benifit_address, staking_address)
     assert_code(result, 0)
     balance = node.eth.getBalance(staking_address)
@@ -1137,8 +1121,8 @@ def test_IV_046(client_new_node, gas_type):
     result = node.ppos.getRestrictingInfo(staking_address)
     print(result)
     candidate_info = node.ppos.getCandidateInfo(node.node_id)['Ret']
-    assert candidate_info['ReleasedHes'] == node.web3.toWei(50000, 'ether') + economic.delegate_limit * 100
-    assert candidate_info['RestrictingPlanHes'] == node.web3.toWei(50000, 'ether') + economic.delegate_limit * 100
+    assert candidate_info['ReleasedHes'] == node.web3.toWei(5000, 'ether') + economic.delegate_limit * 100
+    assert candidate_info['RestrictingPlanHes'] == node.web3.toWei(5000, 'ether') + economic.delegate_limit * 100
     result = client.staking.withdrew_staking(staking_address)
     assert_code(result, 0)
 
@@ -1146,7 +1130,7 @@ def test_IV_046(client_new_node, gas_type):
     log.info("staking_address {}".format(balance))
     restricting_info = node.ppos.getRestrictingInfo(staking_address)['Ret']
     print(result)
-    assert balance + node.web3.toWei(51000, 'ether') - balance1 < node.web3.toWei(0.001, 'ether')
+    assert balance + node.web3.toWei(5100, 'ether') - balance1 < node.web3.toWei(0.001, 'ether')
     assert restricting_info['balance'] == economic.create_staking_limit
     assert restricting_info['debt'] == 0
     assert restricting_info['Pledge'] == 0
@@ -1173,7 +1157,7 @@ def test_IV_047(new_genesis_env, client_new_node, client_consensus):
     benifit_address, _ = economic.account.generate_account(node.web3, 0)
     balance = node.eth.getBalance(staking_address)
     log.info("staking_address {}".format(balance))
-    amount1 = node.web3.toWei(10000, 'ether')
+    amount1 = node.web3.toWei(1000, 'ether')
     plan = [{'Epoch': 1, 'Amount': amount1},
             {'Epoch': 2, 'Amount': amount1},
             {'Epoch': 3, 'Amount': amount1},
@@ -1183,7 +1167,7 @@ def test_IV_047(new_genesis_env, client_new_node, client_consensus):
                                                       economic.account.account_with_money['address'])
     assert_code(result, 0)
     restricting_info = node.ppos.getRestrictingInfo(staking_address)['Ret']
-    assert restricting_info['balance'] == node.web3.toWei(50000, 'ether')
+    assert restricting_info['balance'] == node.web3.toWei(5000, 'ether')
     result = client_new_node.staking.create_staking(2, benifit_address, staking_address)
     assert_code(result, 0)
     balance = node.eth.getBalance(staking_address)
@@ -1202,8 +1186,8 @@ def test_IV_047(new_genesis_env, client_new_node, client_consensus):
     print(result)
     candidate_info = node.ppos.getCandidateInfo(node.node_id)['Ret']
     print(candidate_info)
-    assert candidate_info['ReleasedHes'] == node.web3.toWei(50000, 'ether') + economic.delegate_limit * 100
-    assert candidate_info['RestrictingPlanHes'] == node.web3.toWei(50000, 'ether') + economic.delegate_limit * 100
+    assert candidate_info['ReleasedHes'] == node.web3.toWei(5000, 'ether') + economic.delegate_limit * 100
+    assert candidate_info['RestrictingPlanHes'] == node.web3.toWei(5000, 'ether') + economic.delegate_limit * 100
 
     economic.wait_settlement(node)
     block_reward, staking_reward = client.economic.get_current_year_reward(client.node)
@@ -1225,7 +1209,7 @@ def test_IV_048(new_genesis_env, client_new_node, client_consensus):
     """
     genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
     genesis.economicModel.slashing.slashBlocksReward = 1
-    new_file = new_genesis_env.cfg.env_tmp + "/genesis_1.0.0.json"
+    new_file = new_genesis_env.cfg.env_tmp + "/genesis_0.16.0.json"
     genesis.to_file(new_file)
     new_genesis_env.deploy_all(new_file)
 
@@ -1249,7 +1233,7 @@ def test_IV_048(new_genesis_env, client_new_node, client_consensus):
                                                       economic.account.account_with_money['address'])
     assert_code(result, 0)
     restricting_info = node.ppos.getRestrictingInfo(staking_address)['Ret']
-    assert restricting_info['balance'] == economic.create_staking_limit
+    assert restricting_info['balance'] == economic.create_staking_limit * 10
     result = client_new_node.staking.create_staking(2, benifit_address, staking_address)
     assert_code(result, 0)
     balance = node.eth.getBalance(staking_address)
@@ -1292,7 +1276,7 @@ def test_IV_049(new_genesis_env, clients_noconsensus):
 
     genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
     genesis.economicModel.slashing.slashFractionDuplicateSign = 6000
-    new_file = new_genesis_env.cfg.env_tmp + "/genesis_1.0.0.json"
+    new_file = new_genesis_env.cfg.env_tmp + "/genesis_0.16.0.json"
     genesis.to_file(new_file)
     new_genesis_env.deploy_all(new_file)
 
@@ -1307,7 +1291,7 @@ def test_IV_049(new_genesis_env, clients_noconsensus):
     report_address, _ = economic.account.generate_account(node.web3, node.web3.toWei(1, 'ether'))
     balance = node.eth.getBalance(staking_address)
     log.info("staking_address {}".format(balance))
-    amount1 = node.web3.toWei(10000, 'ether')
+    amount1 = node.web3.toWei(2000, 'ether')
     plan = [{'Epoch': 1, 'Amount': amount1},
             {'Epoch': 2, 'Amount': amount1},
             {'Epoch': 3, 'Amount': amount1},
@@ -1317,7 +1301,7 @@ def test_IV_049(new_genesis_env, clients_noconsensus):
                                                       economic.account.account_with_money['address'])
     assert_code(result, 0)
     restricting_info = node.ppos.getRestrictingInfo(staking_address)['Ret']
-    assert restricting_info['balance'] == node.web3.toWei(50000, 'ether')
+    assert restricting_info['balance'] == node.web3.toWei(1000, 'ether') * 10
     result = client.staking.create_staking(2, benifit_address, staking_address)
     assert_code(result, 0)
     balance = node.eth.getBalance(staking_address)
@@ -1334,17 +1318,17 @@ def test_IV_049(new_genesis_env, clients_noconsensus):
     result = node.ppos.getRestrictingInfo(staking_address)
     print(result)
     candidate_info = node.ppos.getCandidateInfo(node.node_id)['Ret']
-    assert candidate_info['ReleasedHes'] == node.web3.toWei(50000, 'ether') + economic.delegate_limit * 1000
-    assert candidate_info['RestrictingPlanHes'] == node.web3.toWei(50000, 'ether') + economic.delegate_limit * 1000
+    assert candidate_info['ReleasedHes'] == economic.delegate_limit * 1000
+    assert candidate_info['RestrictingPlanHes'] == node.web3.toWei(10000, 'ether') + economic.delegate_limit * 1000
     incentive_pool_balance = client1.node.eth.getBalance(economic.account.raw_accounts[1]['address'])
     print('incentive_pool_balance', incentive_pool_balance)
 
     economic.wait_settlement(node)
     block_reward, staking_reward = client.economic.get_current_year_reward(node)
     candidate_info = node.ppos.getCandidateInfo(node.node_id)['Ret']
-    print(candidate_info)
-    assert candidate_info['Released'] == node.web3.toWei(50000, 'ether') + economic.delegate_limit * 1000
-    assert candidate_info['RestrictingPlan'] == node.web3.toWei(50000, 'ether') + economic.delegate_limit * 1000
+    print(f'candidate_info={candidate_info}')
+    assert candidate_info['Released'] == economic.delegate_limit * 1000
+    assert candidate_info['RestrictingPlan'] == node.web3.toWei(10000, 'ether') + economic.delegate_limit * 1000
     proportion_reward, incentive_pool_reward = economic.get_report_reward(candidate_info['Shares'], penalty_ratio,
                                                                           proportion_ratio)
     print(proportion_reward, incentive_pool_reward)
@@ -1369,18 +1353,17 @@ def test_IV_049(new_genesis_env, clients_noconsensus):
             economic.wait_consensus(node)
 
     candidate_info1 = node.ppos.getCandidateInfo(node.node_id)['Ret']
+    print(f'candidate_info1={candidate_info1}')
     assert candidate_info1['Released'] == 0
-    assert candidate_info1['RestrictingPlan'] == candidate_info['RestrictingPlan'] - node.web3.toWei(12000, 'ether')
+    assert candidate_info1['RestrictingPlan'] == candidate_info['RestrictingPlan'] - node.web3.toWei(6200, 'ether')
 
     client1.economic.wait_settlement(client1.node, 3)
-    blocknumber = client1.economic.get_block_count_number(node, 20)
+    blocknumber = client1.economic.get_block_count_number(node, roundnum=20)
     print(blocknumber)
     amount = int(Decimal(str(block_reward)) * Decimal(str(blocknumber)))
     print(amount)
     log.info(candidate_info1['RestrictingPlan'])
-    client1.economic.wait_settlement(client1.node, 3)
-
-    blocknumber = client.economic.get_block_count_number(node, 16)
+    # client1.economic.wait_settlement(client1.node, 3)
     amount_reware = Decimal(str(incentive_pool_reward)) * Decimal(str(blocknumber))
     report_address_balance1 = client1.node.eth.getBalance(report_address)
     print('report_address_balance', report_address_balance1)
@@ -1389,10 +1372,8 @@ def test_IV_049(new_genesis_env, clients_noconsensus):
     staking_address_balance1 = client1.node.eth.getBalance(staking_address)
     print('staking_address', staking_address_balance1)
     assert report_address_balance + proportion_reward - report_address_balance1 < client1.node.web3.toWei(0.01, 'ether')
-    assert incentive_pool_balance - amount + incentive_pool_reward == incentive_pool_balance1
-    assert staking_address_balance + candidate_info1['RestrictingPlan'] == staking_address_balance1
-    # assert incentive_pool_balance - amount_reware + incentive_pool_reward == incentive_pool_balance1
-    assert staking_address_balance + candidate_info['RestrictingPlan'] + node.web3.toWei(20000 - 12000)
+    assert 0 < incentive_pool_balance1 - (incentive_pool_balance - amount + incentive_pool_reward) < node.web3.toWei(0.1, 'ether')
+    assert staking_address_balance + candidate_info1['RestrictingPlan'] == staking_address_balance1 - node.web3.toWei(5000, 'ether')
 
 
 
@@ -1451,8 +1432,8 @@ def test_IV_050(client_new_node, client_consensus):
     result = node.ppos.getRestrictingInfo(delegate_address)
     print('delegate_address', result)
     candidate_info = node.ppos.getCandidateInfo(node.node_id)['Ret']
-    assert candidate_info['ReleasedHes'] == node.web3.toWei(50000, 'ether') + economic.delegate_limit * 1000
-    assert candidate_info['RestrictingPlanHes'] == node.web3.toWei(50000, 'ether') + economic.delegate_limit * 1000
+    assert candidate_info['ReleasedHes'] == economic.delegate_limit * 1000
+    assert candidate_info['RestrictingPlanHes'] == node.web3.toWei(10000, 'ether') + economic.delegate_limit * 1000
     assert candidate_info['DelegateTotalHes'] == economic.delegate_limit * 2000
     economic.wait_settlement(node)
     delegate_address_balance = node.eth.getBalance(delegate_address)
@@ -1469,7 +1450,7 @@ def test_IV_050(client_new_node, client_consensus):
     restricting_info = node.ppos.getRestrictingInfo(delegate_address)['Ret']
     print(restricting_info)
     assert restricting_info['balance'] == node.web3.toWei(40000, 'ether')
-    assert restricting_info['Pledge'] == node.web3.toWei(5000, 'ether')
+    assert restricting_info['Pledge'] == node.web3.toWei(500, 'ether')
     assert delegate_address_balance + economic.delegate_limit * 1000 - delegate_address_balance1 < node.web3.toWei(0.01, 'ether')
 
 
@@ -1665,7 +1646,7 @@ def test_IV_054(new_genesis_env, clients_noconsensus):
     log.info(candidate_info1)
 
     client1.economic.wait_settlement(client1.node, 3)
-    blocknumber = client.economic.get_block_count_number(node, 16)
+    blocknumber = client.economic.get_block_count_number(node, roundnum = 16)
     amount_reware = Decimal(str(incentive_pool_reward)) * Decimal(str(blocknumber))
 
     report_address_balance1 = client1.node.eth.getBalance(report_address)
@@ -1932,7 +1913,7 @@ def test_IV_056(staking_lock_client, client_consensus):
     print(get_pledge_list(client_consensus.node.ppos.getVerifierList))
 
     balance1 = client_consensus.node.eth.getBalance(staking_address)
-    assert balance1 == client.balance
+    assert balance1 == client.balance + client.amount1 * 4
 
 
 
@@ -1948,7 +1929,7 @@ def test_IV_057(new_genesis_env, client_new_node, client_consensus):
     """
     genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
     genesis.economicModel.slashing.slashBlocksReward = 1
-    new_file = new_genesis_env.cfg.env_tmp + "/genesis_1.0.0.json"
+    new_file = new_genesis_env.cfg.env_tmp + "/genesis_0.16.0.json"
     genesis.to_file(new_file)
     new_genesis_env.deploy_all(new_file)
 
@@ -1989,15 +1970,14 @@ def test_IV_057(new_genesis_env, client_new_node, client_consensus):
 
     punishment_amonut = int(Decimal(str(block_reward)) * Decimal(str(1)))
     assert punishment_amonut - economic.add_staking_limit + candidate_info["RestrictingPlan"] == economic.create_staking_limit + economic.add_staking_limit
-
-    # verifier_list = get_pledge_list(client_consensus.node.ppos.getVerifierList)
-    # assert node.node_id not in verifier_list, "Expected to opt out of certifier list"
+    verifier_list = get_pledge_list(client_consensus.node.ppos.getVerifierList)
+    assert node.node_id not in verifier_list, "Expected to opt out of certifier list"
 
     node.start()
     time.sleep(10)
     economic.wait_settlement(node, 2)
     balance_after = client_consensus.node.eth.getBalance(staking_address)
-    assert balance_before + candidate_info["RestrictingPlan"] + amount1 * 3 - economic.add_staking_limit == balance_after, "After being sent out and removed from the certifier, the amount is refunded abnormally"
+    assert balance_before + amount1 * 6 == balance_after, "After being sent out and removed from the certifier, the amount is refunded abnormally"
 
 
 
@@ -2013,7 +1993,7 @@ def test_IV_058(new_genesis_env, clients_noconsensus):
     """
     genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
     genesis.economicModel.slashing.slashFractionDuplicateSign = 6000
-    new_file = new_genesis_env.cfg.env_tmp + "/genesis_1.0.0.json"
+    new_file = new_genesis_env.cfg.env_tmp + "/genesis_0.16.0.json"
     genesis.to_file(new_file)
     new_genesis_env.deploy_all(new_file)
 
@@ -2028,7 +2008,7 @@ def test_IV_058(new_genesis_env, clients_noconsensus):
     staking_address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
     benifit_address, _ = economic.account.generate_account(node.web3, 0)
     report_address, _ = economic.account.generate_account(node.web3, node.web3.toWei(1, 'ether'))
-    amount1 = node.web3.toWei(20000, 'ether')
+    amount1 = node.web3.toWei(2000, 'ether')
     plan = [{'Epoch': 1, 'Amount': amount1},
             {'Epoch': 2, 'Amount': amount1},
             {'Epoch': 3, 'Amount': amount1},
@@ -2083,7 +2063,7 @@ def test_IV_058(new_genesis_env, clients_noconsensus):
     log.info(candidate_info1)
 
     client1.economic.wait_settlement(client1.node, 3)
-    blocknumber = client.economic.get_block_count_number(node, 16)
+    blocknumber = client.economic.get_block_count_number(node, roundnum=16)
     amount_reware = Decimal(str(incentive_pool_reward)) * Decimal(str(blocknumber))
 
     report_address_balance1 = client1.node.eth.getBalance(report_address)
@@ -2093,8 +2073,8 @@ def test_IV_058(new_genesis_env, clients_noconsensus):
     staking_address_balance1 = client1.node.eth.getBalance(staking_address)
     print('staking_address1', staking_address_balance1)
 
-    assert report_address_balance + proportion_reward - report_address_balance1 < node.web3.toWei(0.01, 'ether')
-    assert staking_address_balance + candidate_info1['RestrictingPlan'] - economic.add_staking_limit + node.web3.toWei(80000 - 20000, 'ether') == staking_address_balance1
+    assert 0 < report_address_balance + proportion_reward - report_address_balance1 < node.web3.toWei(0.01, 'ether')
+    assert staking_address_balance + candidate_info1['RestrictingPlan'] - economic.add_staking_limit + node.web3.toWei(8000 - 2000, 'ether') == staking_address_balance1
     # assert incentive_pool_balance - amount_reware + incentive_pool_reward == incentive_pool_balance1
 
 
@@ -2121,7 +2101,7 @@ def test_IV_059(staking_mix_client, client_consensus):
 
     restricting_info = node.ppos.getRestrictingInfo(staking_address)['Ret']
     assert restricting_info["Pledge"] == 0
-    assert restricting_info["balance"] == node.web3.toWei(100000, 'ether')
+    assert restricting_info["balance"] == node.web3.toWei(10000, 'ether')
 
     verifier_list = get_pledge_list(client_consensus.node.ppos.getVerifierList)
     assert node.node_id not in verifier_list, "Expected to opt out of vertifier list"
@@ -2180,7 +2160,7 @@ def test_IV_061(new_genesis_env, client_new_node, client_consensus):
     """
     genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
     genesis.economicModel.slashing.slashBlocksReward = 1
-    new_file = new_genesis_env.cfg.env_tmp + "/genesis_1.0.0.json"
+    new_file = new_genesis_env.cfg.env_tmp + "/genesis_0.16.0.json"
     genesis.to_file(new_file)
     new_genesis_env.deploy_all(new_file)
 
@@ -2189,7 +2169,7 @@ def test_IV_061(new_genesis_env, client_new_node, client_consensus):
     node = client.node
     staking_address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit)
 
-    amount1 = node.web3.toWei(10000, 'ether')
+    amount1 = node.web3.toWei(1000, 'ether')
     plan = [{'Epoch': 1, 'Amount': amount1},
             {'Epoch': 2, 'Amount': amount1},
             {'Epoch': 3, 'Amount': amount1},
@@ -2222,8 +2202,8 @@ def test_IV_061(new_genesis_env, client_new_node, client_consensus):
     punishment_amonut = int(Decimal(str(block_reward)) * Decimal(str(1)))
     assert punishment_amonut + candidate_info["Released"] == economic.create_staking_limit // 2 + economic.add_staking_limit
 
-    # verifier_list = get_pledge_list(client_consensus.node.ppos.getVerifierList)
-    # assert node.node_id not in verifier_list, "Expected to opt out of certifier list"
+    verifier_list = get_pledge_list(client_consensus.node.ppos.getVerifierList)
+    assert node.node_id not in verifier_list, "Expected to opt out of certifier list"
 
     node.start()
     time.sleep(10)
@@ -2233,7 +2213,7 @@ def test_IV_061(new_genesis_env, client_new_node, client_consensus):
 
 
 
-pytest.mark.P1
+@pytest.mark.P1
 def test_IV_062(new_genesis_env, clients_noconsensus):
     """
     混合金额质押，增持混合金额，双签，踢出验证人列表
@@ -2244,7 +2224,7 @@ def test_IV_062(new_genesis_env, clients_noconsensus):
     """
     genesis = from_dict(data_class=Genesis, data=new_genesis_env.genesis_config)
     genesis.economicModel.slashing.slashFractionDuplicateSign = 6000
-    new_file = new_genesis_env.cfg.env_tmp + "/genesis_1.0.0.json"
+    new_file = new_genesis_env.cfg.env_tmp + "/genesis_0.16.0.json"
     genesis.to_file(new_file)
     new_genesis_env.deploy_all(new_file)
 
@@ -2259,7 +2239,7 @@ def test_IV_062(new_genesis_env, clients_noconsensus):
     staking_address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
     benifit_address, _ = economic.account.generate_account(node.web3, 0)
     report_address, _ = economic.account.generate_account(node.web3, node.web3.toWei(1, 'ether'))
-    amount1 = node.web3.toWei(10000, 'ether')
+    amount1 = node.web3.toWei(1000, 'ether')
     plan = [{'Epoch': 1, 'Amount': amount1},
             {'Epoch': 2, 'Amount': amount1},
             {'Epoch': 3, 'Amount': amount1},
@@ -2314,7 +2294,7 @@ def test_IV_062(new_genesis_env, clients_noconsensus):
     log.info(candidate_info1)
 
     client1.economic.wait_settlement(client1.node, 3)
-    blocknumber = client.economic.get_block_count_number(node, 16)
+    blocknumber = client.economic.get_block_count_number(node, roundnum=16)
     amount_reware = Decimal(str(incentive_pool_reward)) * Decimal(str(blocknumber))
 
     report_address_balance1 = client1.node.eth.getBalance(report_address)
@@ -2325,5 +2305,5 @@ def test_IV_062(new_genesis_env, clients_noconsensus):
     print('staking_address1', staking_address_balance1)
 
     assert report_address_balance + proportion_reward - report_address_balance1 < node.web3.toWei(0.01, 'ether')
-    assert staking_address_balance + candidate_info1["RestrictingPlan"] + node.web3.toWei(30000, 'ether') - economic.add_staking_limit == staking_address_balance1
+    assert staking_address_balance + candidate_info1["RestrictingPlan"] + node.web3.toWei(3000, 'ether') - economic.add_staking_limit == staking_address_balance1
     # assert incentive_pool_balance - amount_reware + incentive_pool_reward == incentive_pool_balance1

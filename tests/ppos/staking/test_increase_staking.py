@@ -14,8 +14,7 @@ def test_AS_001_002_009(client_new_node):
     """
     stakeThreshold = get_governable_parameter_value(client_new_node, "stakeThreshold")
     log.info(stakeThreshold)
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, address, address)
     assert_code(result, 0)
     result = client_new_node.staking.increase_staking(0, address)
@@ -34,8 +33,7 @@ def test_AS_003(client_new_node):
     :param get_generate_account:
     :return:
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     result = client_new_node.staking.increase_staking(0, address)
     log.info(result)
     assert_code(result, 301102)
@@ -49,8 +47,7 @@ def test_AS_004(client_new_node):
     :param get_generate_account:
     :return:
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     client_new_node.staking.create_staking(0, address, address)
     fig = {"gas": 1}
     status = 0
@@ -88,8 +85,7 @@ def test_AS_007(client_new_node):
     :param client_new_node_obj:
     :return:
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     client_new_node.staking.create_staking(0, address, address)
     add_staking_amount = client_new_node.economic.add_staking_limit
     result = client_new_node.staking.increase_staking(0, address, amount=add_staking_amount - 1)
@@ -104,8 +100,7 @@ def test_AS_008(client_new_node):
     :param client_new_node_obj:
     :return:
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     client_new_node.staking.create_staking(0, address, address)
     log.info("进入下个周期")
     client_new_node.economic.wait_settlement(client_new_node.node)
@@ -127,8 +122,7 @@ def test_AS_011_012_013_014(client_new_node):
     :param client_new_node_obj:
     :return:
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     client_new_node.staking.create_staking(0, address, address)
     log.info("进入下个周期")
     client_new_node.economic.wait_settlement(client_new_node.node)
@@ -170,8 +164,7 @@ def test_AS_015(client_new_node):
     :param get_generate_account:
     :return:
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, address, address)
     log.info(result)
     node = client_new_node.node
@@ -196,8 +189,7 @@ def test_AS_016(client_new_node):
     :param client_new_node_obj:
     :return:
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, address, address)
     log.info(result)
     node = client_new_node.node
@@ -221,8 +213,7 @@ def test_AS_017(client_new_node):
     :param client_new_node_obj:
     :return:
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, address, address)
     log.info(result)
     add_staking_amount = client_new_node.economic.add_staking_limit
@@ -240,8 +231,7 @@ def test_AS_018_019(client_new_node):
     :param client_new_node_obj:
     :return:
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, address, address)
     assert_code(result, 0)
     log.info("Next settlement period")
@@ -271,7 +261,7 @@ def test_AS_020_021(clients_new_node, client_consensus):
     node = client.node
     other_node = client_consensus.node
     economic = client.economic
-    address, pri_key = economic.account.generate_account(node.web3, 10 ** 18 * 10000000)
+    address, pri_key = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
 
     value = economic.create_staking_limit
     result = client.staking.create_staking(0, address, address, amount=value)
@@ -308,10 +298,8 @@ def test_AS_022(client_new_node):
     :param client_new_node_obj:
     :return:
     """
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
-    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                    10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 2)
+    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit)
     result = client_new_node.staking.create_staking(0, address, address)
     assert_code(result, 0)
     result = client_new_node.staking.increase_staking(0, address1)
@@ -334,7 +322,7 @@ def test_AS_023(clients_new_node, client_consensus):
     node = client.node
     other_node = client_consensus.node
     economic = client.economic
-    address, pri_key = economic.account.generate_account(node.web3, 10 ** 18 * 10000000)
+    address, pri_key = economic.account.generate_account(node.web3, client.economic.create_staking_limit * 3)
 
     value = economic.create_staking_limit
     result = client.staking.create_staking(0, address, address, amount=value)

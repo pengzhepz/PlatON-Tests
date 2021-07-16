@@ -261,7 +261,7 @@ def test_IT_SD_008_001(client_consensus):
     assert second_balance2 - first_balance2 == node.web3.toWei(1000, 'ether')
     assert second_balance4 - first_balance4 == node.web3.toWei(1000, 'ether')
     assert second_balance5 - first_balance5 == node.web3.toWei(1000, 'ether')
-    assert second_balance6 - first_balance6 == 1000000010500000000000
+    assert second_balance6 - first_balance6 == 1000000105000000000000
 
 #
 # @pytest.mark.P1
@@ -506,7 +506,7 @@ def no_consensus_node_pledge_award_assertion(client, benifit_address, from_addre
             # wait settlement block
             client.economic.wait_settlement(client.node)
             # Count the number of blocks out of pledge node
-            blocknumber = client.economic.get_block_count_number(client.node, 5)
+            blocknumber = client.economic.get_block_count_number(client.node, roundnum=5)
             log.info("blocknumber: {}".format(blocknumber))
             balance1 = client.node.eth.getBalance(benifit_address)
             log.info("benifit address：{} amount：{}".format(benifit_address, balance1))
@@ -1212,7 +1212,7 @@ def test_AL_NBI_017(clients_new_node):
             # view account amount again
             benifit_balance1 = query_ccount_amount(clients_new_node[1], benifit_address)
             # count the number of blocks
-            blocknumber = clients_new_node[1].economic.get_block_count_number(clients_new_node[1].node, 5)
+            blocknumber = clients_new_node[1].economic.get_block_count_number(clients_new_node[1].node, roundnum=5)
             log.info("blocknumber: {}".format(blocknumber))
             assert benifit_balance1 == benifit_balance + int(
                 Decimal(str(block_reward)) * blocknumber), "ErrMsg:benifit_balance1：{}".format(benifit_balance1)
@@ -1270,7 +1270,7 @@ def test_AL_NBI_018(new_genesis_env, client_new_node):
     # wait consensus block
     client.economic.wait_consensus(client.node)
     # count the number of blocks
-    blocknumber = client.economic.get_block_count_number(client.node, 10)
+    blocknumber = client.economic.get_block_count_number(client.node, roundnum=10)
     log.info("blocknumber: {}".format(blocknumber))
     # Check account balance again
     balance1 = node.eth.getBalance(address1)
@@ -1305,6 +1305,7 @@ def calculate_block_rewards_and_pledge_rewards(client, incentive_pool_amount, an
     return per_block_reward, staking_reward
 
 
+@pytest.mark.P2
 def test_AL_NBI_019(client_consensus):
     """
     验证第一个结算周期区块奖励和质押奖励
@@ -1334,6 +1335,7 @@ def test_AL_NBI_019(client_consensus):
         staking_reward)
 
 
+@pytest.mark.P2
 def test_AL_NBI_020(client_consensus):
     """
     调整出块间隔，查看第二个结算周期出块奖励和质押奖励
@@ -1393,6 +1395,7 @@ def test_AL_NBI_020(client_consensus):
         average_interval)
 
 
+
 def test_AL_FI_006(client_consensus):
     """
     增发周期动态调整
@@ -1449,6 +1452,7 @@ def test_AL_FI_006(client_consensus):
     log.info("Incentive pool actual amount： {}".format(actual_incentive_pool_amount))
     assert actual_incentive_pool_amount > plan_incentive_pool_amount, "ErrMsg：Incentive pool balance {}".format(
         actual_incentive_pool_amount)
+
 
 
 def test_AL_FI_007(client_consensus):
@@ -1606,6 +1610,7 @@ def send_batch_transactions(obj, transaction_list):
     return hx_list
 
 
+@pytest.mark.P2
 def test_PT_AC_001(client_consensus):
     """
     非关联性转账交易
@@ -1630,6 +1635,7 @@ def test_PT_AC_001(client_consensus):
         print(addreslist['to'], balance)
 
 
+@pytest.mark.P2
 def test_PT_AC_002(client_consensus):
     """
     关联性转账交易（一）
@@ -1654,6 +1660,7 @@ def test_PT_AC_002(client_consensus):
         print(addreslist['to'], balance)
 
 
+@pytest.mark.P2
 def test_PT_AC_003(client_consensus):
     """
     关联性转账交易（二）
@@ -1686,6 +1693,7 @@ def test_PT_AC_003(client_consensus):
         print(addreslist['to'], balance)
 
 
+@pytest.mark.P2
 def test_PT_AC_004(client_consensus):
     """
     关联性转账交易（三）
@@ -1778,6 +1786,7 @@ def PT_AC_006(client_consensus):
     print(balance)
 
 
+@pytest.mark.P2
 def test_PT_AC_007(client_consensus):
     """
     向合约地址转账（不同地址转入）
@@ -1800,6 +1809,7 @@ def test_PT_AC_007(client_consensus):
     print(balance)
 
 
+@pytest.mark.P2
 def test_PT_AC_008(client_consensus):
     """
     向合约地址转账（同地址转入）
@@ -1822,6 +1832,7 @@ def test_PT_AC_008(client_consensus):
     time.sleep(5)
     balance = node.eth.getBalance(transaction_list[0]['to'])
     print(balance)
+
 
 
 def PT_AC_009(client_consensus):
@@ -1908,11 +1919,12 @@ def create_staking(client):
                                 rlp.encode(economic.create_staking_limit), rlp.encode(0), rlp.encode(program_version),
                                 rlp.encode(bytes.fromhex(program_version_sign)), rlp.encode(bytes.fromhex(bls_pubkey)),
                                 rlp.encode(bytes.fromhex(bls_proof))])).hex()
-    transaction_dict = {'from': address, 'from_private': private_key, 'to': node.web3.stakingAddress,
+    transaction_dict = {'from': address, 'from_private': private_key, 'to': node.ppos.stakingAddress,
                         'to_private': None, 'data': data, 'amount': 10, 'nonce': None}
     return transaction_dict
 
 
+@pytest.mark.P2
 def test_PT_AC_014(client_new_node):
     """
     质押并行交易（一）
@@ -1936,6 +1948,8 @@ def test_PT_AC_014(client_new_node):
     print(result)
 
 
+
+@pytest.mark.P2
 def test_PT_AC_015(client_new_node):
     """
     质押并行交易(二)
@@ -1976,6 +1990,7 @@ def test_PT_AC_015(client_new_node):
     print(result)
 
 
+@pytest.mark.P2
 def test_PT_AC_016(client_new_node):
     client = client_new_node
     economic = client.economic
@@ -2165,10 +2180,10 @@ def test_IT_SD2222(global_test_env):
     """
     node = global_test_env.get_rand_node()
     address, _ = global_test_env.account.generate_account(node.web3, node.web3.toWei(1000, 'ether'))
-    print('address', address, node.eth.getBalance(address))
+    address_balance = node.eth.getBalance(address)
     # Account balance insufficient transfer
     address1, _ = global_test_env.account.generate_account(node.web3, 0)
-    print('address1', address1, node.eth.getBalance(address1))
+    address1_balance = node.eth.getBalance(address1)
     transfer_amount = node.web3.toWei(1, 'ether')
     gasPrice = 1 * 10 ** 8
     print('gasPrice', gasPrice)
@@ -2176,7 +2191,10 @@ def test_IT_SD2222(global_test_env):
                                                      21000, transfer_amount)
     log.info("result: {}".format(result))
     time.sleep(2)
-    print('address1', address1, node.eth.getBalance(address1))
+    address1_balance1 = node.eth.getBalance(address1)
+    address_balance1 = node.eth.getBalance(address)
+    assert address1_balance == address1_balance1 == 0
+    assert address_balance == address_balance1
 
 
 def create_account(HRP):

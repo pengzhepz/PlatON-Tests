@@ -69,8 +69,8 @@ class TestCreateStaking:
 
     def test_IV_043(self, client_new_node):
         staking = client_new_node.staking
-        address, _ = staking.economic.account.generate_account(staking.node.web3, 10 ** 18 * 30000000)
-        plan = [{'Epoch': 20, 'Amount': 10 ** 18 * 2000000}]
+        address, _ = staking.economic.account.generate_account(staking.node.web3, client_new_node.economic.create_staking_limit * 10)
+        plan = [{'Epoch': 20, 'Amount': client_new_node.economic.create_staking_limit * 5}]
         result = client_new_node.restricting.createRestrictingPlan(address, plan, address)
         log.info('CreateRestrictingPlan result : {}'.format(result))
         assert_code(result, 0)
@@ -126,7 +126,7 @@ class TestCreateStaking:
         result = client.staking.withdrew_staking(client.node.staking_address)
         assert_code(result, 0)
         client.economic.wait_settlement(client.node, 2)
-        address, _ = client.economic.account.generate_account(client.node.web3, 10 ** 18 * 10000000)
+        address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 2)
         result = client.staking.create_staking(0, address, address, reward_per=value)
         assert_code(result, 0)
         self.assert_rewardsper_staking(client, value)
@@ -220,7 +220,7 @@ class TestEditCandidate:
     @pytest.mark.P2
     def test_MPI_028_MPI_030_MPI_032(self, client_new_node):
         client = client_new_node
-        address, _ = client.economic.account.generate_account(client.node.web3, 10 ** 18 * 10000000)
+        address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 3)
         result = client.staking.create_staking(0, address, address,
                                                amount=2 * client.economic.genesis.economicModel.staking.stakeThreshold,
                                                reward_per=100)
@@ -281,7 +281,7 @@ class TestEditCandidate:
     @pytest.mark.P2
     def test_MPI_034(self, client_new_node):
         client = client_new_node
-        address, _ = client.economic.account.generate_account(client.node.web3, 10 ** 18 * 10000000)
+        address, _ = client.economic.account.generate_account(client.node.web3,  client.economic.create_staking_limit * 2)
         result = client.staking.create_staking(0, address, address, reward_per=100)
         assert_code(result, 0)
 
@@ -1717,8 +1717,8 @@ class TestNet:
         test_node.clean()
         new_cfg = copy(global_test_env.cfg)
         new_cfg.init_chain = False
-        if net == 'main':
-            new_cfg.append_cmd = "--main"
+        if net == 'alaya':
+            new_cfg.append_cmd = "--alaya"
         elif net == 'alayatestnet':
             new_cfg.append_cmd = "--alayatestnet"
         elif net == 'rallynet':
@@ -1752,8 +1752,8 @@ class TestNet:
 
     @pytest.mark.P2
     def test_DD_NE_002(self, global_test_env):
-        test_node = self.deploy_me(global_test_env, 'main')
-        assert test_node.admin.nodeInfo.get('protocols').get('platon').get('config').get('chainId') == 100
+        test_node = self.deploy_me(global_test_env, 'alaya')
+        assert test_node.admin.nodeInfo.get('protocols').get('platon').get('config').get('chainId') == 201018
         assert test_node.admin.nodeInfo.get('protocols').get('platon').get('network') == 1
 
     @pytest.mark.P2

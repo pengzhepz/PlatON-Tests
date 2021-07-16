@@ -15,8 +15,7 @@ def test_CS_CL_001(clients_new_node):
     client = clients_new_node[0]
     node_id_1 = client.node.node_id
     log.info(client.node.node_id)
-    address, _ = client.economic.account.generate_account(client.node.web3,
-                                                          10 ** 18 * 10000000)
+    address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 3)
     pledge_amount = client.economic.create_staking_limit * 2
     result = client.staking.create_staking(0, address, address, amount=pledge_amount)
     assert_code(result, 0)
@@ -77,8 +76,7 @@ def test_CS_CL_002(clients_new_node):
     node = get_max_staking_tx_index(client.node)
     log.info("The node with the largest trade index:{}".format(node))
 
-    address, _ = client.economic.account.generate_account(client.node.web3,
-                                                          10 ** 18 * 10000000)
+    address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 3)
     pledge_amount = client.economic.create_staking_limit * 2
     result = client.staking.create_staking(0, address, address, amount=pledge_amount)
     assert_code(result, 0)
@@ -127,12 +125,9 @@ def test_CS_CL_003(clients_new_node, clients_consensus):
                                               blocknumber)
     log.info("Report information: {}".format(report_information3))
 
-    address_1, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                         10 ** 18 * 10000000)
-    address_2, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                         10 ** 18 * 10000000)
-    address_3, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                         10 ** 18 * 10000000)
+    address_1, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit)
+    address_2, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit)
+    address_3, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit)
     result = client_consensus1.duplicatesign.reportDuplicateSign(1, report_information1, address_1)
     log.info(result)
     result = client_consensus2.duplicatesign.reportDuplicateSign(1, report_information2, address_2)
@@ -144,14 +139,10 @@ def test_CS_CL_003(clients_new_node, clients_consensus):
     validatorlist = get_pledge_list(client_consensus1.ppos.getValidatorList)
     log.info("After being reported validatorlist:{}".format(validatorlist))
 
-    staking_address1, _ = client_noconsensus1.economic.account.generate_account(client_consensus1.node.web3,
-                                                                                10 ** 18 * 10000000)
-    staking_address2, _ = client_noconsensus1.economic.account.generate_account(client_consensus1.node.web3,
-                                                                                10 ** 18 * 10000000)
-    staking_address3, _ = client_noconsensus1.economic.account.generate_account(client_consensus1.node.web3,
-                                                                                10 ** 18 * 10000000)
-    staking_address4, _ = client_noconsensus1.economic.account.generate_account(client_consensus1.node.web3,
-                                                                                10 ** 18 * 10000000)
+    staking_address1, _ = client_noconsensus1.economic.account.generate_account(client_consensus1.node.web3, client_noconsensus1.economic.create_staking_limit * 3)
+    staking_address2, _ = client_noconsensus1.economic.account.generate_account(client_consensus1.node.web3, client_noconsensus1.economic.create_staking_limit * 3)
+    staking_address3, _ = client_noconsensus1.economic.account.generate_account(client_consensus1.node.web3, client_noconsensus1.economic.create_staking_limit * 3)
+    staking_address4, _ = client_noconsensus1.economic.account.generate_account(client_consensus1.node.web3, client_noconsensus1.economic.create_staking_limit * 3)
     pledge_amount = client_consensus1.economic.create_staking_limit * 2
     log.info("New pledge 4 verifiers")
     result = client_noconsensus1.staking.create_staking(0, staking_address1, staking_address1, amount=pledge_amount)
@@ -315,8 +306,7 @@ def test_CS_CL_010_030(clients_new_node):
     :return:
     """
     client = clients_new_node[0]
-    address, _ = client.economic.account.generate_account(client.node.web3,
-                                                          10 ** 18 * 10000000)
+    address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 3)
     value = client.economic.create_staking_limit * 2
     result = client.staking.create_staking(0, address, address, amount=value)
     assert_code(result, 0)
@@ -330,8 +320,7 @@ def test_CS_CL_010_030(clients_new_node):
                                              number)
 
     log.info("Report information: {}".format(report_information))
-    address, _ = client.economic.account.generate_account(client.node.web3,
-                                                          10 ** 18 * 10000000)
+    address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit)
     result = client.duplicatesign.reportDuplicateSign(1, report_information, address)
     log.info(result)
 
@@ -349,8 +338,7 @@ def test_CS_CL_012_032(clients_new_node):
     :return:
     """
     client = clients_new_node[0]
-    address, _ = client.economic.account.generate_account(client.node.web3,
-                                                          10 ** 18 * 10000000)
+    address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 3)
     value = client.economic.create_staking_limit * 2
     result = client.staking.create_staking(0, address, address, amount=value)
     assert_code(result, 0)
@@ -389,8 +377,7 @@ def test_CS_CL_013_031(clients_new_node, client_consensus):
     :return:
     """
     client = clients_new_node[0]
-    address, _ = client.economic.account.generate_account(client.node.web3,
-                                                          10 ** 18 * 10000000)
+    address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 3)
     value = client.economic.create_staking_limit * 2
     result = client.staking.create_staking(0, address, address, amount=value)
     assert_code(result, 0)
@@ -450,12 +437,9 @@ def test_CS_CL_014_015_016_029(status, clients_new_node, clients_consensus):
                                               blocknumber)
     log.info("Report information: {}".format(report_information3))
 
-    address_1, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                         10 ** 18 * 10000000)
-    address_2, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                         10 ** 18 * 10000000)
-    address_3, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                         10 ** 18 * 10000000)
+    address_1, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit)
+    address_2, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit)
+    address_3, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit)
     result = client_consensus1.duplicatesign.reportDuplicateSign(1, report_information1, address_1)
     log.info(result)
     result = client_consensus2.duplicatesign.reportDuplicateSign(1, report_information2, address_2)
@@ -468,14 +452,12 @@ def test_CS_CL_014_015_016_029(status, clients_new_node, clients_consensus):
     log.info("After being reported validatorlist:{}".format(validatorlist))
 
     if status == 0:
-        address1, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                            10 ** 18 * 10000000)
+        address1, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit * 3)
         value = client_noconsensus1.economic.create_staking_limit * 2
         result = client_noconsensus1.staking.create_staking(0, address1, address1, amount=value)
         assert_code(result, 0)
 
-        address2, _ = client_noconsensus2.economic.account.generate_account(client_noconsensus2.node.web3,
-                                                                            10 ** 18 * 10000000)
+        address2, _ = client_noconsensus2.economic.account.generate_account(client_noconsensus2.node.web3,client_noconsensus1.economic.create_staking_limit * 3)
         value = client_noconsensus2.economic.create_staking_limit * 2
         result = client_noconsensus2.staking.create_staking(0, address2, address2, amount=value)
         assert_code(result, 0)
@@ -496,20 +478,17 @@ def test_CS_CL_014_015_016_029(status, clients_new_node, clients_consensus):
         assert client_consensus4.node.node_id in validatorlist
 
     if status == 1:
-        address1, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                            10 ** 18 * 10000000)
+        address1, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit * 3)
         value = client_noconsensus1.economic.create_staking_limit * 2
         result = client_noconsensus1.staking.create_staking(0, address1, address1, amount=value)
         assert_code(result, 0)
 
-        address2, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                            10 ** 18 * 10000000)
+        address2, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit * 3)
         value = client_noconsensus1.economic.create_staking_limit * 2
         result = client_noconsensus2.staking.create_staking(0, address2, address2, amount=value)
         assert_code(result, 0)
 
-        address3, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                            10 ** 18 * 10000000)
+        address3, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit * 3)
         value = client_noconsensus1.economic.create_staking_limit * 2
         result = client_noconsensus3.staking.create_staking(0, address3, address3, amount=value)
         assert_code(result, 0)
@@ -531,26 +510,22 @@ def test_CS_CL_014_015_016_029(status, clients_new_node, clients_consensus):
         assert client_consensus4.node.node_id in validatorlist
 
     if status == 2:
-        address1, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                            10 ** 18 * 10000000)
+        address1, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit * 3)
         value = client_noconsensus1.economic.create_staking_limit * 2
         result = client_noconsensus1.staking.create_staking(0, address1, address1, amount=value)
         assert_code(result, 0)
 
-        address2, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                            10 ** 18 * 10000000)
+        address2, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit * 3)
         value = client_noconsensus1.economic.create_staking_limit * 2
         result = client_noconsensus2.staking.create_staking(0, address2, address2, amount=value)
         assert_code(result, 0)
 
-        address3, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                            10 ** 18 * 10000000)
+        address3, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit * 3)
         value = client_noconsensus1.economic.create_staking_limit * 2
         result = client_noconsensus3.staking.create_staking(0, address3, address3, amount=value)
         assert_code(result, 0)
 
-        address4, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                            10 ** 18 * 10000000)
+        address4, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit * 3)
         value = client_noconsensus1.economic.create_staking_limit * 2
         result = client_noconsensus4.staking.create_staking(0, address4, address4, amount=value)
         assert_code(result, 0)
@@ -598,8 +573,7 @@ def test_CS_CL_017_018_019(status, clients_new_node, clients_consensus):
                                               blocknumber)
     log.info("Report information: {}".format(report_information1))
 
-    address, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                       10 ** 18 * 10000000)
+    address, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit)
     result = client_consensus1.duplicatesign.reportDuplicateSign(1, report_information1, address)
     log.info(result)
     log.info("The next  periods")
@@ -608,8 +582,7 @@ def test_CS_CL_017_018_019(status, clients_new_node, clients_consensus):
     log.info("After being reported validatorlist:{}".format(validatorlist))
 
     if status == 0:
-        address1, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                            10 ** 18 * 10000000)
+        address1, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit * 3)
         value = client_noconsensus1.economic.create_staking_limit * 2
         result = client_noconsensus1.staking.create_staking(0, address1, address1, amount=value)
         assert_code(result, 0)
@@ -625,14 +598,12 @@ def test_CS_CL_017_018_019(status, clients_new_node, clients_consensus):
         assert client_noconsensus1.node.node_id in validatorlist
 
     if status == 1:
-        address1, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                            10 ** 18 * 10000000)
+        address1, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit * 3)
         value = client_noconsensus1.economic.create_staking_limit * 2
         result = client_noconsensus1.staking.create_staking(0, address1, address1, amount=value)
         assert_code(result, 0)
 
-        address2, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                            10 ** 18 * 10000000)
+        address2, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit * 3)
         value = client_noconsensus1.economic.create_staking_limit * 2
         result = client_noconsensus2.staking.create_staking(0, address2, address2, amount=value)
         assert_code(result, 0)
@@ -654,17 +625,13 @@ def test_CS_CL_027_028(clients_new_node):
     client_noconsensus1 = clients_new_node[0]
     client_noconsensus2 = clients_new_node[1]
 
-    address1, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                        10 ** 18 * 10000000)
-    address2, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3,
-                                                                        10 ** 18 * 10000000)
+    address1, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit * 3)
+    address2, _ = client_noconsensus1.economic.account.generate_account(client_noconsensus1.node.web3, client_noconsensus1.economic.create_staking_limit * 3)
 
-    result = client_noconsensus1.staking.create_staking(0, address1, address1,
-                                                        amount=client_noconsensus1.economic.create_staking_limit * 2)
+    result = client_noconsensus1.staking.create_staking(0, address1, address1, amount=client_noconsensus1.economic.create_staking_limit * 2)
     assert_code(result, 0)
 
-    result = client_noconsensus2.staking.create_staking(0, address2, address2,
-                                                        amount=client_noconsensus2.economic.create_staking_limit)
+    result = client_noconsensus2.staking.create_staking(0, address2, address2, amount=client_noconsensus2.economic.create_staking_limit)
     assert_code(result, 0)
 
     log.info("Next settlement period")
@@ -680,8 +647,7 @@ def test_CS_CL_027_028(clients_new_node):
 @pytest.mark.P2
 def test_CS_CL_033(clients_new_node):
     client = clients_new_node[0]
-    address1, _ = client.economic.account.generate_account(client.node.web3,
-                                                           10 ** 18 * 10000000)
+    address1, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 3)
 
     value = client.economic.create_staking_limit * 2
     result = client.staking.create_staking(0, address1, address1, amount=value)
@@ -696,74 +662,3 @@ def test_CS_CL_033(clients_new_node):
     assert client.node.node_id in verifierlist
 
 
-
-@pytest.mark.P1
-@pytest.mark.compatibility
-def test_CS_CL_034_debug(clients_new_node, client_consensus):
-    """
-    零出块Bug场景复现
-    After the abnormal node state is restored, the weight is updated
-    :param client_new_node:
-    :param client_consensus_obj:
-    :return:
-    """
-
-
-    client = clients_new_node[0]
-    client1 = clients_new_node[1]
-    client2 = client_consensus
-    print(client.node.node_id)
-    print(client1.node.node_id)
-    print(client2.node.url)
-    print(client2.ppos.getCandidateInfo(client2.node.node_id))
-    address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
-    address1, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
-    result = client.staking.create_staking(0, address, address, amount=client.economic.create_staking_limit * 80)
-    assert_code(result, 0)
-    result = client1.staking.create_staking(0, address1, address1, amount=client.economic.create_staking_limit * 80)
-    assert_code(result, 0)
-
-    delegate_address, _ = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit * 100)
-    result = client.delegate.delegate(0, delegate_address, amount=client.economic.create_staking_limit * 80)
-    assert_code(result, 0)
-
-    # Next settlement period
-    client.economic.wait_settlement(client.node)
-    stakingnum = client.staking.get_stakingblocknum(client.node)
-    print(f'stakingnum={stakingnum}')
-    verifierlist = get_pledge_list(client.ppos.getVerifierList)
-    print(f'verifierlist={verifierlist}')
-    validator_list = get_pledge_list(client.ppos.getValidatorList)
-    print(f'validator_list={validator_list}')
-    # assert verifierlist[0] == client.node.node_id and verifierlist[1] == client1.node.node_id
-    # Next settlement period
-    client.economic.wait_settlement(client.node)
-    verifierlist = get_pledge_list(client.ppos.getVerifierList)
-    assert verifierlist[0] == client.node.node_id and verifierlist[1] == client1.node.node_id
-    log.info("Close one node")
-    client.node.stop()
-    node = client1.node
-    log.info("The next  periods")
-
-    # Next settlement period
-    client1.economic.wait_settlement(node)
-    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
-
-    print(f'停掉节点等一个结算周期后verifierlist={verifierlist}')
-    validator_list = get_pledge_list(client1.ppos.getValidatorList)
-    print(f'停掉节点等一个结算周期后validator_list={validator_list}')
-    result = client2.delegate.withdrew_delegate(stakingnum, delegate_address, client.node.node_id, amount=client.economic.create_staking_limit * 80)
-    print(f'撤销委托结果result={result}')
-    # assert client.node.node_id not in verifierlist and client1.node.node_id in verifierlist
-    assert client.node.node_id not in verifierlist and client1.node.node_id in verifierlist
-
-    # Next settlement period
-    client1.economic.wait_settlement(node)
-    log.info("The next  periods")
-    verifierlist = get_pledge_list(client1.ppos.getVerifierList)
-
-    print(f'停掉节点等两个结算周期后verifierlist={verifierlist}')
-    validator_list = get_pledge_list(client1.ppos.getValidatorList)
-    print(f'停掉节点等两个结算周期后validator_list={validator_list}')
-    print(client2.ppos.getCandidateInfo(client.node.node_id))
-    assert verifierlist[1] == client.node.node_id and verifierlist[0] == client1.node.node_id

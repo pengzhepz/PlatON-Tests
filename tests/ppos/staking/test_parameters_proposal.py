@@ -22,8 +22,7 @@ def test_POP_001_003(client_consensus, client_new_node):
     block = param_governance_verify_before_endblock(client_consensus, "staking", "stakeThreshold",
                                                     str(new_amount))
     log.info(block)
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     wait_block_number(client_new_node.node, block)
     result = client_new_node.staking.create_staking(0, address, address, amount=old_amount)
     log.info(result)
@@ -60,8 +59,7 @@ def test_POP_002(client_consensus, client_new_node, new_genesis_env):
                                                     str(new_amount))
     log.info(block)
     wait_block_number(client_new_node.node, block)
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     result = client_new_node.staking.create_staking(0, address, address,
                                                     amount=new_amount - client_consensus.node.web3.toWei(1,
                                                                                                          "ether"))
@@ -88,8 +86,7 @@ def test_POP_005(client_consensus, client_new_node):
     block = param_governance_verify_before_endblock(client_consensus, "staking", "stakeThreshold",
                                                     str(new_amount), effectiveflag=False)
     log.info(block)
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     wait_block_number(client_new_node.node, block)
     result = client_new_node.staking.create_staking(0, address, address, amount=old_amount)
     assert_code(result, 0)
@@ -111,13 +108,11 @@ def test_POP_006(client_consensus, client_new_node):
     block = param_governance_verify_before_endblock(client_consensus, "staking", "operatingThreshold",
                                                     str(new_amount))
     log.info(block)
-    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                    10 ** 18 * 10000000)
+    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     wait_block_number(client_new_node.node, block)
     result = client_new_node.staking.create_staking(0, address1, address1)
     assert_code(result, 0)
-    address2, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                    10 ** 18 * 10000000)
+    address2, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     result = client_new_node.delegate.delegate(0, address2, amount=old_amount)
     assert_code(result, 301105)
     result = client_new_node.delegate.delegate(0, address2, amount=new_amount)
@@ -144,13 +139,11 @@ def test_POP_007(client_consensus, client_new_node):
     block = param_governance_verify_before_endblock(client_consensus, "staking", "operatingThreshold",
                                                     str(new_amount))
     log.info(block)
-    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                    10 ** 18 * 10000000)
+    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     wait_block_number(client_new_node.node, block)
     result = client_new_node.staking.create_staking(0, address1, address1)
     assert_code(result, 0)
-    address2, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                    10 ** 18 * 10000000)
+    address2, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     client_new_node.economic.wait_settlement(client_new_node.node)
 
     result = client_new_node.delegate.delegate(0, address2, amount=old_amount)
@@ -184,13 +177,11 @@ def test_POP_008(client_consensus, client_new_node, new_genesis_env):
     block = param_governance_verify_before_endblock(client_consensus, "staking", "operatingThreshold",
                                                     str(new_amount))
     log.info(block)
-    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                    10 ** 18 * 10000000)
+    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     wait_block_number(client_new_node.node, block)
     result = client_new_node.staking.create_staking(0, address1, address1)
     assert_code(result, 0)
-    address2, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                    10 ** 18 * 10000000)
+    address2, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     result = client_new_node.delegate.delegate(0, address2,
                                                amount=new_amount - client_consensus.node.web3.toWei(1, "ether"))
     assert_code(result, 301105)
@@ -223,13 +214,11 @@ def test_POP_009(client_consensus, client_new_node, new_genesis_env):
     block = param_governance_verify_before_endblock(client_consensus, "staking", "operatingThreshold",
                                                     str(new_amount))
     log.info(block)
-    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                    10 ** 18 * 10000000)
+    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     wait_block_number(client_new_node.node, block)
     result = client_new_node.staking.create_staking(0, address1, address1)
     assert_code(result, 0)
-    address2, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                    10 ** 18 * 10000000)
+    address2, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     log.info("The next cycle")
     client_new_node.economic.wait_settlement(client_new_node.node)
     result = client_new_node.delegate.delegate(0, address2,
@@ -254,10 +243,8 @@ def test_POP_010_011(client_consensus, client_new_node):
     :return:
     """
     client_consensus.economic.env.deploy_all()
-    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                    10 ** 18 * 10000000)
-    address_delegate_1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                              10 ** 18 * 10000000)
+    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
+    address_delegate_1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     result = client_new_node.staking.create_staking(0, address1, address1)
     assert_code(result, 0)
     delegate_amount = client_consensus.economic.delegate_limit + client_consensus.node.web3.toWei(40, "ether")
@@ -273,8 +260,7 @@ def test_POP_010_011(client_consensus, client_new_node):
     log.info("The value of the proposal parameters{}".format(parameters_amount))
     wait_block_number(client_new_node.node, block)
     log.info("The delegate is initiated after the parameter takes effect")
-    address_delegate_2, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                              10 ** 18 * 10000000)
+    address_delegate_2, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     result = client_new_node.delegate.delegate(0, address_delegate_2, amount=delegate_amount)
     assert_code(result, 0)
     amount2_before = client_new_node.node.eth.getBalance(address_delegate_1)
@@ -309,13 +295,11 @@ def test_POP_012(client_consensus, client_new_node):
     """
 
     client_consensus.economic.env.deploy_all()
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     result = client_new_node.staking.create_staking(0, address, address)
 
     assert_code(result, 0)
-    address_delegate, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                            10 ** 18 * 10000000)
+    address_delegate, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     delegate_amount = client_consensus.economic.delegate_limit + client_consensus.node.web3.toWei(1000, "ether")
 
     log.info("Own funds to initiate the commission")
@@ -375,14 +359,12 @@ def test_POP_013(client_consensus, client_new_node, new_genesis_env):
     block = param_governance_verify_before_endblock(client_consensus, "staking", "operatingThreshold",
                                                     str(new_amount), effectiveflag=False)
     log.info(block)
-    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                    10 ** 18 * 10000000)
+    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     wait_block_number(client_new_node.node, block)
     result = client_new_node.staking.create_staking(0, address1, address1)
     assert_code(result, 0)
 
-    address2, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                    10 ** 18 * 10000000)
+    address2, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     result = client_new_node.delegate.delegate(0, address2, amount=new_amount)
     log.info(result)
     assert_code(result, 301105)
@@ -404,10 +386,8 @@ def test_POP_014(client_consensus, client_new_node):
     :return:
     """
     client_consensus.economic.env.deploy_all()
-    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                    10 ** 18 * 10000000)
-    address_delegate_1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                              10 ** 18 * 10000000)
+    address1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
+    address_delegate_1, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     result = client_new_node.staking.create_staking(0, address1, address1)
     assert_code(result, 0)
     delegate_amount = client_consensus.economic.delegate_limit + client_consensus.node.web3.toWei(20, "ether")
@@ -423,8 +403,7 @@ def test_POP_014(client_consensus, client_new_node):
                                                     str(param_amount), effectiveflag=False)
     wait_block_number(client_new_node.node, block)
     log.info("The delegate is initiated after the parameter takes effect")
-    address_delegate_2, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                              10 ** 18 * 10000000)
+    address_delegate_2, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 3)
     result = client_new_node.delegate.delegate(0, address_delegate_2, amount=delegate_amount)
     assert_code(result, 0)
     amount2_before = client_new_node.node.eth.getBalance(address_delegate_1)
@@ -466,8 +445,7 @@ def test_POP_015(client_consensus, clients_noconsensus, new_genesis_env):
     new_genesis_env.deploy_all()
     client1 = clients_noconsensus[0]
     client2 = clients_noconsensus[1]
-    address, _ = client1.economic.account.generate_account(client1.node.web3,
-                                                           10 ** 18 * 10000000)
+    address, _ = client1.economic.account.generate_account(client1.node.web3, client_consensus.economic.create_staking_limit * 3)
     staking_amount = client1.economic.create_staking_limit
     result = client1.staking.create_staking(0, address, address, amount=staking_amount * 2)
     assert_code(result, 0)
@@ -475,8 +453,7 @@ def test_POP_015(client_consensus, clients_noconsensus, new_genesis_env):
     block = param_governance_verify_before_endblock(client_consensus, "staking", "maxValidators",
                                                     str(param))
     wait_block_number(client2.node, block)
-    address1, _ = client2.economic.account.generate_account(client2.node.web3,
-                                                            10 ** 18 * 10000000)
+    address1, _ = client2.economic.account.generate_account(client2.node.web3, client_consensus.economic.create_staking_limit * 4)
     result = client2.staking.create_staking(0, address1, address1, amount=staking_amount * 3)
     assert_code(result, 0)
 
@@ -509,13 +486,11 @@ def test_POP_016(client_consensus, clients_noconsensus, new_genesis_env):
     block = param_governance_verify_before_endblock(client_consensus, "staking", "maxValidators",
                                                     str(param))
     wait_block_number(client2.node, block)
-    address, _ = client1.economic.account.generate_account(client1.node.web3,
-                                                           10 ** 18 * 10000000)
+    address, _ = client1.economic.account.generate_account(client1.node.web3, client1.economic.create_staking_limit * 3)
     staking_amount = client1.economic.create_staking_limit
     result = client1.staking.create_staking(0, address, address, amount=staking_amount * 2)
     assert_code(result, 0)
-    address1, _ = client2.economic.account.generate_account(client2.node.web3,
-                                                            10 ** 18 * 10000000)
+    address1, _ = client2.economic.account.generate_account(client2.node.web3, client1.economic.create_staking_limit * 4)
     result = client2.staking.create_staking(0, address1, address1, amount=staking_amount * 3)
     assert_code(result, 0)
 
@@ -544,13 +519,11 @@ def test_POP_017(client_consensus, clients_noconsensus, new_genesis_env):
     client1 = clients_noconsensus[0]
     client2 = clients_noconsensus[1]
     wait_block_number(client2.node, block)
-    address, _ = client1.economic.account.generate_account(client1.node.web3,
-                                                           10 ** 18 * 10000000)
+    address, _ = client1.economic.account.generate_account(client1.node.web3, client1.economic.create_staking_limit * 3)
     staking_amount = client1.economic.create_staking_limit
     result = client1.staking.create_staking(0, address, address, amount=staking_amount * 2)
     assert_code(result, 0)
-    address1, _ = client2.economic.account.generate_account(client2.node.web3,
-                                                            10 ** 18 * 10000000)
+    address1, _ = client2.economic.account.generate_account(client2.node.web3, client1.economic.create_staking_limit * 4)
     result = client2.staking.create_staking(0, address1, address1, amount=staking_amount * 3)
     assert_code(result, 0)
 
@@ -576,8 +549,7 @@ def test_POP_018(client_consensus, clients_noconsensus, new_genesis_env):
     client1 = clients_noconsensus[0]
     client2 = clients_noconsensus[1]
 
-    address, _ = client1.economic.account.generate_account(client1.node.web3,
-                                                           10 ** 18 * 10000000)
+    address, _ = client1.economic.account.generate_account(client1.node.web3, client1.economic.create_staking_limit * 3)
     staking_amount = client1.economic.create_staking_limit
 
     result = client1.staking.create_staking(0, address, address, amount=staking_amount * 2)
@@ -586,8 +558,7 @@ def test_POP_018(client_consensus, clients_noconsensus, new_genesis_env):
     block = param_governance_verify_before_endblock(client_consensus, "staking", "maxValidators",
                                                     str(param), effectiveflag=False)
     wait_block_number(client2.node, block)
-    address1, _ = client2.economic.account.generate_account(client2.node.web3,
-                                                            10 ** 18 * 10000000)
+    address1, _ = client2.economic.account.generate_account(client2.node.web3, client1.economic.create_staking_limit * 4)
     result = client2.staking.create_staking(0, address1, address1, amount=staking_amount * 3)
     assert_code(result, 0)
 
@@ -611,8 +582,7 @@ def test_POP_019(client_consensus, client_new_node, new_genesis_env):
     :return:
     """
     new_genesis_env.deploy_all()
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_new_node.economic.create_staking_limit * 3)
     result = client_new_node.staking.create_staking(0, address, address)
     assert_code(result, 0)
     param = 3
@@ -648,8 +618,7 @@ def test_POP_020(client_consensus, client_new_node, new_genesis_env):
     genesis.economicModel.staking.unStakeFreezeDuration = unStakeFreezeDuration
     new_genesis_env.set_genesis(genesis.to_dict())
     new_genesis_env.deploy_all()
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, address, address)
     assert_code(result, 0)
     param = 2
@@ -685,8 +654,7 @@ def test_POP_021(client_consensus, client_new_node, new_genesis_env):
     genesis.economicModel.staking.unStakeFreezeDuration = unStakeFreezeDuration
     new_genesis_env.set_genesis(genesis.to_dict())
     new_genesis_env.deploy_all()
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,  client_consensus.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, address, address)
     assert_code(result, 0)
 
@@ -723,8 +691,7 @@ def test_POP_022(client_consensus, client_new_node, new_genesis_env):
     genesis.economicModel.staking.unStakeFreezeDuration = unStakeFreezeDuration
     new_genesis_env.set_genesis(genesis.to_dict())
     new_genesis_env.deploy_all()
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, address, address)
     assert_code(result, 0)
     param = 2
@@ -760,8 +727,7 @@ def test_POP_023(client_consensus, client_new_node, new_genesis_env):
     genesis.economicModel.staking.unStakeFreezeDuration = unStakeFreezeDuration
     new_genesis_env.set_genesis(genesis.to_dict())
     new_genesis_env.deploy_all()
-    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3,
-                                                                   10 ** 18 * 10000000)
+    address, _ = client_new_node.economic.account.generate_account(client_new_node.node.web3, client_consensus.economic.create_staking_limit * 2)
     result = client_new_node.staking.create_staking(0, address, address)
     assert_code(result, 0)
     log.info("Next settlement period")
