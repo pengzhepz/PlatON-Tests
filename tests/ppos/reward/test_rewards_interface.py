@@ -1621,8 +1621,8 @@ class TestGas:
         try:
             result = client.delegate.withdrew_delegate(stakingnum, address, amount=client.economic.delegate_limit,
                                               transaction_cfg={'gas': gas})
-        except ValueError as e:
-            assert e.args[0].get('message') == "intrinsic gas too low"
+        except IndexError as e:
+            assert str(e) == "list index out of range"
 
         gas = 21000 + 6000 + 8000 + get_the_dynamic_parameter_gas_fee(data) + 200
         result = client.delegate.withdrew_delegate(stakingnum, address, amount=client.economic.delegate_limit,
