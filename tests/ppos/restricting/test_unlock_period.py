@@ -364,6 +364,7 @@ def test_UP_FV_009(clients_new_node):
     log.info("punishment_amonut: {}".format(punishment_amonut))
     # view restricting plan again
     restricting_info = client2.ppos.getRestrictingInfo(address1)
+    restricting_balance = restricting_info['Ret']['balance']
     log.info("restricting plan informtion: {}".format(restricting_info))
     info = restricting_info['Ret']
     if punishment_amonut < economic.create_staking_limit:
@@ -377,7 +378,7 @@ def test_UP_FV_009(clients_new_node):
     print(f'block_number={block_number}')
     balance1 = client2.node.eth.getBalance(address1)
     print(balance1)
-    assert balance == balance1
+    assert balance + restricting_balance == balance1
 
 
 @pytest.mark.P2
