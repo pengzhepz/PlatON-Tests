@@ -134,11 +134,13 @@ class TestParam:
 
     @pytest.mark.P0
     @pytest.mark.parametrize('value, code',
-                             [(str(100 * 10 ** 18), 302034), (100 * 10 ** 18, 3), (str(99 * 10 ** 18), 3), (str(10000001 * 10 ** 18), 3),
-                              (str(100001 * 10 ** 18), 0), (str(80 * 10 ** 18), 3), (str(81 * 10 ** 18), 3)])
+                             [(str(79 * 10 ** 18), 3), (str(80 * 10 ** 18), 302034), (str(100001 * 10 ** 18), 3), (100000 * 10 ** 18, 3),
+                              (str(100000 * 10 ** 18), 0)])
     def test_invalid_param_of_minimumRelease(self, noproposal_pips, value, code):
         pips = noproposal_pips
         pip = pips[0]
+        print(pip.pip.getGovernParamValue('restricting', 'minimumRelease'))
+        print(pip.pip.listGovernParam())
         result = param_proposal(pip, 'restricting', 'minimumRelease', value)
         assert_code(result, code)
 

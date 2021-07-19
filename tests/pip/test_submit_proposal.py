@@ -1047,8 +1047,8 @@ class TestPP:
         log.info('Submit param proposal result : {}'.format(result))
         assert_code(result, 302034)
 
-        if int(get_governable_parameter_value(client, 'maxValidators')) != 10000:
-            result = pip.submitParam(pip.node.node_id, str(time.time()), 'staking', 'maxValidators', '10000',
+        if int(get_governable_parameter_value(client, 'maxValidators')) != 201:
+            result = pip.submitParam(pip.node.node_id, str(time.time()), 'staking', 'maxValidators', '201',
                                      pip.node.staking_address, transaction_cfg=pip.cfg.transaction_cfg)
             log.info('Submit param proposal result : {}'.format(result))
             assert_code(result, 0)
@@ -1288,7 +1288,7 @@ class TestPP:
         client = clients_consensus[0]
         pip = client.pip
         result = pip.submitParam(pip.node.node_id, str(time.time()), 'slashing', 'zeroProduceCumulativeTime',
-                                 '50', pip.node.staking_address,
+                                 '4', pip.node.staking_address,
                                  transaction_cfg=pip.cfg.transaction_cfg)
         assert_code(result, 0)
 
@@ -1298,7 +1298,7 @@ class TestPP:
         client = clients_consensus[0]
         pip = client.pip
         result = pip.submitParam(pip.node.node_id, str(time.time()), 'slashing', 'zeroProduceCumulativeTime',
-                                 '51', pip.node.staking_address,
+                                 '5', pip.node.staking_address,
                                  transaction_cfg=pip.cfg.transaction_cfg)
         assert_code(result, 3)
 
