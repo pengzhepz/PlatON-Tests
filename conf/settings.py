@@ -46,4 +46,4 @@ class ConfTmpDir:
 # directory cache configuration
 DEFAULT_CONF_TMP_DIR = ConfTmpDir("global")
 
-NODE_FILE = os.path.abspath(os.path.join(BASE_DIR, "deploy/node_file.yml"))
+NODE_FILE = os.path.abspath(os.path.join(BASE_DIR, "deploy/node/pengzhe_4_4.yml"))

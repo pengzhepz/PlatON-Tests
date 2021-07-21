@@ -3628,47 +3628,175 @@ def test_EI_BC_086(client_new_node, reset_environment):
 #     balance = node.eth.getBalance(benifit_address, settlement_block)
 #     print("benifit_balance", balance)
 
+
+
 @pytest.mark.P1
 def test_EI_BC_087(client_new_node):
     """
-    节点质押被A/B委托，等待三个结算周期 A委托失败 查看A B可领取委托分红奖励是否正确
+    @describe: 节点质押被A/B委托（B是自由金额委托），等待三个结算周期 A委托失败 A B可领取委托分红奖励是正确
+    @step:
+    - 1. 未生效期A账号委托A节点
+    - 2. 未生效期B账号委托A节点
+    - 3. 生效期A委托A节点，失败
+    - 4. 查看A\B的可领取委托收益
+    @expect:
+    - 1. A\B委托可领取分红分别都正确
     """
     clinet = client_new_node
     economic = clinet.economic
     node = clinet.node
     staking_address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
-
     result = clinet.staking.create_staking(0, staking_address, staking_address, reward_per=1000)
     assert_code(result, 0)
-
     delegate_address1, _ = economic.account.generate_account(node.web3, economic.delegate_limit * 3)
     delegate_address2, _ = economic.account.generate_account(node.web3, economic.delegate_limit * 2)
-
     result = clinet.delegate.delegate(0, delegate_address1, node.node_id, amount=economic.delegate_limit * 2)
     assert_code(result, 0)
-
     result = clinet.delegate.delegate(0, delegate_address2, node.node_id)
     assert_code(result, 0)
 
     economic.wait_settlement(node, 1)
+    balance1_befor = node.eth.getBalance(delegate_address1)
+    balance2_befor = node.eth.getBalance(delegate_address2)
 
-    result = node.ppos.getDelegateReward(delegate_address1)['Ret']
-    reward1 = result[0]['reward']
+    reward1 = node.ppos.getDelegateReward(delegate_address1)['Ret'][0]['reward']
     assert reward1
-
-    result = node.ppos.getDelegateReward(delegate_address2)['Ret']
-    reward2 = result[0]['reward']
+    reward2 = node.ppos.getDelegateReward(delegate_address2)['Ret'][0]['reward']
     assert reward2
 
-    result = clinet.delegate.delegate(0, delegate_address1)
-    assert_code(result, 301111)
+    fail_result = clinet.delegate.delegate(0, delegate_address1)
+    assert_code(fail_result, 301111)
 
-    result = node.ppos.getDelegateReward(delegate_address1)['Ret']
-    reward3 = result[0]['reward']
-    assert reward1 == reward3
+    balance1_after = node.eth.getBalance(delegate_address1)
+    balance2_after = node.eth.getBalance(delegate_address2)
+    assert 0 < balance1_befor - balance1_after < node.web3.toWei(0.01, 'ether')
+    assert balance2_befor == balance2_after
 
-    result = node.ppos.getDelegateReward(delegate_address2)['Ret']
-    reward4 = result[0]['reward']
+    withdraw_delegate_reward_result = clinet.delegate.withdraw_delegate_reward(delegate_address1)
+    print(f'withdraw_delegate_reward_result = {withdraw_delegate_reward_result}')
+    time.sleep(3)
+
+    reward3 = node.ppos.getDelegateReward(delegate_address1)['Ret'][0]['reward']
+    assert reward3 == 0
+    reward4 = node.ppos.getDelegateReward(delegate_address2)['Ret'][0]['reward']
+    assert reward2 == reward4
+
+
+@pytest.mark.P2
+def test_EI_BC_108(client_new_node):
+    """
+    @describe: 节点质押被A/B委托（B是锁仓金额委托），等待三个结算周期 A委托失败 A B可领取委托分红奖励是正确
+    @step:
+    - 1. 未生效期A账号委托A节点
+    - 2. 未生效期B账号委托A节点
+    - 3. 生效期A委托A节点，失败
+    - 4. 查看A\B的可领取委托收益
+    @expect:
+    - 1. A\B委托可领取分红分别都正确
+    """
+    clinet = client_new_node
+    economic = clinet.economic
+    node = clinet.node
+    staking_address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
+    result = clinet.staking.create_staking(0, staking_address, staking_address, reward_per=1000)
+    assert_code(result, 0)
+    delegate_address1, _ = economic.account.generate_account(node.web3, economic.delegate_limit * 3)
+    delegate_address2, _ = economic.account.generate_account(node.web3, node.web3.toWei(0.1, 'ether'))
+    amount1 = node.web3.toWei(100, 'ether')
+    plan = [{'Epoch': 1, 'Amount': amount1},
+            {'Epoch': 2, 'Amount': amount1}]
+    result = clinet.restricting.createRestrictingPlan(delegate_address2, plan, economic.account.account_with_money['address'])
+    assert_code(result, 0)
+    result = clinet.delegate.delegate(0, delegate_address1, node.node_id, amount=economic.delegate_limit * 2)
+    assert_code(result, 0)
+    result = clinet.delegate.delegate(1, delegate_address2, node.node_id)
+    assert_code(result, 0)
+
+    economic.wait_settlement(node, 1)
+    balance1_befor = node.eth.getBalance(delegate_address1)
+    balance2_befor = node.eth.getBalance(delegate_address2)
+    assert 0 < node.web3.toWei(200.1, 'ether') - economic.delegate_limit - balance2_befor < node.web3.toWei(0.01, 'ether')
+
+    reward1 = node.ppos.getDelegateReward(delegate_address1)['Ret'][0]['reward']
+    assert reward1
+    reward2 = node.ppos.getDelegateReward(delegate_address2)['Ret'][0]['reward']
+    assert reward2
+
+    fail_result = clinet.delegate.delegate(0, delegate_address1)
+    assert_code(fail_result, 301111)
+
+    withdraw_delegate_reward_result = clinet.delegate.withdraw_delegate_reward(delegate_address1)
+    print(f'withdraw_delegate_reward_result = {withdraw_delegate_reward_result}')
+    time.sleep(3)
+
+    balance1_after = node.eth.getBalance(delegate_address1)
+    balance2_after = node.eth.getBalance(delegate_address2)
+    assert 0 < balance1_befor - balance1_after + reward1 < node.web3.toWei(0.01, 'ether')
+    assert balance2_befor == balance2_after
+
+    reward3 = node.ppos.getDelegateReward(delegate_address1)['Ret'][0]['reward']
+    assert reward3 == 0
+    reward4 = node.ppos.getDelegateReward(delegate_address2)['Ret'][0]['reward']
+    assert reward2 == reward4
+
+
+@pytest.mark.P2
+def test_EI_BC_109(client_new_node):
+    """
+    @describe: 节点质押被A/B委托（B是混合金额委托），等待三个结算周期 A委托失败 A B可领取委托分红奖励是正确
+    @step:
+    - 1. 未生效期A账号委托A节点
+    - 2. 未生效期B账号委托A节点
+    - 3. 生效期A委托A节点，失败
+    - 4. 查看A\B的可领取委托收益
+    @expect:
+    - 1. A\B委托可领取分红分别都正确
+    """
+    clinet = client_new_node
+    economic = clinet.economic
+    node = clinet.node
+    staking_address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit * 2)
+    result = clinet.staking.create_staking(0, staking_address, staking_address, reward_per=1000)
+    assert_code(result, 0)
+    delegate_address1, _ = economic.account.generate_account(node.web3, economic.delegate_limit * 3)
+    delegate_address2, _ = economic.account.generate_account(node.web3, economic.delegate_limit * 2)
+    amount1 = node.web3.toWei(100, 'ether')
+    plan = [{'Epoch': 1, 'Amount': amount1},
+            {'Epoch': 2, 'Amount': amount1}]
+    result = clinet.restricting.createRestrictingPlan(delegate_address2, plan, economic.account.account_with_money['address'])
+    assert_code(result, 0)
+    result = clinet.delegate.delegate(0, delegate_address1, node.node_id, amount=economic.delegate_limit * 2)
+    assert_code(result, 0)
+    result = clinet.delegate.delegate(0, delegate_address2, node.node_id)
+    assert_code(result, 0)
+    result = clinet.delegate.delegate(1, delegate_address2, node.node_id)
+    assert_code(result, 0)
+
+    economic.wait_settlement(node, 1)
+    balance1_befor = node.eth.getBalance(delegate_address1)
+    balance2_befor = node.eth.getBalance(delegate_address2)
+    assert 0 < node.web3.toWei(220, 'ether') - economic.delegate_limit * 2 - balance2_befor < node.web3.toWei(0.01, 'ether')
+
+    reward1 = node.ppos.getDelegateReward(delegate_address1)['Ret'][0]['reward']
+    assert reward1
+    reward2 = node.ppos.getDelegateReward(delegate_address2)['Ret'][0]['reward']
+    assert reward2
+
+    fail_result = clinet.delegate.delegate(0, delegate_address1, amount=economic.delegate_limit * 2)
+    assert_code(fail_result, 301111)
+
+    withdraw_delegate_reward_result = clinet.delegate.withdraw_delegate_reward(delegate_address1)
+    print(f'withdraw_delegate_reward_result = {withdraw_delegate_reward_result}')
+    time.sleep(3)
+
+    balance1_after = node.eth.getBalance(delegate_address1)
+    balance2_after = node.eth.getBalance(delegate_address2)
+    assert 0 < balance1_befor - balance1_after + reward1 < node.web3.toWei(0.01, 'ether')
+    assert balance2_befor == balance2_after
+
+    reward3 = node.ppos.getDelegateReward(delegate_address1)['Ret'][0]['reward']
+    assert reward3 == 0
+    reward4 = node.ppos.getDelegateReward(delegate_address2)['Ret'][0]['reward']
     assert reward2 == reward4
 
 
