@@ -407,9 +407,9 @@ class Node:
                 cmd = cmd + " --pprof --pprofaddr 0.0.0.0 --pprofport " + str(self.pprofport)
             if self.wsport:
                 cmd = cmd + " --ws --wsorigins '*' --wsaddr 0.0.0.0 --wsport " + str(self.wsport)
-                cmd = cmd + " --wsapi platon,debug,personal,admin,net,web3"
+                cmd = cmd + " --wsapi web3,platon,admin,personal,miner,txpool,net,debug"
             cmd = cmd + " --rpc --rpcaddr 0.0.0.0 --rpcport " + str(self.rpc_port)
-            cmd = cmd + " --rpcapi platon,debug,personal,admin,net,web3,txpool"
+            cmd = cmd + " --rpcapi web3,platon,admin,personal,miner,txpool,net,debug"
             cmd = cmd + " --txpool.nolocals"
             if self.cfg.append_cmd:
                 cmd = cmd + " " + self.cfg.append_cmd

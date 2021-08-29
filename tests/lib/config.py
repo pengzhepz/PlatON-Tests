@@ -37,7 +37,7 @@ class PipConfig:
     version7 = 4608
     version8 = 591617
     version9 = 526081
-    version0 = 4096
+    version0 = 4097
     transaction_cfg = {"gasPrice": 3000000000000000, "gas": 1000000}
 
 
