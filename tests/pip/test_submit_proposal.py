@@ -1077,7 +1077,7 @@ class TestPP:
         pip.economic.wait_consensus(pip.node)
 
     @pytest.mark.P0
-    @allure.title('Submit parammeter  proposal function verification')
+    @allure.title('Submit parammeter proposal function verification')
     def test_PP_SU_016_2(self, no_vp_proposal, all_clients, clients_noconsensus):
         pip = no_vp_proposal
 

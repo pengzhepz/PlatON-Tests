@@ -411,6 +411,7 @@ class Node:
             cmd = cmd + " --rpc --rpcaddr 0.0.0.0 --rpcport " + str(self.rpc_port)
             cmd = cmd + " --rpcapi web3,platon,admin,personal,miner,txpool,net,debug"
             cmd = cmd + " --txpool.nolocals"
+            cmd = cmd + " --allow-insecure-unlock"
             if self.cfg.append_cmd:
                 cmd = cmd + " " + self.cfg.append_cmd
             fp.write("command=" + cmd + "\n")

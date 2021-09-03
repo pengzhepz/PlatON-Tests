@@ -89,7 +89,7 @@ class TestVotingProposalStaking:
         if platon_bin != pip.cfg.PLATON_NEW_BIN1:
             assert_code(result, 0)
         else:
-            assert_code(result, 301005)
+            assert_code(result, 301004)
 
 
 class TestNoProposalStaking:
@@ -105,7 +105,7 @@ class TestNoProposalStaking:
     def test_ST_NO_002(self, new_node_no_proposal):
         pip = new_node_no_proposal
         result = replace_platon_and_staking(pip, pip.cfg.PLATON_NEW_BIN1)
-        assert_code(result, 301005)
+        assert_code(result, 301004)
 
     @pytest.mark.P1
     @allure.title('No proposal, verify stake function')
