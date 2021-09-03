@@ -16,7 +16,7 @@ CONFIG_JSON_FILE = os.path.abspath(os.path.join(BASE_DIR, "deploy/template/confi
 STATIC_NODE_FILE = os.path.abspath(os.path.join(BASE_DIR, 'deploy/template/static-nodes.json'))
 SUPERVISOR_FILE = os.path.abspath(os.path.join(BASE_DIR, "deploy/template/supervisor_template.conf"))
 ADDRESS_FILE = os.path.abspath(
-    os.path.join(BASE_DIR, 'deploy/keystore/lat1785psd0qs0g8p79j54mnewh0ndwcvqq680rcfc'))
+    os.path.join(BASE_DIR, 'deploy/keystore/atp1zkrxx6rf358jcvr7nruhyvr9hxpwv9uncjmns0'))
 ACCOUNT_FILE = os.path.abspath(os.path.join(BASE_DIR, "deploy/accounts.yml"))
 LOG_FILE = os.path.abspath(os.path.join(BASE_DIR, "deploy/tmp/platon.log"))
 
