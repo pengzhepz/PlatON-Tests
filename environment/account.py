@@ -38,7 +38,7 @@ class Account:
     def get_rand_account(self):
         return random.choice(list(self.accounts.values()))
 
-    def sendTransaction(self, connect, data, from_address, to_address, gasPrice, gas, value, check_address=True):
+    def sendTransaction(self, connect, data, from_address, to_address, gasPrice, gas, value):
         platon = Eth(connect)
         account = self.accounts[from_address]
         nonce = platon.getTransactionCount(from_address)

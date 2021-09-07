@@ -213,6 +213,7 @@ def test_estimated_gas_004(client_new_node):
     assert_code(result, 0)
     balance_after = client.node.eth.getBalance(staking_address)
     assert balance_after == 0
+    client.ppos.need_quota_gas = True
 
 
 @pytest.mark.P1
@@ -327,6 +328,7 @@ def test_estimated_gas_006(client_new_node):
     assert_code(result, 0)
     balance2 = node.eth.getBalance(staking_address)
     assert balance2 == econnmic.create_staking_limit
+    client.ppos.need_quota_gas = True
 
 
 @pytest.mark.P1
@@ -378,6 +380,8 @@ def test_estimated_gas_007(client_new_node):
     assert balance_after == proportion_reward
     released = client.ppos.getCandidateInfo(node.node_id)['Ret']['Released']
     assert released == economic.create_staking_limit - proportion_reward * 2
+    client.ppos.need_quota_gas = True
+
 
 @pytest.mark.P1
 def test_estimated_gas_008(client_new_node):

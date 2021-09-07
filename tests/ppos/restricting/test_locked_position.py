@@ -1201,6 +1201,8 @@ def test_LS_PV_010(client_new_node):
     except Exception as e:
         log.info("Use case success, exception information：{} ".format(str(e)))
     assert status, "ErrMsg: create restricting result {}".format(status)
+    client.ppos.need_quota_gas = True
+
 
 
 @pytest.mark.P2
@@ -1823,6 +1825,7 @@ def test_LS_EV_022(client_new_node):
     address1, address2 = create_lock_release_amount(client, amount1, amount2)
     # create Restricting Plan
     plan = [{'Epoch': 1, 'Amount': economic.delegate_limit * 100}]
+    print(client.node.eth.blockNumber)
     result = client.restricting.createRestrictingPlan(address2, plan, address1)
     assert_code(result, 0)
     # create staking
@@ -1842,6 +1845,7 @@ def test_LS_EV_022(client_new_node):
     except Exception as e:
         log.info("Use case success, exception information：{} ".format(str(e)))
     assert status, "ErrMsg:Transfer result {}".format(status)
+    client.ppos.need_quota_gas = True
 
 
 def create_restricting_increase_staking(client, economic, node):
@@ -1913,6 +1917,7 @@ def test_LS_IV_002(client_new_node):
     except Exception as e:
         log.info("Use case success, exception information：{} ".format(str(e)))
     assert status, "ErrMsg:Transfer result {}".format(status)
+    client.ppos.need_quota_gas = True
 
 
 @pytest.mark.P1
@@ -2482,9 +2487,7 @@ def test_LS_UPV_021(new_genesis_env, clients_noconsensus, client_consensus):
     assert balance_restrictingAddress2 == balance_restrictingAddress
 
 
-
 def test_LS_UPV_022(client_new_node, client_consensus):
-
     """
     多个锁仓释放期质押主动退回质押
     :param client_new_node:
@@ -2536,7 +2539,7 @@ def test_LS_UPV_022(client_new_node, client_consensus):
         balance_benefit = node.eth.getBalance(benefit_address, economic.settlement_size * i)
         assert balance_staking - balance_staking1 < node.web3.toWei(0.01, 'ether')
         economic.wait_settlement(node)
-    #Check the income to the account
+    # Check the income to the account
 
     assert balance_benefit == block_reward * 40 + staking_reward
     list = node.ppos.getRestrictingInfo(staking_address)['Ret']['plans']
@@ -2626,7 +2629,6 @@ def test_LS_UPV_023(client_new_node):
             assert balance_restrictingAddress == balance_restrictingAddress1
 
 
-
 def test_LS_UPV_024(client_new_node, client_consensus):
     """
     多个释放期，全部释放之后
@@ -2676,7 +2678,6 @@ def test_LS_UPV_024(client_new_node, client_consensus):
 
     restricting_info_end = node.ppos.getRestrictingInfo(staking_address)["Ret"]
     assert restricting_info_end["debt"] == economic.create_staking_limit
-
 
 
 def test_LS_UPV_025(client_new_node, client_consensus):
@@ -2737,8 +2738,6 @@ def test_LS_UPV_025(client_new_node, client_consensus):
     assert_code(result, 304005)
 
 
-
-
 @pytest.mark.P1
 def test_LS_UPV_026(client_new_node):
     """
@@ -2760,3 +2759,4 @@ def test_LS_UPV_026(client_new_node):
     print(restricting_info)
     balance_after = node.eth.getBalance(address)
     assert balance - balance_after - amount * 2 < node.web3.toWei(0.01, 'ether')
+    node.ppos.need_quota_gas = True

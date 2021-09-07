@@ -29,20 +29,21 @@ def account_env(global_test_env) -> (Node, AccountEnv):
     node = env.get_rand_node()
     log.info("Node::::::::::::::::::::::::::::::{}:{}".format(node.host, node.p2p_port))
 
+    print(node.remote_node_path)
     remote_pwd_file = node.remote_node_path + "/password.txt"
     node.upload_file("./deploy/keystore/password.txt", remote_pwd_file)
 
-    remote_account_file = node.remote_keystore_dir + "/UTC--2019-08-23T12-33-18.192329788Z--2e95e3ce0a54951eb9a99152a6d5827872dfb4fd"
+    # remote_account_file = node.remote_keystore_dir + "/UTC--2019-08-23T12-33-18.192329788Z--2e95e3ce0a54951eb9a99152a6d5827872dfb4fd"
     # node.upload_file("./deploy/keystore/UTC--2019-10-15T10-27-31.520865283Z--c198603d3793c11e5362c8564a65d3880bae341b", remote_account_file)
 
-    remote_key_file = node.remote_keystore_dir + "/key1.pri"
-    node.upload_file("./deploy/key1.pri", remote_key_file)
+    # remote_key_file = node.remote_keystore_dir + "/key1.pri"
+    # node.upload_file("./deploy/key1.pri", remote_key_file)
 
     account_env = AccountEnv()
     account_env.remote_pwd_file = remote_pwd_file
-    account_env.remote_account_file = remote_account_file
-    account_env.remote_key_file = remote_key_file
-    account_env.remote_account_address = "atx1zkrxx6rf358jcvr7nruhyvr9hxpwv9unj58er9"
+    # account_env.remote_account_file = remote_account_file
+    # account_env.remote_key_file = remote_key_file
+    account_env.remote_account_address = "atp1c06f04dujg7jcrnpv6zk35p8q4gvjmwd6hhlut"
 
     yield node, account_env
 
@@ -209,7 +210,8 @@ def test_CMD_133(account_env):
 def test_CMD_005(account_env):
     node, env = account_env
     returnList = run_ssh_cmd(node.ssh, "{} account update {} --datadir {}".format(node.remote_bin_file, env.remote_account_address, node.remote_data_dir), "88888888", "88888888", "88888888")
-    log.info(f'returnList is {returnList}')
+    # log.info(f'returnList is {returnList}')
+    log.info("{} account update {} --datadir {}".format(node.remote_bin_file, env.remote_account_address, node.remote_data_dir))
     assert len(returnList) == 6
     assert returnList[5].strip() == "Repeat passphrase:"
 
