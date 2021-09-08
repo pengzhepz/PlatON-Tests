@@ -102,10 +102,10 @@ def test_personal_importRawKey(global_running_env):
 def test_personal_sign_ecRecover(global_running_env):
     node = global_running_env.get_rand_node()
     test_data = "0x11"
-    signer = Web3.toChecksumAddress(node.eth.accounts[0])
+    signer = node.eth.accounts[0]
     sign_data = node.personal.sign(test_data, signer, password)
     assert len(sign_data) == 132
-    assert Web3.toChecksumAddress(node.personal.ecRecover(test_data, sign_data)) == signer
+    assert node.personal.ecRecover(test_data, sign_data) == signer
 
 
 @allure.title("Sign transaction")
