@@ -20,7 +20,7 @@ from client_sdk_python.exceptions import (
 from common.log import log
 import time
 
-UNKNOWN_ADDRESS = '0xdEADBEeF00000000000000000000000000000000'
+UNKNOWN_ADDRESS = '14qViLJfdGaP4EeHnDyJbEGQysnCpwn1gd'
 UNKNOWN_HASH = '0xdeadbeef00000000000000000000000000000000000000000000000000000000'
 COMMON_ADDRESS = '0x55bfd49472fd41211545b01713a9c3a97af78b05'
 ADDRESS = "atx1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpd3er4y"

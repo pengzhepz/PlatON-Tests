@@ -94,9 +94,9 @@ class TestEnvironment:
     def validatorMode(self):
         return self.genesis_config["config"]["cbft"]["validatorMode"]
 
-    @property
-    def version(self):
-        return "0.13.2"
+    # @property
+    # def version(self):
+    #     return "0.13.2"
 
     @property
     def running(self) -> bool:

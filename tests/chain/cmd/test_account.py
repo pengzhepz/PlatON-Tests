@@ -237,12 +237,12 @@ def test_CMD_007(account_env):
     old_counts = len(return_list) - 1
 
     remote_key_file = node.remote_keystore_dir + "/key1.pri"
-    node.upload_file("./deploy/key1.pri", remote_key_file)
+    node.upload_file("./deploy/file/key1.pri", remote_key_file)
 
     run_ssh_cmd(node.ssh, "{} account import {} --datadir {}".format(node.remote_bin_file, remote_key_file, node.remote_data_dir), "88888888", "88888888")
     time.sleep(2)
     return_list2 = run_ssh_cmd(node.ssh, "{} account list --datadir {}".format(node.remote_bin_file, node.remote_data_dir))
-
+    print(return_list2)
     new_counts = len(return_list2) - 1
 
     assert old_counts + 1 == new_counts
@@ -300,7 +300,7 @@ def test_CMD_008(account_env):
     old_counts = len(return_list) - 1
 
     remote_key_file = node.remote_keystore_dir + "/key4.pri"
-    node.upload_file("./deploy/file.key4.pri", remote_key_file)
+    node.upload_file("./deploy/file/key4.pri", remote_key_file)
 
     run_ssh_cmd(node.ssh, "{} account import {} --keystore {}  --password {}".format(node.remote_bin_file, remote_key_file, node.remote_keystore_dir, env.remote_pwd_file))
     time.sleep(0.2)
@@ -470,7 +470,7 @@ def test_CMD_026(global_test_env):
     # for i in range(len(returnList)):
     #     log.info("Serial number：{}   result：{}".format(i, returnList[i]))
 
-    assert return_list[0].strip() == "platon is free software: you can redistribute it and/or modify"
+    assert return_list[0].strip() == "alaya is free software: you can redistribute it and/or modify"
 
 
 @allure.title("Display chain version")
@@ -488,23 +488,23 @@ def test_CMD_029(global_test_env):
     assert "Version:" in return_list[1]
 
 
-@allure.title("Load configuration file")
-@pytest.mark.P3
-def test_CMD_033_CMD_034(global_test_env):
-    global_env = global_test_env
-
-    node = global_env.consensus_node_list[0]
-    node.stop()
-
-    run_ssh_cmd(node.ssh, "sed -i 's/\"NetworkId\": 1/\"NetworkId\": 111/g' {}".format(node.remote_config_file))
-
-    node.start(False)
-
-    time.sleep(2)
-
-    ret = node.admin.nodeInfo
-    # print(ret)
-    assert ret["protocols"]["platon"]["network"] == 111
+# @allure.title("Load configuration file")
+# @pytest.mark.P3
+# def test_CMD_033_CMD_034(global_test_env):
+#     global_env = global_test_env
+#
+#     node = global_env.consensus_node_list[0]
+#     node.stop()
+#
+#     run_ssh_cmd(node.ssh, "sed -i 's/\"NetworkId\": 1/\"NetworkId\": 111/g' {}".format(node.remote_config_file))
+#
+#     node.start(False)
+#
+#     time.sleep(2)
+#
+#     ret = node.admin.nodeInfo
+#     # print(ret)
+#     assert ret["protocols"]["platon"]["network"] == 111
 
 # Todo: use case without assertion
 # def no_t1est_removedb(global_test_env):
