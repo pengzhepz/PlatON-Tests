@@ -13,7 +13,7 @@ from hexbytes import HexBytes
 from common.log import log
 
 password = "88888888"
-to_address = "atx1nssezvh4cljl5emq3a244j53xeg0kery423jja"
+to_address = "atp1c06f04dujg7jcrnpv6zk35p8q4gvjmwd6hhlut"
 g_txHash = None
 
 
