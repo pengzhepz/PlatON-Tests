@@ -428,6 +428,7 @@ def test_CMD_029(global_test_env):
 
     assert return_list[0].strip() == "PlatON"
     assert "Version:" in return_list[1]
+    assert "Git Commit Date" in return_list[3]
 
 
 @allure.title("Load configuration file")

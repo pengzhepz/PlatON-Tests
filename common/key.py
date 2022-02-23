@@ -1,7 +1,7 @@
 import os
 import sys
 from common.abspath import abspath
-from eth_keys import (
+from platon_keys import (
     keys,
 )
 from eth_utils.curried import (

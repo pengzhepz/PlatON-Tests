@@ -412,6 +412,7 @@ class Node:
             cmd = cmd + " --rpcapi platon,debug,personal,admin,net,web3,txpool"
             cmd = cmd + " --txpool.nolocals"
             cmd = cmd + " --allow-insecure-unlock"
+            cmd = cmd + " --graphql"
             if self.cfg.append_cmd:
                 cmd = cmd + " " + self.cfg.append_cmd
             fp.write("command=" + cmd + "\n")

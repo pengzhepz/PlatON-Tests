@@ -114,7 +114,7 @@ def initial_report(global_test_env):
     assert_code(result, 0)
     yield clients_consensus, economic, node, report_address, current_block
     log.info("case execution completed")
-    global_test_env.deploy_all()
+    # global_test_env.deploy_all()
     time.sleep(3)
 
 
@@ -814,7 +814,9 @@ def test_VP_PVF_001(client_consensus, reset_environment):
     assert_code(result, 0)
     # Query and report violation records
     evidence_parameter = get_param_by_dict(report_information, 'prepareA', 'validateNode', 'nodeId')
+    print(evidence_parameter)
     result = client.ppos.checkDuplicateSign(1, evidence_parameter, current_block)
+    print(f'ssss{result}')
     assert_code(result, 0)
     assert result['Ret'] is not None, "ErrMsg:Query results {}".format(result['Ret'])
 
