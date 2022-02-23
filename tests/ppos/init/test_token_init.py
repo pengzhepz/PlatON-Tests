@@ -4,7 +4,7 @@ from decimal import Decimal
 
 import allure
 import pytest
-from alaya.eth import Eth
+from client_sdk_python.eth import Eth
 from client_sdk_python import Web3
 from client_sdk_python.packages.platon_keys.utils.address import address_bytes_to_bech32_address
 from dacite import from_dict
@@ -1718,7 +1718,7 @@ def test_PT_AC_004(client_consensus):
     print(balance)
 
 
-def PT_AC_005(client_consensus):
+def test_PT_AC_005(client_consensus):
     """
     非关联性转账交易nonce重复
     """
@@ -2188,10 +2188,14 @@ def test_IT_SD2222(global_test_env):
     transfer_amount = node.web3.toWei(1, 'ether')
     gasPrice = 1 * 10 ** 8
     print('gasPrice', gasPrice)
-    result = global_test_env.account.sendTransaction(node.web3, '', address, address1, gasPrice,
+    status = 0
+    try:
+        result = global_test_env.account.sendTransaction(node.web3, '', address, address1, gasPrice,
                                                      21000, transfer_amount)
-    log.info("result: {}".format(result))
-    time.sleep(2)
+        log.info("result: {}".format(result))
+    except:
+        status = 1
+    assert status
     address1_balance1 = node.eth.getBalance(address1)
     address_balance1 = node.eth.getBalance(address)
     assert address1_balance == address1_balance1 == 0

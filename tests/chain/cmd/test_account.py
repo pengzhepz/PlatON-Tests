@@ -483,9 +483,10 @@ def test_CMD_029(global_test_env):
     return_list = run_ssh_cmd(node.ssh, "{} version".format(node.remote_bin_file))
     # for i in range(len(returnList)):
     #     log.info("Serial number：{}   Result: {}".format(i, returnList[i]))
-
-    assert return_list[0].strip() == "PlatON"
+    print(return_list)
+    assert return_list[0].strip() == "Alaya"
     assert "Version:" in return_list[1]
+    assert "Git Commit Date" in return_list[3]
 
 
 # @allure.title("Load configuration file")

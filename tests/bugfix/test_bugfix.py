@@ -1,8 +1,14 @@
 import time
 import rlp
+from client_sdk_python import HTTPProvider, Web3
+from client_sdk_python.packages.platon_account.internal.transactions import bech32_address_bytes
+from hexbytes import HexBytes
+from platon.platon import Platon
+
 from common.log import log
+from environment import Node, TestConfig
 from tests.conftest import upgrade_proposal
-from tests.lib import get_the_dynamic_parameter_gas_fee, assert_code, get_pledge_list
+from tests.lib import get_the_dynamic_parameter_gas_fee, assert_code, get_pledge_list, get_block_count_number
 
 
 def test_1769_call_return_32000(client_consensus):
@@ -52,7 +58,6 @@ def test_1758_estimate_pip_without_gas_price(client_consensus):
 
 def test_1583_EI_BC_090(clients_new_node, clients_consensus, all_clients, client_consensus):
     """
-    复现场景修改中
     @describe: 0.13.2节点质押被A/B委托（B是自由金额委托），等待三个结算周期 A委托失败 升级到0.16.0，可领取委托分红奖励正确
     @step:
     - 1. 未生效期A账号委托A节点
@@ -1302,3 +1307,90 @@ def test_1654_restricting_continuous_upgrade_zero_out_block_N(clients_new_node, 
         candidate_info = client1.ppos.getCandidateInfo(client.node.node_id)['Ret']
         assert candidate_info['Shares'] == candidateinfo_shares - sub_share
         assert candidate_info['RestrictingPlan'] == candidateinfo_restrictingplan
+
+
+
+def test_eth17037(clients_consensus):
+    # 启用--allow-insecure-unlock之后执行
+    for client_node in clients_consensus:
+        print(client_node.node.node_mark)
+        if client_node.node.node_mark == '192.168.16.121:16789':
+            client = client_node
+    print(client.node.node_mark)
+
+    account, pri = client.economic.account.generate_account(client.node.web3, client.economic.create_staking_limit)
+    account1, _ = client.economic.account.generate_account(client.node.web3, 0)
+    client.node.personal.importRawKey(pri, '88888888')
+
+    account_balance = client.node.eth.getBalance(account)
+    result = client.node.personal.unlockAccount(account, '88888888')
+    assert result
+    restlt = client.economic.account.sendTransaction(client.node.web3, "", account, account1, client.node.eth.gasPrice, 21000, 10000000000)
+    account_balance_after = client.node.eth.getBalance(account)
+    assert 0 < account_balance - account_balance_after - 10000000000 < client.node.web3.toWei(0.001, 'ether')
+    balance1 = client.node.eth.getBalance(account1)
+    assert balance1 == 10000000000
+
+
+
+def test_debugpz(clients_new_node):
+    for client in clients_new_node:
+        if client.node.node_mark == '192.168.16.121:16790':
+            break
+
+
+
+    # 修改质押信息预估gas
+    # reward_per = 0
+    # node_name = "aaanode_name"
+    # staking_address = 'atp1jt5puthuzyf48r5su9ejy9hnf85juvtvwelxsp'
+    # pri_key = '0x7793f49c6af925e13e5d1c80d9f7756b29eaefe8de210370c6da6e3d277c2ac7'
+    # rlp_reward_per = rlp.encode(reward_per) if reward_per else b''
+    # data = HexBytes(rlp.encode(
+    #     [rlp.encode(int(1001)), rlp.encode(bech32_address_bytes(staking_address)), rlp.encode(bytes.fromhex(client.node.node_id)),
+    #      rlp_reward_per,
+    #      rlp.encode(client.staking.cfg.external_id), rlp.encode(node_name), rlp.encode(client.staking.cfg.website),
+    #      rlp.encode(client.staking.cfg.details)]))
+    # estimated_edit_gas = client.node.eth.estimateGas({"from": staking_address, "to": client.node.ppos.stakingAddress, "data": data})
+    # print(estimated_edit_gas)
+    # address = 'atp1jt5puthuzyf48r5su9ejy9hnf85juvtvwelxsp'
+    # node_name = "node_aname"
+    # reward_per = 0
+    # rlp_reward_per = rlp.encode(reward_per) if reward_per else b''
+    # data = HexBytes(rlp.encode(
+    #     [rlp.encode(int(1001)), rlp.encode(bech32_address_bytes(address)), rlp.encode(bytes.fromhex(client.node.node_id)),
+    #      rlp_reward_per,
+    #      rlp.encode("external_id"), rlp.encode(node_name), rlp.encode("website"),
+    #      rlp.encode("details")]))
+    # estimated_edit_gas = client.node.eth.estimateGas(
+    #     {"from": address, "to": 'atp1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzfyslg3', "data": data})
+    # print(estimated_edit_gas)
+
+    # 委托预估gas
+    delegate_address = 'atp1eq95atjq30yqk3j93ma0f5287mqgpdfgtsvd0s'
+    # delegate_privatekey = '0x1da03be888f1721c1ab859cc56aab4e5272c39b0990746e6140b35b079e7f54c'
+    #
+    # data = rlp.encode([rlp.encode(int(1004)), rlp.encode(0), rlp.encode(bytes.fromhex(client.node.node_id)),
+    #                    rlp.encode(client.economic.delegate_limit)])
+    # transaction_data = {"to": client.node.ppos.stakingAddress, "data": data, "from": delegate_address}
+    # estimated_gas = client.node.eth.estimateGas(transaction_data)
+    # print(estimated_gas)
+
+    # 领取委托预估gas
+    # balance = client.node.web3.toWei(1000, 'ether')
+    # delegate_address, delegate_prikey = client.economic.account.generate_account(client.node.web3, balance)
+    # delegate_address = 'atp14pc23tfs0frkd6tpzye45ps2pvau7wz0uvns8f'
+    # print(f'委托地址 ={delegate_address}')
+    # result = client.delegate.delegate(0, delegate_address)
+    # print(f'委托结果 ={result}')
+    # client.economic.wait_settlement(client.node, 2)
+    #
+    # data = rlp.encode([rlp.encode(int(5000))])
+    # print(client.node.ppos.delegateRewardAddress)
+    # estimated_gas = client.node.eth.estimateGas({"to": delegate_address, "data": data, "from": client.node.ppos.delegateRewardAddress})
+    # print(estimated_gas)  # 21080
+
+
+def test_172_debug_economicConfig(client_new_node):
+    economic_config = client_new_node.node.debug.economicConfig()
+    assert economic_config['restricting']['minimumRelease'] == client_new_node.node.web3.toWei(80, 'ether')

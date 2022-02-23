@@ -362,10 +362,11 @@ def test_LS_RV_003(client_new_node):
     client = client_new_node
     economic = client.economic
     node = client.node
+    client.ppos.need_quota_gas = False
     # create account
     address, _ = economic.account.generate_account(node.web3, economic.create_staking_limit)
     louk_up_balace = economic.genesis.economicModel.restricting.minimumRelease
-    print(type(louk_up_balace), louk_up_balace)
+    # print(type(louk_up_balace), louk_up_balace)
     plan = [{'Epoch': 1, 'Amount': louk_up_balace}, {'Epoch': 1, 'Amount': louk_up_balace}]
     # create restricting plan
     restricting_info = create_restricting_plan(client, plan, address, address)

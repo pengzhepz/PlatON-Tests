@@ -75,19 +75,22 @@ def test_CH_IN_015(global_test_env):
         assert w3.toChecksumAddress(info['innerAcc']['cdfAccount']) == w3.toChecksumAddress(genesis.economicModel.innerAcc.cdfAccount)
         assert info['innerAcc']['cdfBalance'] == genesis.economicModel.innerAcc.cdfBalance
 
-#
-# @allure.title("Foundation lock warehouse plan inquiry")
-# @pytest.mark.P1
-# def test_CH_IN_014(global_test_env):
-#     """
-#     View the foundation lock warehouse plan query
-#     """
-#     log.info("View the foundation lock warehouse plan query")
-#     w3_list = [one_node.web3 for one_node in global_test_env.consensus_node_list]
-#     for w3 in w3_list:
-#         info = w3.eth.call({"to": "atx1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpd3er4y", "data": "0xda8382100495941000000000000000000000000000000000000003"}, 0)
-#         recive = json.loads(str(info, encoding="ISO-8859-1"))
-#         pass
+
+
+@allure.title("Foundation lock warehouse plan inquiry")
+@pytest.mark.P1
+def test_CH_IN_014(global_test_env):
+    """
+    View the foundation lock warehouse plan query
+    """
+    log.info("View the foundation lock warehouse plan query")
+    w3_list = [one_node.web3 for one_node in global_test_env.consensus_node_list]
+    for w3 in w3_list:
+        # info = w3.eth.call({"to": "atx1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpd3er4y", "data": "0xda8382100495941000000000000000000000000000000000000003"}, 0)
+        info = w3.eth.call({"to": "atp1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqp8h9fxw",
+                            "data": "0xda8382100495941000000000000000000000000000000000000003"}, 0)
+        recive = json.loads(str(info, encoding="ISO-8859-1"))
+        pass
         # move for 0.7.5
         # plans = recive['Ret']['plans']
         # assert(8 == len(plans))
@@ -111,9 +114,11 @@ def test_CH_IN_015(global_test_env):
 
 
 @allure.title("Consensus parameter")
-@pytest.mark.P1
+# @pytest.mark.P1
+@pytest.mark.skip
 def test_CH_IN_016(global_test_env):
     """
+    TODO: the method platon_getPrepareQC does not exist/is not available
     View the number of blocks of each consensus node of the consensus
     """
     log.info("View the number of outbound blocks of each consensus node and the total number of consensus nodes")

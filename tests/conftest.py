@@ -151,7 +151,7 @@ def clients_new_node(global_test_env, staking_cfg) -> List[Client]:
     """
     Get new node Client object list
     """
-    global_test_env.deploy_all()
+    # global_test_env.deploy_all()
     return get_clients_noconsensus(global_test_env, staking_cfg)
 
 

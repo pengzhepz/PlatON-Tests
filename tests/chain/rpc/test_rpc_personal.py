@@ -116,6 +116,8 @@ def test_personal_signTransaction(global_running_env):
     account = global_running_env.account
     platon = Eth(node.web3)
     addr = account.account_with_money["address"]
+    pri_key = account.account_with_money["prikey"]
+    node.personal.importRawKey(pri_key, password)
 
     nonce = hex(platon.getTransactionCount(Web3.toChecksumAddress(addr)))
     transaction_dict = {
@@ -146,6 +148,7 @@ def transaction_func(node, from_addr="", to_addr=to_address, value=1000, data=''
         return gas
     transaction_dict["gas"] = gas
     global g_txHash
+    node.personal.unlockAccount(from_addr, password)
     g_txHash = node.personal.sendTransaction(transaction_dict, password)
     return g_txHash
 
@@ -172,6 +175,8 @@ def test_platon_gasPrice(global_running_env):
     platon = Eth(node.web3)
     account = global_running_env.account
     from_address = account.account_with_money["address"]
+    pri_key = account.account_with_money["prikey"]
+    node.personal.importRawKey(pri_key, password)
 
     nCount = platon.getTransactionCount(Web3.toChecksumAddress(from_address))
     nonce = hex(nCount)
@@ -205,6 +210,8 @@ def test_platon_GetBlock(global_running_env):
     account = global_running_env.account
     platon = Eth(node.web3)
     address = account.account_with_money["address"]
+    pri_key = account.account_with_money["prikey"]
+    node.personal.importRawKey(pri_key, password)
     nCount = platon.getTransactionCount(Web3.toChecksumAddress(address))
     nonce = hex(nCount)
 
@@ -265,6 +272,8 @@ def test_platon_estimateGas(global_running_env):
     account = global_running_env.account
     platon = Eth(node.web3)
     address = account.account_with_money["address"]
+    pri_key = account.account_with_money["prikey"]
+    node.personal.importRawKey(pri_key, password)
 
     nCount = platon.getTransactionCount(Web3.toChecksumAddress(address))
     nonce = hex(nCount)

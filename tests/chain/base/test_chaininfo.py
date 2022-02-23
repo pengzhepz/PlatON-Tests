@@ -48,7 +48,7 @@ def test_CH_IN_020(global_test_env):
 def test_platon_versions(global_test_env):
     node = global_test_env.get_rand_node()
     cmd_list = node.run_ssh("{} version".format(node.remote_bin_file))
-    assert "0.16.1" in cmd_list[1], "The version number is incorrect"
+    assert "0.16.3" in cmd_list[1], "The version number is incorrect"
 
 
 @allure.title("Test restart all consensus nodes")

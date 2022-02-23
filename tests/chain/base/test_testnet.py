@@ -21,7 +21,7 @@ def test_mainnet_fast(global_test_env):
     log.info("is init:{}".format(test_node.cfg.init_chain))
     test_node.deploy_me(genesis_file=None)
     log.info("deploy end")
-    time.sleep(5)
+    time.sleep(15)
     assert test_node.web3.eth.syncing is not False
 
 

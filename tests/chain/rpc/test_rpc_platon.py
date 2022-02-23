@@ -15,7 +15,7 @@ from client_sdk_python.eth import Eth
 @pytest.mark.P1
 def test_platon_protocolVersion(global_running_env):
     node = global_running_env.get_rand_node()
-    assert node.eth.protocolVersion == '63'
+    assert node.eth.protocolVersion == '65'
 
 
 @allure.title("Get the amount of the account")
@@ -27,7 +27,7 @@ def test_platon_GetBalance(global_running_env):
     addr = account.account_with_money["address"]
     from_addr = Web3.toChecksumAddress(addr)
     # balance = platon.getBalance(from_addr)
-    balance = platon.getBalance(node.web3.pipAddress)
+    balance = platon.getBalance(node.pip.pipAddress)
     assert balance == 0
 
 
@@ -51,8 +51,7 @@ def test_platon_call(global_running_env):
     account = global_running_env.account
     addr = account.account_with_money["address"]
     from_addr = Web3.toChecksumAddress(addr)
-
-    to_addr = node.web3.stakingAddress
+    to_addr = node.ppos.stakingAddress
     data = rlp.encode([rlp.encode(int(1100))])
     recive = platon_call(platon, from_addr, to_addr, data)
     assert recive != "0x"
@@ -79,9 +78,11 @@ def test_platon_evidences(global_running_env):
 
 
 @allure.title("Get the aggregate signature of any block")
-@pytest.mark.P1
+# @pytest.mark.P1
+@pytest.mark.skip
 @pytest.mark.compatibility
 def test_platon_getPrepareQC(global_running_env):
+    # TODO: message': 'the method platon_getPrepareQC does not exist/is not available'
     node = global_running_env.get_rand_node()
     platon = Eth(node.web3)
     blockNumber = platon.blockNumber

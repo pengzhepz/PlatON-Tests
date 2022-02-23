@@ -284,10 +284,11 @@ class TestEditCandidate:
         address, _ = client.economic.account.generate_account(client.node.web3,  client.economic.create_staking_limit * 2)
         result = client.staking.create_staking(0, address, address, reward_per=100)
         assert_code(result, 0)
-
+        print(client.ppos.getCandidateInfo(client.node.node_id))
         client.economic.wait_settlement(client.node, 1)
         result = client.staking.edit_candidate(address, address, reward_per=101)
         assert_code(result, 0)
+        print(client.ppos.getCandidateInfo(client.node.node_id))
         assert_code(100, client.staking.get_rewardper())
         assert_code(101, client.staking.get_rewardper(isnext=True))
         vaule, newvalue = get_pledge_list(client.ppos.getCandidateList, nodeid=client.node.node_id)

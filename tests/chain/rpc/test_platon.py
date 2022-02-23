@@ -23,7 +23,7 @@ import time
 UNKNOWN_ADDRESS = '14qViLJfdGaP4EeHnDyJbEGQysnCpwn1gd'
 UNKNOWN_HASH = '0xdeadbeef00000000000000000000000000000000000000000000000000000000'
 COMMON_ADDRESS = '0x55bfd49472fd41211545b01713a9c3a97af78b05'
-ADDRESS = "atx1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpd3er4y"
+ADDRESS = "atp1zqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqp8h9fxw"
 
 
 @pytest.fixture(scope="module")
@@ -473,7 +473,7 @@ class TestPlaton():
         replace_txn = platon.getTransaction(replace_txn_hash)
 
         # Todo: minimum gas price is what
-        assert replace_txn['gasPrice'] == 110000000
+        assert replace_txn['gasPrice'] == 1100000000
 
     @pytest.mark.P1
     def test_platon_replaceTransaction_gas_price_defaulting_strategy_higher(self, unlocked_account):
